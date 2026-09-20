@@ -47,8 +47,12 @@
     <div class="section-head">
       <h2>Выберите игру</h2>
     </div>
+  </div>
 
-    <div class="grid-compact">
+  <div class="games-carousel-wrap">
+    <button class="carousel-arrow left" type="button" onclick="scrollCarousel(-1)" aria-label="Назад">‹</button>
+
+    <div class="games-carousel" id="gamesCarousel">
       <button type="button" class="tile live" onclick="openGame('wall')">
         <span class="tile-tag">Доступно</span>
         <span class="tile-title">Стена</span>
@@ -72,7 +76,15 @@
         <span class="tile-title">Гонка кликов</span>
         <span class="tile-arrow">→</span>
       </button>
+
+      <button type="button" class="tile soon" onclick="openGame('memory')">
+        <span class="tile-tag grey">Скоро</span>
+        <span class="tile-title">Мемори</span>
+        <span class="tile-arrow">→</span>
+      </button>
     </div>
+
+    <button class="carousel-arrow right" type="button" onclick="scrollCarousel(1)" aria-label="Вперёд">›</button>
   </div>
 </section>
 
@@ -93,7 +105,7 @@
 
 <!-- ============ МОДАЛКА: ПРАВИЛА ИГРЫ ============ -->
 <div id="gameModal" class="modal-overlay" role="dialog" aria-modal="true">
-  <div class="modal-box">
+  <div class="modal-box glass">
     <button class="modal-close" onclick="closeGame()" aria-label="Закрыть">✕</button>
     <div class="modal-content">
       <div class="section-eyebrow">Правила</div>
@@ -128,7 +140,7 @@
 
       <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">2. Обратная связь через Telegram-бота</h3>
       <p style="font-size:14px;color:#4B5563;line-height:1.75;">
-        Если вы напишете нам через Telegram-бота, он сохранит текст обращения, ваш username и ID (это делает Telegram), и выбранную категорию. Эти данные видит только администратор проекта.
+        Если вы напишете нам через Telegram-бота, он сохранит текст обращения, ваш username и ID (это делает Telegram), и выбранную категорию.
       </p>
 
       <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">3. Что мы не делаем</h3>
@@ -163,10 +175,8 @@ const GAMES = {
   wall: {
     title: 'Стена',
     rules: `
-      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:18px;">
-        Рисуй с телефона — твой штрих мгновенно появляется на большом экране. Так могут делать все одновременно.
-      </p>
-      <ul style="font-size:15px;color:#4B5563;line-height:1.75;padding-left:22px;">
+      <p class="rule-text">Рисуй с телефона — твой штрих мгновенно появляется на большом экране. Так могут делать все одновременно.</p>
+      <ul class="rule-list">
         <li>выбирай цвет и толщину линии в нижней панели;</li>
         <li>рисуй пальцем по холсту;</li>
         <li>кнопка «Отменить» убирает твой последний штрих;</li>
@@ -179,12 +189,8 @@ const GAMES = {
   snake: {
     title: 'Змейка',
     rules: `
-      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:18px;">
-        Классика на большом экране. Управление — с телефона.
-      </p>
-      <p style="font-size:15px;color:#4B5563;line-height:1.75;">
-        Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.
-      </p>
+      <p class="rule-text">Классика на большом экране. Управление — с телефона.</p>
+      <p class="rule-text">Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.</p>
     `,
     playUrl: null,
     playLabel: 'Скоро'
@@ -192,12 +198,8 @@ const GAMES = {
   poll: {
     title: 'Опрос дня',
     rules: `
-      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:18px;">
-        Один вопрос — много мнений. Голосуй с телефона, результаты видны всем в реальном времени.
-      </p>
-      <p style="font-size:15px;color:#4B5563;line-height:1.75;">
-        Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.
-      </p>
+      <p class="rule-text">Один вопрос — много мнений. Голосуй с телефона, результаты видны всем в реальном времени.</p>
+      <p class="rule-text">Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.</p>
     `,
     playUrl: null,
     playLabel: 'Скоро'
@@ -205,17 +207,31 @@ const GAMES = {
   click: {
     title: 'Гонка кликов',
     rules: `
-      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:18px;">
-        Нажимай быстрее всех. Таблица лидеров обновляется мгновенно на общем экране.
-      </p>
-      <p style="font-size:15px;color:#4B5563;line-height:1.75;">
-        Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.
-      </p>
+      <p class="rule-text">Нажимай быстрее всех. Таблица лидеров обновляется мгновенно на общем экране.</p>
+      <p class="rule-text">Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.</p>
+    `,
+    playUrl: null,
+    playLabel: 'Скоро'
+  },
+  memory: {
+    title: 'Мемори',
+    rules: `
+      <p class="rule-text">Найди все пары карточек быстрее остальных. Играй с телефона, следи за результатом на большом экране.</p>
+      <p class="rule-text">Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.</p>
     `,
     playUrl: null,
     playLabel: 'Скоро'
   }
 };
+
+/* ============ КАРУСЕЛЬ ============ */
+function scrollCarousel(dir){
+  const el = document.getElementById('gamesCarousel');
+  if (!el) return;
+  const card = el.querySelector('.tile');
+  const step = card ? card.offsetWidth + 18 : 340;
+  el.scrollBy({left: dir * step, behavior: 'smooth'});
+}
 
 /* ============ МОДАЛКА ИГРЫ ============ */
 function openGame(key){
@@ -262,7 +278,7 @@ function unlockScroll(){
   document.documentElement.style.removeProperty('--scrollbar-width');
 }
 
-/* ============ ЗАКРЫТИЕ ПО КЛИКУ НА ФОН / ESC ============ */
+/* ============ ЗАКРЫТИЕ ПО ФОНУ / ESC ============ */
 document.addEventListener('DOMContentLoaded', function(){
   ['gameModal', 'privacyModal'].forEach(function(id){
     var modal = document.getElementById(id);

@@ -15,6 +15,7 @@ from config import (
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
 # ============ БАЗА ДАННЫХ ============
 async def db_init():

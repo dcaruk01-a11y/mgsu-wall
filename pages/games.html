@@ -4,64 +4,99 @@
 <title>Игры МГСУ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/style.css">
 </head><body>
 
 <header><div class="wrap head">
   <a class="brand" href="/games">
     <div class="brand-mark">ИГ</div>
-    <span>НИУ МГСУ · Игры</span>
+    <span class="brand-label"><b>НИУ МГСУ</b> · Игры</span>
   </a>
   <nav>
     <a href="/games" class="active">Игры</a>
-    <a href="/games#soon">Скоро</a>
-    <a href="/">О проекте</a>
+    <a href="/kiosk">Экран</a>
+    <a href="#about">О проекте</a>
   </nav>
 </div></header>
 
-<section class="hero"><div class="wrap">
-  <div class="eyebrow">Студенческий проект</div>
-  <h1>Игры МГСУ</h1>
-  <p>Интерактивные развлечения для студентов. Играй с телефона — смотри результат на большом экране.</p>
-</div></section>
-
-<section class="section"><div class="wrap">
-  <h2>Выберите игру</h2>
-  <p class="lead">Откройте на телефоне — и играйте. Всё, что вы делаете, видно на общем экране в реальном времени.</p>
-
-  <div class="grid">
-    <a class="card live" href="/">
-      <span class="card-tag">Доступно</span>
-      <h3>Стена</h3>
-      <p>Рисуй с телефона — твой штрих появляется на большом экране. Раз в день стена «печатается» и уходит в архив.</p>
-      <div class="arrow">Играть →</div>
-    </a>
-
-    <a class="card soon" href="/games#soon">
-      <span class="card-tag grey">Скоро</span>
-      <h3>Змейка</h3>
-      <p>Классика на большом экране. Управление с телефона, зрители следят за игрой на стене.</p>
-    </a>
-
-    <a class="card soon" href="/games#soon">
-      <span class="card-tag grey">Скоро</span>
-      <h3>Опрос дня</h3>
-      <p>Один вопрос — много мнений. Голосуй с телефона, результаты видны всем в реальном времени.</p>
-    </a>
-
-    <a class="card soon" href="/games#soon">
-      <span class="card-tag grey">Скоро</span>
-      <h3>Гонка кликов</h3>
-      <p>Нажимай быстрее всех. Таблица лидеров обновляется мгновенно на общем экране.</p>
-    </a>
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-kicker">Студенческий проект · 2026</div>
+    <h1>Ты готов<br><em>к игре?</em></h1>
+    <p class="hero-sub">Играй с телефона — смотри результат на большом экране в реальном времени.</p>
+    <a class="hero-cta" href="/">Открыть стену <span>→</span></a>
   </div>
-</div></section>
+  <div class="scroll-hint">
+    <span>Прокрутите вниз</span>
+    <div class="scroll-arrow">↓</div>
+  </div>
+</section>
 
-<section class="section" id="soon"><div class="wrap">
-  <h2>Что дальше</h2>
-  <p class="lead">Мы работаем над новыми играми. Хочешь свою идею — напиши нам в Telegram-канал архива стены.</p>
-</div></section>
+<!-- ABSTRACT BLOCK -->
+<section class="abstract">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="abstract-content">
+    <div class="marquee">
+      <div class="marquee-track">
+        <span>ИГРАЙ · РИСУЙ · СМОТРИ · ИГРАЙ · РИСУЙ · СМОТРИ · ИГРАЙ · РИСУЙ · СМОТРИ · </span>
+        <span>ИГРАЙ · РИСУЙ · СМОТРИ · ИГРАЙ · РИСУЙ · СМОТРИ · ИГРАЙ · РИСУЙ · СМОТРИ · </span>
+      </div>
+    </div>
+
+    <p class="abstract-quote">Это не просто стена.<br><b>Это экран, который ждёт тебя.</b></p>
+
+    <div class="abstract-tags">
+      <span class="tag">real-time</span>
+      <span class="tag">студентам</span>
+      <span class="tag">бесплатно</span>
+      <span class="tag">каждый день</span>
+      <span class="tag">в твоём телефоне</span>
+    </div>
+  </div>
+</section>
+
+<!-- GAMES -->
+<section class="section" id="about">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="section-eyebrow">Что доступно</div>
+      <h2>Выберите игру</h2>
+      <p>Откройте на телефоне — и играйте. Всё, что вы делаете, видно на общем экране в реальном времени.</p>
+    </div>
+
+    <div class="grid">
+      <a class="card live" href="/">
+        <span class="card-tag">Доступно</span>
+        <h3>Стена</h3>
+        <p>Рисуй с телефона — твой штрих появляется на большом экране. Раз в день стена «печатается» и уходит в архив.</p>
+        <div class="arrow">Играть <span>→</span></div>
+      </a>
+
+      <a class="card soon" href="#about">
+        <span class="card-tag grey">Скоро</span>
+        <h3>Змейка</h3>
+        <p>Классика на большом экране. Управление с телефона, зрители следят за игрой на стене.</p>
+      </a>
+
+      <a class="card soon" href="#about">
+        <span class="card-tag grey">Скоро</span>
+        <h3>Опрос дня</h3>
+        <p>Один вопрос — много мнений. Голосуй с телефона, результаты видны всем в реальном времени.</p>
+      </a>
+
+      <a class="card soon" href="#about">
+        <span class="card-tag grey">Скоро</span>
+        <h3>Гонка кликов</h3>
+        <p>Нажимай быстрее всех. Таблица лидеров обновляется мгновенно на общем экране.</p>
+      </a>
+    </div>
+  </div>
+</section>
 
 <footer><div class="wrap foot">
   <small>© 2026 · Студенческий проект. Не является официальным сайтом НИУ МГСУ.</small>

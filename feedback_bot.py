@@ -16,7 +16,6 @@ TYPE_NAMES = {
     "question": "Свой вопрос",
 }
 
-# user_id -> выбранный тип (или None, если ждём выбора)
 user_states: dict[int, str] = {}
 
 
@@ -41,14 +40,12 @@ async def send_message(client, api, chat_id, text, reply_markup=None):
 
 
 async def handle_update(client, api, upd):
-    # Кнопки
     if "callback_query" in upd:
         cb = upd["callback_query"]
         user = cb["from"]
         data = cb.get("data", "")
         chat_id = cb["message"]["chat"]["id"]
 
-        # Подтверждаем нажатие кнопки
         try:
             await client.post(f"{api}/answerCallbackQuery", json={"callback_query_id": cb["id"]})
         except Exception:
@@ -63,14 +60,12 @@ async def handle_update(client, api, upd):
             )
         return
 
-    # Текстовые сообщения
     if "message" in upd:
         msg = upd["message"]
         user = msg.get("from", {})
         chat_id = msg["chat"]["id"]
         text = msg.get("text", "").strip()
 
-        # /start
         if text == "/start":
             user_states.pop(user.get("id"), None)
             await send_message(
@@ -82,7 +77,6 @@ async def handle_update(client, api, upd):
             )
             return
 
-        # /help
         if text == "/help":
             await send_message(
                 client, api, chat_id,
@@ -90,7 +84,6 @@ async def handle_update(client, api, upd):
             )
             return
 
-        # Пользователь пишет текст заявки
         state = user_states.get(user.get("id"))
         if state:
             label = TYPE_NAMES.get(state, "Сообщение")
@@ -117,7 +110,7 @@ async def handle_update(client, api, upd):
 
 async def feedback_bot_loop():
     if not TG_FEEDBACK_BOT_TOKEN:
-        print("Feedback bot: token не задан")
+        print("Feedback bot: токен не задан")
         return
     if not TG_ADMIN_ID:
         print("Feedback bot: TG_ADMIN_ID не задан")
@@ -128,7 +121,6 @@ async def feedback_bot_loop():
     print("Feedback bot started")
 
     async with httpx.AsyncClient(timeout=35) as client:
-        # Убираем старые апдейты
         try:
             r = await client.get(f"{api}/getUpdates", params={"offset": -1})
             data = r.json()

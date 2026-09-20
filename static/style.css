@@ -35,7 +35,7 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{
-  font-family:'Manrope',system-ui,-apple-system,sans-serif;
+  font-family:'TT Norms','Manrope',system-ui,-apple-system,sans-serif;
   background:#fff;color:var(--text);line-height:1.5;
   -webkit-font-smoothing:antialiased;overflow-x:hidden;
 }

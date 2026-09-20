@@ -23,6 +23,7 @@
   src:url('/assets/fonts/TT_Norms/TTNorms-ExtraBold.woff') format('woff');
   font-weight:800;font-style:normal;font-display:swap;
 }
+
 :root{
   --blue:#0F3C73;
   --blue-deep:#0a2a52;
@@ -52,7 +53,13 @@ header{
 .head{display:flex;align-items:center;justify-content:space-between;height:64px;}
 .brand{display:flex;align-items:center;gap:14px;text-decoration:none;}
 .brand-logo{
-  width:36px;height:36px;display:block;object-fit:contain;
+  width:36px !important;
+  height:36px !important;
+  max-width:36px !important;
+  max-height:36px !important;
+  display:block;
+  object-fit:contain;
+  flex-shrink:0;
 }
 .brand-label{
   font-weight:500;font-size:14px;color:var(--text);
@@ -249,27 +256,18 @@ footer{
 }
 .foot{
   display:flex;
-  justify-content:space-between;
+  justify-content:center;
   align-items:center;
   flex-wrap:wrap;
-  gap:16px 24px;
+  gap:8px;
   font-size:13px;
   color:var(--grey);
-  line-height:1.5;
 }
-.foot-left,
 .foot-right{
   display:flex;
   align-items:center;
   flex-wrap:wrap;
-  gap:6px 8px;
-}
-.foot-brand{
-  font-weight:700;
-  color:var(--blue);
-}
-.foot-muted{
-  color:#B0B5BD;
+  gap:6px 10px;
 }
 .foot-dot{
   color:#D1D5DB;
@@ -287,7 +285,14 @@ footer{
 }
 
 @media(max-width:720px){
+  .hero{padding:80px 0 40px;}
+  .abstract{min-height:70vh;padding:80px 0;}
+  .section{padding:64px 0;}
+  .head{height:auto;padding:12px 0;flex-wrap:wrap;}
+  nav a{padding:0 12px;font-size:13px;height:48px;}
+  .brand-label{display:none;}
+  .scroll-hint{margin-top:60px;}
   footer{padding:24px 0;}
-  .foot{flex-direction:column;align-items:flex-start;gap:14px;}
-  .foot-left,.foot-right{gap:4px 6px;}
+  .foot{gap:6px;font-size:12px;}
+  .foot-right{gap:4px 8px;justify-content:center;}
 }

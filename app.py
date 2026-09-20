@@ -98,7 +98,7 @@ async def ws_endpoint(ws: WebSocket):
                 "x1": float(msg["x1"]), "y1": float(msg["y1"]),
                 "color": str(msg.get("color", "#ffffff"))[:9],
                 "width": max(1, min(40, int(msg.get("width", 4)))),
-                "ts": now,
+                "ts": time.time(),
             }
             await save_stroke(stroke)
             await hub.broadcast({"type": "stroke", **stroke})

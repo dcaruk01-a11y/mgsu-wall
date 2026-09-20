@@ -63,5 +63,75 @@
     <a href="https://t.me/mgsu_wall_archive" target="_blank" rel="noopener">Telegram-канал</a>
   </div>
 </div></footer>
+<div id="privacyModal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closePrivacy()" aria-label="Закрыть">✕</button>
+    <div class="modal-content">
+      <div class="section-eyebrow">Документы</div>
+      <h2 style="margin-bottom:14px;">Политика конфиденциальности</h2>
+      <p style="color:var(--grey);font-size:14px;margin-bottom:36px;">
+        Последнее обновление: сентябрь 2026
+      </p>
 
+      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:28px;">
+        «Игры МГСУ» — студенческий некоммерческий проект. Мы стараемся собирать как можно меньше данных о пользователях и не передавать их третьим лицам.
+      </p>
+
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">1. Что делаем с данными</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
+        Штрихи на «Стене» используются только для отображения на общем экране и создания ежедневного снимка. Снимок публикуется в Telegram-канале проекта. Все штрихи автоматически удаляются на следующий день.
+      </p>
+
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">2. Обратная связь через Telegram-бота</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
+        Если вы напишете нам через Telegram-бота, он сохранит текст обращения, ваш username и ID (это делает Telegram), и выбранную категорию. Эти данные видит только администратор проекта.
+      </p>
+
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">3. Что мы не делаем</h3>
+      <ul style="font-size:14px;color:#4B5563;line-height:1.75;padding-left:22px;">
+        <li>не продаём и не передаём данные третьим лицам;</li>
+        <li>не используем рекламные трекеры и аналитику;</li>
+        <li>не строим профили пользователей;</li>
+        <li>не храним данные дольше, чем нужно для работы сервиса.</li>
+      </ul>
+
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">4. Модерация</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
+        Мы оставляем за собой право удалять отдельные штрихи, содержащие оскорбления, неприемлемый контент или нарушающие закон.
+      </p>
+
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">5. Технические данные</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
+        Проект размещён на Render (render.com) и использует сервисы Telegram и Google Fonts. Их политики конфиденциальности применяются к техническим данным (например, IP-адресам).
+      </p>
+
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">6. Контакты</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
+        Любые вопросы и предложения — через Telegram-бота проекта или Telegram-канал.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+function openPrivacy(e){
+  if(e) e.preventDefault();
+  document.getElementById('privacyModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePrivacy(){
+  document.getElementById('privacyModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var modal = document.getElementById('privacyModal');
+  if(!modal) return;
+  modal.addEventListener('click', function(e){
+    if(e.target === modal) closePrivacy();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closePrivacy();
+  });
+});
+</script>
 </body></html>

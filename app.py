@@ -172,6 +172,10 @@ async def games():
     return FileResponse("pages/games.html")
 
 @app.get("/kiosk")
+@app.get("/privacy")
+async def privacy():
+    return FileResponse("pages/privacy.html")
+
 async def kiosk():
     return FileResponse("pages/kiosk.html")
 

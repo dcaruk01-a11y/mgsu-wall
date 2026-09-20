@@ -312,6 +312,198 @@ let ws;
 @app.get("/")
 async def index():
     return HTMLResponse(INDEX_HTML)
+# ============ HTML: ИГРЫ МГСУ ============
+GAMES_HTML = """<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#0F3C73;
+  --red:#AC1422;
+  --grey:#808080;
+  --line:#E5E7EB;
+  --text:#0A0A0A;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Manrope',system-ui,-apple-system,sans-serif;
+  background:#fff;color:var(--text);line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1240px;margin:0 auto;padding:0 32px;}
+
+/* ===== HEADER ===== */
+header{border-bottom:1px solid var(--line);}
+.head{
+  display:flex;align-items:center;justify-content:space-between;
+  height:72px;
+}
+.brand{
+  display:flex;align-items:center;gap:14px;
+  font-weight:600;font-size:15px;color:var(--blue);
+  letter-spacing:0.02em;text-decoration:none;
+}
+.brand-mark{
+  width:36px;height:36px;border:1.5px solid var(--blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;color:var(--blue);
+  border-radius:4px;
+}
+nav{display:flex;align-items:center;gap:0;}
+nav a{
+  color:var(--text);text-decoration:none;font-size:15px;
+  padding:0 20px;height:72px;display:flex;align-items:center;
+  border-left:1px solid var(--line);transition:color .15s;
+}
+nav a:first-child{border-left:none;}
+nav a:hover{color:var(--blue);}
+nav a.active{color:var(--blue);font-weight:600;}
+
+/* ===== HERO ===== */
+.hero{padding:80px 0 60px;border-bottom:1px solid var(--line);}
+.eyebrow{
+  display:flex;align-items:center;gap:12px;
+  font-size:12px;font-weight:600;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--blue);margin-bottom:20px;
+}
+.eyebrow::before{
+  content:'';width:28px;height:2px;background:var(--blue);
+}
+h1{
+  font-size:64px;font-weight:700;line-height:1.05;
+  color:var(--blue);letter-spacing:-0.02em;margin-bottom:20px;
+}
+.hero p{
+  font-size:18px;color:#4B5563;max-width:620px;
+}
+
+/* ===== SECTION ===== */
+.section{padding:64px 0;}
+h2{
+  font-size:36px;font-weight:700;color:var(--blue);
+  letter-spacing:-0.01em;margin-bottom:14px;
+}
+.section .lead{font-size:16px;color:#4B5563;max-width:640px;margin-bottom:40px;}
+
+/* ===== CARDS ===== */
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:20px;
+}
+.card{
+  border:1px solid var(--line);border-radius:6px;
+  padding:28px;background:#fff;text-decoration:none;color:inherit;
+  display:flex;flex-direction:column;min-height:230px;
+  transition:border-color .15s,transform .15s;
+}
+.card:hover{border-color:var(--blue);transform:translateY(-2px);}
+.card.live:hover{border-color:var(--blue);}
+.card.soon{cursor:default;opacity:0.65;}
+.card.soon:hover{transform:none;border-color:var(--line);}
+.card-tag{
+  display:inline-block;font-size:11px;font-weight:600;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--blue);padding:4px 10px;border:1px solid var(--blue);
+  border-radius:3px;align-self:flex-start;margin-bottom:auto;
+}
+.card-tag.red{color:var(--red);border-color:var(--red);}
+.card-tag.grey{color:var(--grey);border-color:var(--line);}
+.card h3{
+  font-size:22px;font-weight:600;color:var(--blue);
+  margin:18px 0 8px;letter-spacing:-0.01em;
+}
+.card p{font-size:14px;color:#4B5563;line-height:1.55;}
+.card .arrow{
+  margin-top:16px;color:var(--blue);font-size:14px;
+  font-weight:600;display:flex;align-items:center;gap:6px;
+}
+.card.soon .arrow{display:none;}
+
+/* ===== FOOTER ===== */
+footer{border-top:1px solid var(--line);padding:32px 0;margin-top:40px;}
+.foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.foot small{color:var(--grey);font-size:13px;}
+.foot a{color:var(--blue);text-decoration:none;font-size:13px;}
+.foot a:hover{text-decoration:underline;}
+
+@media(max-width:720px){
+  h1{font-size:42px;}
+  h2{font-size:28px;}
+  .head{height:auto;padding:16px 0;flex-direction:column;gap:12px;}
+  nav a{height:auto;padding:10px 14px;font-size:14px;}
+}
+</style>
+</head><body>
+
+<header><div class="wrap head">
+  <a class="brand" href="/games">
+    <div class="brand-mark">ИГ</div>
+    <span>НИУ МГСУ · Игры</span>
+  </a>
+  <nav>
+    <a href="/games" class="active">Игры</a>
+    <a href="/games#soon">Скоро</a>
+    <a href="/">О проекте</a>
+  </nav>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <div class="eyebrow">Студенческий проект</div>
+  <h1>Игры МГСУ</h1>
+  <p>Интерактивные развлечения для студентов. Играй с телефона — смотри результат на большом экране.</p>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <h2>Выберите игру</h2>
+  <p class="lead">Откройте на телефоне — и играйте. Всё, что вы делаете, видно на общем экране в реальном времени.</p>
+
+  <div class="grid">
+    <a class="card live" href="/">
+      <span class="card-tag">Доступно</span>
+      <h3>Стена</h3>
+      <p>Рисуй с телефона — твой штрих появляется на большом экране. Раз в день стена «печатается» и уходит в архив.</p>
+      <div class="arrow">Играть →</div>
+    </a>
+
+    <a class="card soon" href="/games#soon">
+      <span class="card-tag grey">Скоро</span>
+      <h3>Змейка</h3>
+      <p>Классика на большом экране. Управление с телефона, зрители следят за игрой на стене.</p>
+    </a>
+
+    <a class="card soon" href="/games#soon">
+      <span class="card-tag grey">Скоро</span>
+      <h3>Опрос дня</h3>
+      <p>Один вопрос — много мнений. Голосуй с телефона, результаты видны всем в реальном времени.</p>
+    </a>
+
+    <a class="card soon" href="/games#soon">
+      <span class="card-tag grey">Скоро</span>
+      <h3>Гонка кликов</h3>
+      <p>Нажимай быстрее всех. Таблица лидеров обновляется мгновенно на общем экране.</p>
+    </a>
+  </div>
+</div></section>
+
+<section class="section" id="soon"><div class="wrap">
+  <h2>Что дальше</h2>
+  <p class="lead">Мы работаем над новыми играми. Хочешь свою идею — напиши нам в Telegram-канал архива стены.</p>
+</div></section>
+
+<footer><div class="wrap foot">
+  <small>© 2026 · Студенческий проект. Не является официальным сайтом НИУ МГСУ.</small>
+  <a href="/">Перейти к стене →</a>
+</div></footer>
+
+</body></html>"""
+
+@app.get("/games")
+async def games():
+    return HTMLResponse(GAMES_HTML)
 
 @app.get("/kiosk")
 async def kiosk():

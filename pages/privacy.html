@@ -116,12 +116,15 @@
 <script>
 function openPrivacy(e){
   if(e) e.preventDefault();
+  var sw = window.innerWidth - document.documentElement.clientWidth;
+  document.documentElement.style.setProperty('--scrollbar-width', sw + 'px');
   document.getElementById('privacyModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  document.body.classList.add('modal-open');
 }
 function closePrivacy(){
   document.getElementById('privacyModal').classList.remove('open');
-  document.body.style.overflow = '';
+  document.body.classList.remove('modal-open');
+  document.documentElement.style.removeProperty('--scrollbar-width');
 }
 document.addEventListener('DOMContentLoaded', function(){
   var modal = document.getElementById('privacyModal');

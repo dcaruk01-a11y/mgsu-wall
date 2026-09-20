@@ -12,7 +12,7 @@ from config import (
     CANVAS_W, CANVAS_H, DB_PATH, SNAPSHOT_DIR,
     TG_BOT_TOKEN, TG_CHAT_ID,
 )
-
+from feedback_bot import feedback_bot_loop
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
@@ -160,6 +160,7 @@ async def daily_loop():
 async def on_startup():
     await db_init()
     asyncio.create_task(daily_loop())
+    asyncio.create_task(feedback_bot_loop())    
 
 # ============ СТРАНИЦЫ (HTML-файлы) ============
 @app.get("/")

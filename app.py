@@ -14,7 +14,6 @@ CANVAS_W, CANVAS_H = 1920, 1080
 STROKE_COOLDOWN = 0.0
 DB_PATH = "wall.db"
 
-# Рабочие часы стены (по Москве)
 OPEN_HOUR = 8
 CLOSE_HOUR = 17
 
@@ -93,7 +92,6 @@ hub = Hub()
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
     await hub.connect(ws)
-    last = 0.0
     try:
         while True:
             raw = await ws.receive_text()
@@ -174,6 +172,7 @@ async def daily_loop():
 async def on_startup():
     await db_init()
     asyncio.create_task(daily_loop())
+
 @app.get("/status")
 async def status_endpoint():
     now = datetime.now(MSK)
@@ -183,6 +182,7 @@ async def status_endpoint():
         "closes_at": CLOSE_HOUR,
         "current_hour_msk": now.hour,
     }
+
 @app.get("/snapshot")
 async def manual_snapshot():
     path = await make_snapshot()
@@ -272,7 +272,7 @@ async function checkStatus(){
     const b = document.getElementById('banner');
     if(!s.open){
       b.style.display='block';
-      b.textContent='🔒 Стена закрыта. Откроется в '+s.opens_at+':00 по Москве.';
+      b.textContent='Стена закрыта. Откроется в '+s.opens_at+':00 по Москве.';
       c.style.pointerEvents='none';
       c.style.opacity='0.4';
     } else {
@@ -284,7 +284,7 @@ async function checkStatus(){
 }
 checkStatus();
 setInterval(checkStatus, 60000);
-</script></body></html>
+</script></body></html>"""
 
 KIOSK_HTML = """<!doctype html>
 <html><head><meta charset="utf-8"><title>MGSU Wall</title>

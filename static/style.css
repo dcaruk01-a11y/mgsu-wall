@@ -266,13 +266,15 @@ footer{
 .foot-left{
   color:var(--grey);
   line-height:1.5;
+  margin-left:auto;
+  text-align:right;
 }
 .foot-right{
   display:flex;
   align-items:center;
   flex-wrap:wrap;
   gap:6px 10px;
-  margin-left:auto;
+  margin-right:auto;
 }
 .foot-dot{
   color:#D1D5DB;
@@ -297,5 +299,6 @@ footer{
     gap:12px;
     font-size:12px;
   }
-  .foot-right{margin-left:0;gap:4px 8px;}
+  .foot-left{margin-left:0;text-align:left;}
+  .foot-right{margin-right:0;gap:4px 8px;}
 }

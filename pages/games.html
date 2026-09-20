@@ -7,15 +7,17 @@
 <link rel="stylesheet" href="/static/style.css">
 </head><body>
 
-<header><div class="wrap head">
-  <a class="brand" href="/games">
-    <img src="/assets/Logo/logo.svg" alt="Лого" class="brand-logo">
-    <span class="brand-label"><b>НИУ МГСУ</b> · Игры</span>
-  </a>
-  <nav>
-    <a href="/games" class="active">Игры</a>
-    <a href="/privacy">О проекте</a>
-  </nav>
+<header><div class="wrap">
+  <div class="head">
+    <a class="brand" href="/games">
+      <img src="/assets/Logo/logo.svg" alt="Лого" class="brand-logo">
+      <span class="brand-label"><b>НИУ МГСУ</b> · Игры</span>
+    </a>
+    <nav>
+      <a href="/games" class="active">Игры</a>
+      <a href="/privacy">О проекте</a>
+    </nav>
+  </div>
 </div></header>
 
 <section class="hero">
@@ -45,48 +47,66 @@
     <div class="section-head">
       <h2>Выберите игру</h2>
     </div>
-    <div class="grid">
-      <a class="card live" href="/">
-        <span class="card-tag">Доступно</span>
-        <h3>Стена</h3>
-        <p>Рисуй с телефона — твой штрих появляется на большом экране. Раз в день стена «печатается» и уходит в архив.</p>
-        <div class="arrow">Играть <span>→</span></div>
-      </a>
 
-      <a class="card soon" href="#">
-        <span class="card-tag grey">Скоро</span>
-        <h3>Змейка</h3>
-        <p>Классика на большом экране. Управление с телефона, зрители следят за игрой на стене.</p>
-      </a>
+    <div class="grid-compact">
+      <button type="button" class="tile live" onclick="openGame('wall')">
+        <span class="tile-tag">Доступно</span>
+        <span class="tile-title">Стена</span>
+        <span class="tile-arrow">→</span>
+      </button>
 
-      <a class="card soon" href="#">
-        <span class="card-tag grey">Скоро</span>
-        <h3>Опрос дня</h3>
-        <p>Один вопрос — много мнений. Голосуй с телефона, результаты видны всем в реальном времени.</p>
-      </a>
+      <button type="button" class="tile soon" onclick="openGame('snake')">
+        <span class="tile-tag grey">Скоро</span>
+        <span class="tile-title">Змейка</span>
+        <span class="tile-arrow">→</span>
+      </button>
 
-      <a class="card soon" href="#">
-        <span class="card-tag grey">Скоро</span>
-        <h3>Гонка кликов</h3>
-        <p>Нажимай быстрее всех. Таблица лидеров обновляется мгновенно на общем экране.</p>
-      </a>
+      <button type="button" class="tile soon" onclick="openGame('poll')">
+        <span class="tile-tag grey">Скоро</span>
+        <span class="tile-title">Опрос дня</span>
+        <span class="tile-arrow">→</span>
+      </button>
+
+      <button type="button" class="tile soon" onclick="openGame('click')">
+        <span class="tile-tag grey">Скоро</span>
+        <span class="tile-title">Гонка кликов</span>
+        <span class="tile-arrow">→</span>
+      </button>
     </div>
   </div>
 </section>
 
-<footer><div class="wrap foot">
-  <div class="foot-left">
-    © 2026 · Не является официальным сайтом НИУ МГСУ
+<footer>
+  <div class="foot">
+    <div class="foot-left">
+      © 2026 · Не является официальным сайтом НИУ МГСУ
+    </div>
+    <div class="foot-right">
+      <a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>
+      <span class="foot-dot">·</span>
+      <a href="#" onclick="openPrivacy(event)">Политика конфиденциальности</a>
+      <span class="foot-dot">·</span>
+      <a href="https://t.me/mgsu_wall_archive" target="_blank" rel="noopener">Telegram-канал</a>
+    </div>
   </div>
-  <div class="foot-right">
-    <a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>
-    <span class="foot-dot">·</span>
-    <a href="#" onclick="openPrivacy(event)">Политика конфиденциальности</a>
-    <span class="foot-dot">·</span>
-    <a href="https://t.me/mgsu_wall_archive" target="_blank" rel="noopener">Telegram-канал</a>
-  </div>
-</div></footer>
+</footer>
 
+<!-- ============ МОДАЛКА: ПРАВИЛА ИГРЫ ============ -->
+<div id="gameModal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeGame()" aria-label="Закрыть">✕</button>
+    <div class="modal-content">
+      <div class="section-eyebrow">Правила</div>
+      <h2 id="gameTitle" style="margin-bottom:20px;">Стена</h2>
+
+      <div id="gameRules"></div>
+
+      <div id="gameActions" style="margin-top:36px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ МОДАЛКА: ПОЛИТИКА ============ -->
 <div id="privacyModal" class="modal-overlay" role="dialog" aria-modal="true">
   <div class="modal-box">
     <button class="modal-close" onclick="closePrivacy()" aria-label="Закрыть">✕</button>
@@ -126,7 +146,7 @@
 
       <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">5. Технические данные</h3>
       <p style="font-size:14px;color:#4B5563;line-height:1.75;">
-        Проект размещён на Render (render.com) и использует сервисы Telegram и Google Fonts. Их политики конфиденциальности применяются к техническим данным (например, IP-адресам).
+        Проект размещён на Render (render.com) и использует сервисы Telegram и Google Fonts.
       </p>
 
       <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">6. Контакты</h3>
@@ -138,26 +158,127 @@
 </div>
 
 <script>
+/* ============ ДАННЫЕ ИГР ============ */
+const GAMES = {
+  wall: {
+    title: 'Стена',
+    rules: `
+      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:18px;">
+        Рисуй с телефона — твой штрих мгновенно появляется на большом экране. Так могут делать все одновременно.
+      </p>
+      <ul style="font-size:15px;color:#4B5563;line-height:1.75;padding-left:22px;">
+        <li>выбирай цвет и толщину линии в нижней панели;</li>
+        <li>рисуй пальцем по холсту;</li>
+        <li>кнопка «Отменить» убирает твой последний штрих;</li>
+        <li>в 17:00 стена «печатается» и уходит в Telegram-архив.</li>
+      </ul>
+    `,
+    playUrl: '/',
+    playLabel: 'Играть'
+  },
+  snake: {
+    title: 'Змейка',
+    rules: `
+      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:18px;">
+        Классика на большом экране. Управление — с телефона.
+      </p>
+      <p style="font-size:15px;color:#4B5563;line-height:1.75;">
+        Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.
+      </p>
+    `,
+    playUrl: null,
+    playLabel: 'Скоро'
+  },
+  poll: {
+    title: 'Опрос дня',
+    rules: `
+      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:18px;">
+        Один вопрос — много мнений. Голосуй с телефона, результаты видны всем в реальном времени.
+      </p>
+      <p style="font-size:15px;color:#4B5563;line-height:1.75;">
+        Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.
+      </p>
+    `,
+    playUrl: null,
+    playLabel: 'Скоро'
+  },
+  click: {
+    title: 'Гонка кликов',
+    rules: `
+      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:18px;">
+        Нажимай быстрее всех. Таблица лидеров обновляется мгновенно на общем экране.
+      </p>
+      <p style="font-size:15px;color:#4B5563;line-height:1.75;">
+        Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.
+      </p>
+    `,
+    playUrl: null,
+    playLabel: 'Скоро'
+  }
+};
+
+/* ============ МОДАЛКА ИГРЫ ============ */
+function openGame(key){
+  const g = GAMES[key];
+  if (!g) return;
+
+  document.getElementById('gameTitle').textContent = g.title;
+  document.getElementById('gameRules').innerHTML = g.rules;
+
+  const actions = document.getElementById('gameActions');
+  if (g.playUrl) {
+    actions.innerHTML = '<a class="btn-play" href="' + g.playUrl + '">' + g.playLabel + ' →</a>';
+  } else {
+    actions.innerHTML = '<span class="btn-play disabled">' + g.playLabel + '</span>';
+  }
+
+  lockScroll();
+  document.getElementById('gameModal').classList.add('open');
+}
+function closeGame(){
+  document.getElementById('gameModal').classList.remove('open');
+  unlockScroll();
+}
+
+/* ============ МОДАЛКА ПОЛИТИКИ ============ */
 function openPrivacy(e){
   if(e) e.preventDefault();
-  var sw = window.innerWidth - document.documentElement.clientWidth;
-  document.documentElement.style.setProperty('--scrollbar-width', sw + 'px');
+  lockScroll();
   document.getElementById('privacyModal').classList.add('open');
-  document.body.classList.add('modal-open');
 }
 function closePrivacy(){
   document.getElementById('privacyModal').classList.remove('open');
+  unlockScroll();
+}
+
+/* ============ СКРОЛЛ-ЛОК БЕЗ СДВИГА ============ */
+function lockScroll(){
+  var sw = window.innerWidth - document.documentElement.clientWidth;
+  document.documentElement.style.setProperty('--scrollbar-width', sw + 'px');
+  document.body.classList.add('modal-open');
+}
+function unlockScroll(){
   document.body.classList.remove('modal-open');
   document.documentElement.style.removeProperty('--scrollbar-width');
 }
+
+/* ============ ЗАКРЫТИЕ ПО КЛИКУ НА ФОН / ESC ============ */
 document.addEventListener('DOMContentLoaded', function(){
-  var modal = document.getElementById('privacyModal');
-  if(!modal) return;
-  modal.addEventListener('click', function(e){
-    if(e.target === modal) closePrivacy();
+  ['gameModal', 'privacyModal'].forEach(function(id){
+    var modal = document.getElementById(id);
+    if (!modal) return;
+    modal.addEventListener('click', function(e){
+      if (e.target === modal) {
+        if (id === 'gameModal') closeGame();
+        else closePrivacy();
+      }
+    });
   });
   document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape') closePrivacy();
+    if (e.key === 'Escape') {
+      closeGame();
+      closePrivacy();
+    }
   });
 });
 </script>

@@ -14,6 +14,7 @@ from config import (
 )
 from feedback_bot import feedback_bot_loop
 
+
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")

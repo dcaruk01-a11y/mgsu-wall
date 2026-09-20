@@ -18,13 +18,15 @@ DB_PATH = "wall.db"
 OPEN_HOUR = 8
 CLOSE_HOUR = 17
 
+MSK = timezone(timedelta(hours=3))
+
 def is_open():
     now = datetime.now(MSK)
     return OPEN_HOUR <= now.hour < CLOSE_HOUR
+
 SNAPSHOT_DIR = "snapshots"
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
-MSK = timezone(timedelta(hours=3))
 app = FastAPI()
 
 # ============ БАЗА ДАННЫХ ============
@@ -99,7 +101,7 @@ async def ws_endpoint(ws: WebSocket):
                 msg = json.loads(raw)
             except Exception:
                 continue
-                       if msg.get("type") != "stroke":
+            if msg.get("type") != "stroke":
                 continue
             if not is_open():
                 continue

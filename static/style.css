@@ -460,8 +460,10 @@ body.modal-open{
 /* ===== КАРУСЕЛЬ ИГР ===== */
 .games-carousel-wrap{
   position:relative;
-  margin-top:16px;
-  padding:0 32px;
+  max-width:1300px;
+  margin:16px auto 0;
+  padding:0 72px;
+  box-sizing:border-box;
 }
 .games-carousel{
   display:flex !important;
@@ -578,8 +580,8 @@ body.modal-open{
   background:rgba(15,60,115,1);
   transform:translateY(-50%) scale(1.08);
 }
-.carousel-arrow.left{left:0;}
-.carousel-arrow.right{right:0;}
+.carousel-arrow.left{left:14px;}
+.carousel-arrow.right{right:14px;}
 
 @media(max-width:720px){
   .games-carousel-wrap{padding:0 16px;}

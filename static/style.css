@@ -26,11 +26,8 @@ header{
 }
 .head{display:flex;align-items:center;justify-content:space-between;height:64px;}
 .brand{display:flex;align-items:center;gap:14px;text-decoration:none;}
-.brand-mark{
-  width:32px;height:32px;border:1.5px solid var(--blue);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:11px;color:var(--blue);
-  border-radius:4px;letter-spacing:0.05em;
+.brand-logo{
+  width:36px;height:36px;display:block;object-fit:contain;
 }
 .brand-label{
   font-weight:500;font-size:14px;color:var(--text);

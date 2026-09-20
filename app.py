@@ -11,7 +11,7 @@ TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID", "")
 
 CANVAS_W, CANVAS_H = 1920, 1080
-STROKE_COOLDOWN = 0.008
+STROKE_COOLDOWN = 0.0
 DB_PATH = "wall.db"
 SNAPSHOT_DIR = "snapshots"
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
@@ -93,10 +93,6 @@ async def ws_endpoint(ws: WebSocket):
                 continue
             if msg.get("type") != "stroke":
                 continue
-            now = time.time()
-            if now - last < STROKE_COOLDOWN:
-                continue
-            last = now
             stroke = {
                 "x0": float(msg["x0"]), "y0": float(msg["y0"]),
                 "x1": float(msg["x1"]), "y1": float(msg["y1"]),

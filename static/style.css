@@ -452,3 +452,8 @@ footer{
   .modal-content{padding:36px 24px 28px;}
   .modal-close{top:10px;right:10px;}
 }
+/* Фикс: когда открыта модалка, не дёргается страница */
+body.modal-open{
+  overflow:hidden;
+  padding-right:var(--scrollbar-width, 0px);
+}

@@ -13,9 +13,11 @@ from config import (
     TG_BOT_TOKEN, TG_CHAT_ID,
 )
 from feedback_bot import feedback_bot_loop
+
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+
 
 # ============ БАЗА ДАННЫХ ============
 async def db_init():
@@ -29,6 +31,7 @@ async def db_init():
         """)
         await db.commit()
 
+
 async def save_stroke(s):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
@@ -37,6 +40,7 @@ async def save_stroke(s):
         )
         await db.commit()
 
+
 async def load_today_strokes():
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute(
@@ -44,24 +48,29 @@ async def load_today_strokes():
             (today_str(),)
         )
         rows = await cur.fetchall()
-    return [dict(zip(["x0","y0","x1","y1","color","width","ts"], r)) for r in rows]
+    return [dict(zip(["x0", "y0", "x1", "y1", "color", "width", "ts"], r)) for r in rows]
+
 
 async def clear_today():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM strokes WHERE day=?", (today_str(),))
         await db.commit()
 
+
 # ============ WEBSOCKET ХАБ ============
 class Hub:
     def __init__(self):
         self.clients = set()
+
     async def connect(self, ws):
         await ws.accept()
         self.clients.add(ws)
         for s in await load_today_strokes():
             await ws.send_text(json.dumps({"type": "stroke", **s}))
+
     def disconnect(self, ws):
         self.clients.discard(ws)
+
     async def broadcast(self, msg):
         data = json.dumps(msg)
         dead = []
@@ -73,7 +82,9 @@ class Hub:
         for d in dead:
             self.disconnect(d)
 
+
 hub = Hub()
+
 
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
@@ -103,6 +114,7 @@ async def ws_endpoint(ws: WebSocket):
     except Exception:
         hub.disconnect(ws)
 
+
 # ============ СНИМОК И TELEGRAM ============
 async def make_snapshot():
     img = Image.new("RGB", (CANVAS_W, CANVAS_H), (10, 10, 14))
@@ -114,6 +126,7 @@ async def make_snapshot():
     path = os.path.join(SNAPSHOT_DIR, f"{today_str()}.png")
     img.save(path)
     return path
+
 
 async def post_to_telegram(path):
     if not TG_BOT_TOKEN or not TG_CHAT_ID:
@@ -132,7 +145,7 @@ async def post_to_telegram(path):
     except Exception as e:
         print("Ошибка Telegram:", e)
 
-# ============ ЕЖЕДНЕВНЫЙ ЦИКЛ ============
+
 async def daily_loop():
     while True:
         now = datetime.now(MSK)
@@ -140,7 +153,7 @@ async def daily_loop():
         if target <= now:
             target += timedelta(days=1)
         wait = (target - now).total_seconds()
-        print(f"До снимка: {wait/3600:.1f} ч")
+        print(f"До снимка: {wait / 3600:.1f} ч")
         await asyncio.sleep(wait)
         try:
             strokes = await load_today_strokes()
@@ -156,28 +169,34 @@ async def daily_loop():
         except Exception as e:
             print("Ошибка:", e)
 
+
 @app.on_event("startup")
 async def on_startup():
     await db_init()
     asyncio.create_task(daily_loop())
-    asyncio.create_task(feedback_bot_loop())    
+    asyncio.create_task(feedback_bot_loop())
 
-# ============ СТРАНИЦЫ (HTML-файлы) ============
+
+# ============ СТРАНИЦЫ ============
 @app.get("/")
 async def index():
     return FileResponse("pages/wall.html")
+
 
 @app.get("/games")
 async def games():
     return FileResponse("pages/games.html")
 
+
 @app.get("/kiosk")
+async def kiosk():
+    return FileResponse("pages/kiosk.html")
+
+
 @app.get("/privacy")
 async def privacy():
     return FileResponse("pages/privacy.html")
 
-async def kiosk():
-    return FileResponse("pages/kiosk.html")
 
 # ============ API ============
 @app.get("/status")
@@ -189,6 +208,7 @@ async def status_endpoint():
         "closes_at": 17,
         "current_hour_msk": now.hour,
     }
+
 
 @app.get("/snapshot")
 async def manual_snapshot():

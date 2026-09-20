@@ -11,7 +11,7 @@ TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID", "")
 
 CANVAS_W, CANVAS_H = 1920, 1080
-STROKE_COOLDOWN = 0.05
+STROKE_COOLDOWN = 0.008
 DB_PATH = "wall.db"
 SNAPSHOT_DIR = "snapshots"
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)

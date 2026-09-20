@@ -572,3 +572,219 @@ body.modal-open{
   .tile-arrow{right:14px;bottom:14px;font-size:16px;}
   .btn-play{padding:12px 22px;font-size:14px;}
 }
+/* ===== КАРУСЕЛЬ ИГР ===== */
+.games-carousel-wrap{
+  position:relative;
+  margin-top:8px;
+}
+.games-carousel{
+  display:flex;
+  gap:18px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  padding:12px 32px 32px;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.games-carousel::-webkit-scrollbar{display:none;}
+
+.tile{
+  position:relative;
+  flex:0 0 360px;
+  scroll-snap-align:start;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:18px;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  padding:32px 28px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:16px;
+  cursor:pointer;
+  font-family:inherit;
+  text-align:left;
+  transition:transform .25s ease,background .2s,border-color .2s,box-shadow .25s;
+  color:#fff;
+  min-height:220px;
+  overflow:hidden;
+}
+.tile:hover{
+  transform:translateY(-6px);
+  background:rgba(255,255,255,0.10);
+  border-color:rgba(255,255,255,0.30);
+  box-shadow:0 20px 40px rgba(0,0,0,0.35);
+}
+.tile.soon:hover{
+  background:rgba(255,255,255,0.08);
+  border-color:rgba(255,255,255,0.22);
+  box-shadow:0 16px 32px rgba(0,0,0,0.25);
+}
+.tile-tag{
+  display:inline-block;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.9);
+  padding:5px 12px;
+  border:1px solid rgba(255,255,255,0.28);
+  border-radius:999px;
+  background:rgba(255,255,255,0.05);
+}
+.tile-tag.grey{
+  color:rgba(255,255,255,0.5);
+  border-color:rgba(255,255,255,0.15);
+}
+.tile-title{
+  font-size:32px;
+  font-weight:700;
+  letter-spacing:-0.02em;
+  color:#fff;
+  margin-top:auto;
+}
+.tile-arrow{
+  position:absolute;
+  right:26px;
+  bottom:32px;
+  font-size:24px;
+  color:rgba(255,255,255,0.55);
+  transition:transform .25s,color .25s;
+}
+.tile:hover .tile-arrow{
+  transform:translateX(6px);
+  color:#fff;
+}
+
+/* стрелки карусели */
+.carousel-arrow{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,0.20);
+  background:rgba(15,60,115,0.75);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  color:#fff;
+  font-size:22px;
+  font-weight:400;
+  line-height:1;
+  cursor:pointer;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .15s,transform .15s;
+  padding:0;
+}
+.carousel-arrow:hover{
+  background:rgba(15,60,115,0.95);
+  transform:translateY(-50%) scale(1.08);
+}
+.carousel-arrow.left{left:20px;}
+.carousel-arrow.right{right:20px;}
+
+/* ===== МОДАЛКА «СТЕКЛО» В СИНЕМ СТИЛЕ ===== */
+.modal-box.glass{
+  background:
+    radial-gradient(ellipse at 30% 10%, rgba(26,77,143,0.5) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(15,60,115,0.94) 0%, rgba(5,14,31,0.96) 100%);
+  border:1px solid rgba(255,255,255,0.14);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  color:#fff;
+}
+.modal-box.glass .modal-content h2,
+.modal-box.glass .modal-content h3{
+  color:#fff !important;
+}
+.modal-box.glass .modal-content p,
+.modal-box.glass .modal-content li,
+.modal-box.glass .modal-content ul{
+  color:rgba(255,255,255,0.85) !important;
+}
+.modal-box.glass .section-eyebrow{
+  color:rgba(255,255,255,0.7) !important;
+}
+.modal-box.glass .section-eyebrow::before{
+  background:rgba(255,255,255,0.5) !important;
+}
+.modal-box.glass .modal-close{
+  color:rgba(255,255,255,0.7);
+}
+.modal-box.glass .modal-close:hover{
+  background:rgba(255,255,255,0.12);
+  color:#fff;
+}
+
+/* тексты правил внутри модалки */
+.rule-text{
+  font-size:15px;
+  line-height:1.75;
+  margin-bottom:18px;
+  color:rgba(255,255,255,0.85);
+}
+.rule-list{
+  font-size:15px;
+  line-height:1.8;
+  padding-left:22px;
+  margin-bottom:8px;
+}
+.rule-list li{
+  color:rgba(255,255,255,0.85);
+  margin-bottom:4px;
+}
+
+/* кнопка «Играть» */
+.btn-play{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 30px;
+  border-radius:999px;
+  background:#fff;
+  color:var(--blue);
+  font-family:inherit;
+  font-size:15px;
+  font-weight:700;
+  text-decoration:none;
+  border:0;
+  cursor:pointer;
+  transition:background .15s,transform .15s,box-shadow .15s;
+  box-shadow:0 10px 24px rgba(0,0,0,0.25);
+}
+.btn-play:hover{
+  background:#e8eef7;
+  transform:translateY(-2px);
+  box-shadow:0 14px 28px rgba(0,0,0,0.3);
+}
+.btn-play.disabled{
+  background:rgba(255,255,255,0.10);
+  color:rgba(255,255,255,0.4);
+  cursor:default;
+  pointer-events:none;
+  box-shadow:none;
+}
+.btn-play.disabled:hover{transform:none;}
+
+/* мобильная версия */
+@media(max-width:720px){
+  .games-carousel{
+    padding:10px 20px 24px;
+    gap:14px;
+  }
+  .tile{
+    flex:0 0 280px;
+    padding:24px 22px;
+    min-height:180px;
+    border-radius:16px;
+  }
+  .tile-title{font-size:24px;}
+  .tile-arrow{right:20px;bottom:24px;font-size:20px;}
+  .carousel-arrow{display:none;}
+}

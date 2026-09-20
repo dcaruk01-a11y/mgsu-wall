@@ -457,3 +457,118 @@ body.modal-open{
   overflow:hidden;
   padding-right:var(--scrollbar-width, 0px);
 }
+/* ===== КОМПАКТНЫЕ ПЛИТКИ ИГР ===== */
+.grid-compact{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:14px;
+}
+.tile{
+  position:relative;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:14px;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  padding:22px 22px 22px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:14px;
+  cursor:pointer;
+  font-family:inherit;
+  text-align:left;
+  transition:transform .2s ease,background .2s,border-color .2s;
+  color:#fff;
+  min-height:132px;
+  overflow:hidden;
+}
+.tile:hover{
+  transform:translateY(-4px);
+  background:rgba(255,255,255,0.10);
+  border-color:rgba(255,255,255,0.28);
+}
+.tile:active{transform:translateY(-2px);}
+.tile.soon:hover{
+  background:rgba(255,255,255,0.08);
+  border-color:rgba(255,255,255,0.20);
+}
+.tile-tag{
+  display:inline-block;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.85);
+  padding:4px 10px;
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:999px;
+  background:rgba(255,255,255,0.05);
+}
+.tile-tag.grey{
+  color:rgba(255,255,255,0.5);
+  border-color:rgba(255,255,255,0.15);
+}
+.tile-title{
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:-0.02em;
+  color:#fff;
+  margin-top:auto;
+}
+.tile-arrow{
+  position:absolute;
+  right:20px;
+  bottom:20px;
+  font-size:20px;
+  color:rgba(255,255,255,0.5);
+  transition:transform .2s,color .2s;
+}
+.tile:hover .tile-arrow{
+  transform:translateX(4px);
+  color:#fff;
+}
+
+/* кнопка «Играть» в модалке */
+.btn-play{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 28px;
+  border-radius:999px;
+  background:var(--blue);
+  color:#fff;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:600;
+  text-decoration:none;
+  border:0;
+  cursor:pointer;
+  transition:background .15s,transform .15s;
+}
+.btn-play:hover{
+  background:#0a2a52;
+  transform:translateY(-1px);
+}
+.btn-play.disabled{
+  background:#E5E7EB;
+  color:#9CA3AF;
+  cursor:default;
+  pointer-events:none;
+}
+.btn-play.disabled:hover{transform:none;}
+
+@media(max-width:640px){
+  .grid-compact{
+    grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+    gap:10px;
+  }
+  .tile{
+    padding:16px 16px 16px;
+    min-height:112px;
+    border-radius:12px;
+  }
+  .tile-title{font-size:18px;}
+  .tile-arrow{right:14px;bottom:14px;font-size:16px;}
+  .btn-play{padding:12px 22px;font-size:14px;}
+}

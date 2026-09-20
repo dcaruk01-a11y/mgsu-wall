@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Нарисуй на стене МГСУ</title>
+<style>
+html,body{margin:0;background:#0a0a0e;color:#fff;font-family:system-ui;overscroll-behavior:none;touch-action:none;height:100%;}
+canvas{display:block;width:100vw;height:70vh;background:#000;touch-action:none;}
+.bar{display:flex;gap:10px;padding:10px;flex-wrap:wrap;align-items:center;}
+.sw{width:36px;height:36px;border-radius:50%;border:3px solid #444;cursor:pointer;}
+.sw.active{border-color:#fff;transform:scale(1.15);}
+input[type=range]{flex:1;min-width:120px;}
+p{padding:0 12px;color:#888;font-size:14px;margin:6px 0;}
+a.back{position:fixed;top:10px;left:10px;color:#fff;background:rgba(0,0,0,0.5);padding:8px 14px;border-radius:6px;text-decoration:none;font-size:14px;z-index:10;}
+#banner{display:none;background:#ff3b30;color:#fff;padding:14px;text-align:center;font-weight:bold;}
+</style></head><body>
+<a class="back" href="/games">← Игры</a>
+<canvas id="c"></canvas>
+<div class="bar" id="colors"></div>
+<div class="bar"><input type="range" id="w" min="2" max="30" value="6"></div>
+<div id="banner"></div>
+<p>Штрих появляется на большом экране через секунду. В 17:00 стена «печатается» и уходит в архив.</p>
+<script>
+const W=1920,H=1080;
+const c=document.getElementById('c');
+const ctx=c.getContext('2d');
+c.width=W;c.height=H;
+const COLORS=['#ffffff','#ff3b30','#ff9500','#ffcc00','#34c759','#00c7be','#30b0ff','#5856d6','#af52de','#ff2d55'];
+let color=COLORS[0], width=6;
+const palette=document.getElementById('colors');
+COLORS.forEach((col,i)=>{
+  const b=document.createElement('div');
+  b.className='sw'+(i===0?' active':'');
+  b.style.background=col;
+  b.onclick=()=>{color=col;document.querySelectorAll('.sw').forEach(x=>x.classList.remove('active'));b.classList.add('active');};
+  palette.appendChild(b);
+});
+document.getElementById('w').oninput=e=>width=+e.target.value;
+let ws,queue=[];
+function connect(){
+  ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
+  ws.onopen=()=>queue.splice(0).forEach(m=>ws.send(m));
+  ws.onclose=()=>setTimeout(connect,1500);
+  ws.onmessage=e=>{
+    const m=JSON.parse(e.data);
+    if(m.type==='stroke')draw(m.x0,m.y0,m.x1,m.y1,m.color,m.width);
+    if(m.type==='reset')ctx.clearRect(0,0,W,H);
+  };
+}
+connect();
+function draw(x0,y0,x1,y1,col,w){
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+}
+let drawing=false,last=null;
+function pos(e){
+  const r=c.getBoundingClientRect();
+  const p=e.touches?e.touches[0]:e;
+  return {x:(p.clientX-r.left)*(W/r.width),y:(p.clientY-r.top)*(H/r.height)};
+}
+function start(e){e.preventDefault();drawing=true;last=pos(e);}
+function move(e){
+  if(!drawing)return;e.preventDefault();
+  const p=pos(e);
+  const s={x0:last.x,y0:last.y,x1:p.x,y1:p.y,color,width};
+  draw(s.x0,s.y0,s.x1,s.y1,color,width);
+  const msg=JSON.stringify({type:'stroke',...s});
+  ws&&ws.readyState===1?ws.send(msg):queue.push(msg);
+  last=p;
+}
+function end(){drawing=false;last=null;}
+c.addEventListener('touchstart',start,{passive:false});
+c.addEventListener('touchmove',move,{passive:false});
+c.addEventListener('touchend',end);
+c.addEventListener('mousedown',start);
+c.addEventListener('mousemove',move);
+c.addEventListener('mouseup',end);
+c.addEventListener('mouseleave',end);
+
+async function checkStatus(){
+  try{
+    const r = await fetch('/status');
+    const s = await r.json();
+    const b = document.getElementById('banner');
+    if(!s.open){
+      b.style.display='block';
+      b.textContent='Стена закрыта. Откроется в '+s.opens_at+':00 по Москве.';
+      c.style.pointerEvents='none';
+      c.style.opacity='0.4';
+    } else {
+      b.style.display='none';
+      c.style.pointerEvents='auto';
+      c.style.opacity='1';
+    }
+  }catch(e){}
+}
+checkStatus();
+setInterval(checkStatus, 60000);
+</script></body></html>

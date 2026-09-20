@@ -14,7 +14,6 @@ from config import (
 )
 from feedback_bot import feedback_bot_loop
 
-
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
@@ -35,21 +34,28 @@ async def db_init():
 
 async def save_stroke(s):
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
+        cur = await db.execute(
             "INSERT INTO strokes(day,x0,y0,x1,y1,color,width,ts) VALUES (?,?,?,?,?,?,?,?)",
             (today_str(), s["x0"], s["y0"], s["x1"], s["y1"], s["color"], s["width"], s["ts"])
         )
+        await db.commit()
+        return cur.lastrowid
+
+
+async def delete_stroke(stroke_id):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("DELETE FROM strokes WHERE id=?", (stroke_id,))
         await db.commit()
 
 
 async def load_today_strokes():
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute(
-            "SELECT x0,y0,x1,y1,color,width,ts FROM strokes WHERE day=? ORDER BY id",
+            "SELECT id,x0,y0,x1,y1,color,width,ts FROM strokes WHERE day=? ORDER BY id",
             (today_str(),)
         )
         rows = await cur.fetchall()
-    return [dict(zip(["x0", "y0", "x1", "y1", "color", "width", "ts"], r)) for r in rows]
+    return [dict(zip(["id", "x0", "y0", "x1", "y1", "color", "width", "ts"], r)) for r in rows]
 
 
 async def clear_today():
@@ -85,11 +91,13 @@ class Hub:
 
 
 hub = Hub()
+connection_strokes: dict = {}
 
 
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
     await hub.connect(ws)
+    connection_strokes[ws] = []
     try:
         while True:
             raw = await ws.receive_text()
@@ -97,22 +105,36 @@ async def ws_endpoint(ws: WebSocket):
                 msg = json.loads(raw)
             except Exception:
                 continue
-            if msg.get("type") != "stroke":
-                continue
-            if not is_open():
-                continue
-            stroke = {
-                "x0": float(msg["x0"]), "y0": float(msg["y0"]),
-                "x1": float(msg["x1"]), "y1": float(msg["y1"]),
-                "color": str(msg.get("color", "#ffffff"))[:9],
-                "width": max(1, min(40, int(msg.get("width", 4)))),
-                "ts": time.time(),
-            }
-            await save_stroke(stroke)
-            await hub.broadcast({"type": "stroke", **stroke})
+
+            t = msg.get("type")
+
+            if t == "stroke":
+                if not is_open():
+                    continue
+                stroke = {
+                    "x0": float(msg["x0"]), "y0": float(msg["y0"]),
+                    "x1": float(msg["x1"]), "y1": float(msg["y1"]),
+                    "color": str(msg.get("color", "#ffffff"))[:9],
+                    "width": max(1, min(40, int(msg.get("width", 4)))),
+                    "ts": time.time(),
+                }
+                new_id = await save_stroke(stroke)
+                connection_strokes[ws].append(new_id)
+                await hub.broadcast({"type": "stroke", "id": new_id, **stroke})
+
+            elif t == "undo":
+                ids = connection_strokes.get(ws, [])
+                if not ids:
+                    continue
+                last_id = ids.pop()
+                await delete_stroke(last_id)
+                await hub.broadcast({"type": "remove", "id": last_id})
+
     except WebSocketDisconnect:
+        connection_strokes.pop(ws, None)
         hub.disconnect(ws)
     except Exception:
+        connection_strokes.pop(ws, None)
         hub.disconnect(ws)
 
 
@@ -216,3 +238,4 @@ async def manual_snapshot():
     path = await make_snapshot()
     await post_to_telegram(path)
     return {"ok": True, "path": path}
+    

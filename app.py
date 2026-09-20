@@ -13,6 +13,14 @@ TG_CHAT_ID = os.environ.get("TG_CHAT_ID", "")
 CANVAS_W, CANVAS_H = 1920, 1080
 STROKE_COOLDOWN = 0.0
 DB_PATH = "wall.db"
+
+# Рабочие часы стены (по Москве)
+OPEN_HOUR = 8
+CLOSE_HOUR = 17
+
+def is_open():
+    now = datetime.now(MSK)
+    return OPEN_HOUR <= now.hour < CLOSE_HOUR
 SNAPSHOT_DIR = "snapshots"
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
@@ -91,7 +99,9 @@ async def ws_endpoint(ws: WebSocket):
                 msg = json.loads(raw)
             except Exception:
                 continue
-            if msg.get("type") != "stroke":
+                       if msg.get("type") != "stroke":
+                continue
+            if not is_open():
                 continue
             stroke = {
                 "x0": float(msg["x0"]), "y0": float(msg["y0"]),
@@ -162,7 +172,15 @@ async def daily_loop():
 async def on_startup():
     await db_init()
     asyncio.create_task(daily_loop())
-
+@app.get("/status")
+async def status_endpoint():
+    now = datetime.now(MSK)
+    return {
+        "open": is_open(),
+        "opens_at": OPEN_HOUR,
+        "closes_at": CLOSE_HOUR,
+        "current_hour_msk": now.hour,
+    }
 @app.get("/snapshot")
 async def manual_snapshot():
     path = await make_snapshot()
@@ -186,7 +204,8 @@ p{padding:0 12px;color:#888;font-size:14px;margin:6px 0;}
 <canvas id="c"></canvas>
 <div class="bar" id="colors"></div>
 <div class="bar"><input type="range" id="w" min="2" max="30" value="6"></div>
-<p>Штрих появляется на большом экране через секунду. В 00:00 стена «печатается» и уходит в архив.</p>
+<div id="banner" style="display:none;background:#ff3b30;color:#fff;padding:14px;text-align:center;font-weight:bold;"></div>
+<p>Штрих появляется на большом экране через секунду. В 17:00 стена «печатается» и уходит в архив.</p>
 <script>
 const W=1920,H=1080;
 const c=document.getElementById('c');
@@ -243,7 +262,27 @@ c.addEventListener('mousedown',start);
 c.addEventListener('mousemove',move);
 c.addEventListener('mouseup',end);
 c.addEventListener('mouseleave',end);
-</script></body></html>"""
+
+async function checkStatus(){
+  try{
+    const r = await fetch('/status');
+    const s = await r.json();
+    const b = document.getElementById('banner');
+    if(!s.open){
+      b.style.display='block';
+      b.textContent='🔒 Стена закрыта. Откроется в '+s.opens_at+':00 по Москве.';
+      c.style.pointerEvents='none';
+      c.style.opacity='0.4';
+    } else {
+      b.style.display='none';
+      c.style.pointerEvents='auto';
+      c.style.opacity='1';
+    }
+  }catch(e){}
+}
+checkStatus();
+setInterval(checkStatus, 60000);
+</script></body></html>
 
 KIOSK_HTML = """<!doctype html>
 <html><head><meta charset="utf-8"><title>MGSU Wall</title>

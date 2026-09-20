@@ -57,25 +57,31 @@ body{
 }
 .wrap{max-width:1240px;margin:0 auto;padding:0 32px;}
 
-/* ===== HEADER — ПЛАШКА-ПИЛЮЛЯ ===== */
+/* ===== HEADER — FULL-WIDTH ===== */
 header{
   position:sticky;
   top:0;
   z-index:50;
-  padding:14px 0 10px;
-  background:linear-gradient(180deg, rgba(5,14,31,0.85) 0%, rgba(5,14,31,0) 100%);
+  padding:0;
+  background:rgba(5,14,31,0.92);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(255,255,255,0.10);
+}
+header .wrap{
+  max-width:none;
+  padding:0 32px;
+  margin:0;
 }
 .head{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  height:64px;
-  background:var(--glass);
-  border:1px solid var(--glass-border);
-  border-radius:999px;
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  padding:0 28px;
+  height:72px;
+  background:transparent;
+  border:none;
+  border-radius:0;
+  padding:0;
 }
 .brand{display:flex;align-items:center;gap:14px;text-decoration:none;}
 .brand-logo{
@@ -112,7 +118,6 @@ nav a{
 nav a:first-child{border-left:none;}
 nav a:hover{color:#fff;}
 nav a.active{color:#fff;font-weight:600;}
-
 /* ===== HERO ===== */
 .hero{
   position:relative;
@@ -296,21 +301,22 @@ h2{
 .card:hover .arrow{gap:14px;}
 .card.soon .arrow{display:none;}
 
-/* ===== FOOTER — ПЛАШКА-ПИЛЮЛЯ ===== */
+/* ===== FOOTER — FULL-WIDTH ===== */
 footer{
-  padding:0 32px 40px;
-  background:transparent;
-  border:none;
+  padding:0;
+  margin-top:60px;
+  background:rgba(5,14,31,0.92);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-top:1px solid rgba(255,255,255,0.10);
 }
 .foot{
-  max-width:1176px;
-  margin:0 auto;
-  background:var(--glass);
-  border:1px solid var(--glass-border);
-  border-radius:999px;
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  padding:16px 32px;
+  max-width:none;
+  margin:0;
+  background:transparent;
+  border:none;
+  border-radius:0;
+  padding:20px 32px;
   display:flex;
   justify-content:space-between;
   align-items:center;

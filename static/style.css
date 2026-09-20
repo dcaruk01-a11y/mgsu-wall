@@ -263,11 +263,12 @@ footer{
   font-size:13px;
   color:var(--grey);
 }
-.foot-left{
-  color:var(--grey);
-  line-height:1.5;
-  margin-left:auto;
-  text-align:right;
+.foot-right{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px 10px;
+  margin-right:auto;
 }
 .foot-right{
   display:flex;

@@ -138,11 +138,17 @@ async def post_to_telegram(path):
 async def daily_loop():
     while True:
         now = datetime.now(MSK)
-        tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=10, microsecond=0)
-        wait = (tomorrow - now).total_seconds()
+        target = now.replace(hour=17, minute=0, second=0, microsecond=0)
+        if target <= now:
+            target += timedelta(days=1)
+        wait = (target - now).total_seconds()
         print(f"До снимка: {wait/3600:.1f} ч")
         await asyncio.sleep(wait)
         try:
+            strokes = await load_today_strokes()
+            if not strokes:
+                print("Холст пустой — снимок не делаем")
+                continue
             print("Снимок дня...")
             path = await make_snapshot()
             await post_to_telegram(path)

@@ -466,9 +466,9 @@ body.modal-open{
 /* ===== КАРУСЕЛЬ ИГР ===== */
 .games-carousel-wrap{
   position:relative;
-  max-width:1300px;
-  margin:16px auto 0;
-  padding:0 72px;
+  max-width:1240px;
+  margin:0 auto;
+  padding:0 32px;
   box-sizing:border-box;
 }
 .games-carousel{

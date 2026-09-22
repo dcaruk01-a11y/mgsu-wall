@@ -7,8 +7,7 @@
 <link rel="stylesheet" href="/static/style.css">
 <style>
 body.clicker-page{
-  height:100vh;
-  overflow:hidden;
+  min-height:100vh;
   display:flex;
   flex-direction:column;
   touch-action:manipulation;
@@ -16,33 +15,68 @@ body.clicker-page{
   -webkit-user-select:none;
   -webkit-tap-highlight-color:transparent;
 }
-.clicker-top{
-  flex-shrink:0;
-  padding:14px 0;
-}
+
 .clicker-stage{
   flex:1;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
-  flex-direction:column;
   position:relative;
-  overflow:hidden;
-  padding:20px;
+  padding:20px 16px 60px;
+  width:100%;
+  box-sizing:border-box;
+  min-height:0;
 }
+
+/* ===== ВЕРХНЯЯ ПАНЕЛЬ СО СЧЁТОМ ===== */
+.score-bar{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+}
+.score-cell{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  min-width:100px;
+}
+.score-label{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.45);
+}
+.score-val{
+  font-size:42px;
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-0.03em;
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+}
+.score-val.low{color:#FF4D5E;}
+
+/* ===== РАНГ ===== */
 .rank-badge{
-  font-size:13px;
+  font-size:12px;
   font-weight:700;
   letter-spacing:0.16em;
   text-transform:uppercase;
-  color:rgba(255,255,255,0.7);
+  color:rgba(255,255,255,0.75);
   padding:8px 20px;
   border:1px solid rgba(255,255,255,0.18);
   border-radius:999px;
   background:rgba(255,255,255,0.05);
   backdrop-filter:blur(10px);
-  margin-bottom:24px;
-  transition:all .2s;
+  -webkit-backdrop-filter:blur(10px);
+  margin-bottom:22px;
+  transition:all .25s;
 }
 .rank-badge.up{
   background:rgba(255,255,255,0.15);
@@ -50,9 +84,17 @@ body.clicker-page{
   transform:scale(1.08);
   color:#fff;
 }
+
+/* ===== КНОПКА КЛИКА ===== */
+.btn-wrap{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
 .click-btn{
-  width:220px;
-  height:220px;
+  width:clamp(160px, 32vw, 230px);
+  height:clamp(160px, 32vw, 230px);
   border-radius:50%;
   border:3px solid rgba(255,255,255,0.25);
   background:
@@ -61,29 +103,28 @@ body.clicker-page{
   box-shadow:
     0 20px 60px rgba(15,60,115,0.5),
     inset 0 -8px 24px rgba(0,0,0,0.35);
-  font-size:96px;
+  font-size:clamp(64px, 13vw, 100px);
   line-height:1;
   cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
-  transition:transform .08s ease-out, box-shadow .15s;
+  transition:transform .06s ease-out;
   padding:0;
   color:#fff;
   position:relative;
+  touch-action:manipulation;
+  will-change:transform;
 }
 .click-btn:active{
-  transform:scale(0.94);
-  box-shadow:
-    0 8px 30px rgba(15,60,115,0.6),
-    inset 0 -4px 16px rgba(0,0,0,0.4);
+  transform:scale(0.93);
 }
 .click-btn.pop{
-  animation:pop .18s ease-out;
+  animation:pop .16s ease-out;
 }
 @keyframes pop{
-  0%{transform:scale(0.94);}
-  50%{transform:scale(1.04);}
+  0%{transform:scale(0.93);}
+  45%{transform:scale(1.06);}
   100%{transform:scale(1);}
 }
 .click-btn::after{
@@ -92,61 +133,83 @@ body.clicker-page{
   inset:-14px;
   border-radius:50%;
   border:1px dashed rgba(255,255,255,0.12);
-  animation:spin 12s linear infinite;
+  animation:spin 14s linear infinite;
   pointer-events:none;
 }
-@keyframes spin{
-  to{transform:rotate(360deg);}
-}
+@keyframes spin{ to{transform:rotate(360deg);} }
 
-.timer-wrap{
-  margin-top:36px;
-  display:flex;
-  align-items:center;
-  gap:14px;
-  font-size:15px;
-  color:rgba(255,255,255,0.7);
-}
-.timer-num{
-  font-size:28px;
-  font-weight:800;
+/* ===== ВСПЛЫВАЮЩИЕ ЧИСЛА (+1, +10, +50...) ===== */
+.float-num{
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translate(-50%, -50%);
+  font-size:32px;
+  font-weight:900;
   color:#fff;
-  letter-spacing:-0.02em;
-  min-width:52px;
-  text-align:center;
+  pointer-events:none;
+  text-shadow:0 2px 12px rgba(0,0,0,0.6);
+  animation:floatUp 1s ease-out forwards;
   font-variant-numeric:tabular-nums;
+  z-index:5;
 }
-.timer-num.low{
+.float-num.big{
+  font-size:46px;
+  color:#FFD84D;
+  text-shadow:0 2px 20px rgba(255,216,77,0.5);
+}
+.float-num.mega{
+  font-size:56px;
   color:#FF4D5E;
-  animation:pulse .5s ease-in-out infinite alternate;
+  text-shadow:0 2px 24px rgba(255,77,94,0.6);
 }
-@keyframes pulse{
-  from{opacity:1;}
-  to{opacity:0.5;}
+@keyframes floatUp{
+  0%{opacity:0; transform:translate(-50%, -30%) scale(0.6);}
+  15%{opacity:1; transform:translate(-50%, -70%) scale(1.1);}
+  100%{opacity:0; transform:translate(-50%, -180%) scale(1);}
 }
 
-/* стартовый оверлей */
+/* ===== БОНУСЫ, ПАДАЮЩИЕ СВЕРХУ ===== */
+.falling{
+  position:fixed;
+  top:-100px;
+  font-size:64px;
+  pointer-events:none;
+  animation:fall 1.6s ease-in forwards;
+  z-index:20;
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+}
+@keyframes fall{
+  0%{top:-100px; opacity:0; transform:rotate(0deg) scale(0.6);}
+  15%{opacity:1;}
+  85%{opacity:1; transform:rotate(360deg) scale(1);}
+  100%{top:100%; opacity:0; transform:rotate(540deg) scale(1);}
+}
+
+/* ===== СТАРТОВЫЙ ОВЕРЛЕЙ ===== */
 .start-overlay{
   position:absolute;
   inset:0;
-  background:rgba(5,14,31,0.85);
-  backdrop-filter:blur(8px);
+  background:rgba(5,14,31,0.88);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
   display:flex;
   align-items:center;
   justify-content:center;
   flex-direction:column;
-  gap:24px;
-  padding:32px;
+  gap:20px;
+  padding:32px 24px;
   text-align:center;
   z-index:10;
   transition:opacity .3s;
+  overflow-y:auto;
 }
 .start-overlay.hide{
   opacity:0;
   pointer-events:none;
 }
 .start-title{
-  font-size:32px;
+  font-size:clamp(24px, 6vw, 36px);
   font-weight:800;
   color:#fff;
   letter-spacing:-0.02em;
@@ -155,31 +218,33 @@ body.clicker-page{
 .start-sub{
   font-size:15px;
   color:rgba(255,255,255,0.7);
-  max-width:340px;
+  max-width:360px;
   line-height:1.6;
 }
 .btn-big{
   display:inline-flex;
   align-items:center;
-  gap:12px;
-  padding:18px 40px;
+  justify-content:center;
+  gap:10px;
+  padding:16px 36px;
   border-radius:999px;
   background:#fff;
   color:var(--blue);
   font-family:inherit;
-  font-size:17px;
+  font-size:16px;
   font-weight:700;
   text-decoration:none;
   border:0;
   cursor:pointer;
   transition:transform .15s,box-shadow .15s;
   box-shadow:0 12px 30px rgba(0,0,0,0.3);
+  min-width:220px;
 }
 .btn-big:hover{
   transform:translateY(-2px);
   box-shadow:0 16px 36px rgba(0,0,0,0.35);
 }
-.btn-big:active{transform:translateY(0) scale(0.98);}
+.btn-big:active{transform:scale(0.98);}
 .btn-ghost{
   background:rgba(255,255,255,0.08);
   color:#fff;
@@ -191,15 +256,15 @@ body.clicker-page{
   box-shadow:none;
 }
 
-/* финальный экран */
+/* ===== ФИНАЛЬНЫЙ ЭКРАН ===== */
 .finish-emoji{
-  font-size:120px;
+  font-size:clamp(72px, 18vw, 110px);
   line-height:1;
   margin-bottom:8px;
   filter:drop-shadow(0 12px 40px rgba(255,255,255,0.15));
 }
 .finish-rank{
-  font-size:38px;
+  font-size:clamp(26px, 7vw, 38px);
   font-weight:800;
   color:#fff;
   letter-spacing:-0.02em;
@@ -208,33 +273,36 @@ body.clicker-page{
 .finish-desc{
   font-size:15px;
   color:rgba(255,255,255,0.65);
-  margin-bottom:28px;
-  max-width:340px;
+  margin-bottom:24px;
+  max-width:360px;
   line-height:1.6;
 }
 .finish-score{
-  font-size:64px;
+  font-size:clamp(48px, 14vw, 76px);
   font-weight:900;
   color:#fff;
   letter-spacing:-0.04em;
-  margin-bottom:6px;
+  margin-bottom:4px;
   font-variant-numeric:tabular-nums;
+  line-height:1;
 }
 .finish-label{
-  font-size:12px;
+  font-size:11px;
   font-weight:700;
   letter-spacing:0.18em;
   text-transform:uppercase;
   color:rgba(255,255,255,0.5);
-  margin-bottom:36px;
+  margin-bottom:32px;
 }
 .finish-actions{
   display:flex;
   gap:12px;
   flex-wrap:wrap;
   justify-content:center;
+  padding-bottom:20px;
 }
 
+/* ===== ТОСТ ===== */
 .toast{
   position:fixed;
   bottom:30px;
@@ -257,13 +325,15 @@ body.clicker-page{
   opacity:1;
 }
 
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
 @media(max-width:640px){
-  .click-btn{width:170px;height:170px;font-size:76px;}
-  .start-title{font-size:26px;}
-  .finish-emoji{font-size:90px;}
-  .finish-rank{font-size:30px;}
-  .finish-score{font-size:52px;}
-  .timer-num{font-size:24px;}
+  .clicker-stage{padding:16px 12px 40px;}
+  .score-bar{gap:16px;margin-bottom:18px;}
+  .score-val{font-size:34px;}
+  .score-cell{min-width:80px;}
+  .rank-badge{margin-bottom:16px;font-size:11px;padding:7px 16px;}
+  .finish-actions{flex-direction:column;width:100%;max-width:280px;}
+  .btn-big{width:100%;}
 }
 </style>
 </head><body class="clicker-page">
@@ -285,14 +355,22 @@ body.clicker-page{
 
 <div class="clicker-stage">
 
+  <div class="score-bar">
+    <div class="score-cell">
+      <span class="score-label">Клики</span>
+      <span class="score-val" id="scoreVal">0</span>
+    </div>
+    <div class="score-cell">
+      <span class="score-label">Время</span>
+      <span class="score-val" id="timerVal">30</span>
+    </div>
+  </div>
+
   <div class="rank-badge" id="rankBadge">Студент</div>
 
-  <button class="click-btn" id="clickBtn" type="button">🎓</button>
-
-  <div class="timer-wrap">
-    <span>Осталось:</span>
-    <span class="timer-num" id="timer">30</span>
-    <span>сек</span>
+  <div class="btn-wrap">
+    <button class="click-btn" id="clickBtn" type="button">🎓</button>
+    <div id="floatLayer"></div>
   </div>
 
   <!-- стартовый оверлей -->
@@ -300,7 +378,8 @@ body.clicker-page{
     <div class="start-title">Кликер МГСУ</div>
     <div class="start-sub">
       За 30 секунд накликай как можно больше.<br>
-      Стартуешь студентом — закончишь легендой.
+      Каждые 10 кликов — бонус +10.<br>
+      Лови падающие подарки: зачётку, кофе, стипендию, диплом.
     </div>
     <button class="btn-big" id="startBtn" type="button">Начать →</button>
   </div>
@@ -320,18 +399,26 @@ body.clicker-page{
 
 </div>
 
-<div class="toast" id="toast">Скопировано в буфер</div>
+<div class="toast" id="toast">Скопировано!</div>
 
 <script>
 /* ============ РАНГИ ============ */
 const RANKS = [
-  {max:30,   name:'Студент',      emoji:'🎓', desc:'Ты только начал путь. Попробуй ещё!'},
-  {max:70,   name:'ССОшник',      emoji:'👷', desc:'Уже в отряде. Ещё немного — и станешь прорабом.'},
-  {max:130,  name:'Прораб',       emoji:'📋', desc:'На объекте тебя знают. Растёшь на глазах.'},
-  {max:200,  name:'Строитель',    emoji:'🏗️', desc:'Руки в деле. Дом сам себя не построит.'},
-  {max:300,  name:'Генподрядчик', emoji:'🏢', desc:'Уже целой стройкой управляешь. Уважение.'},
-  {max:450,  name:'Застройщик',   emoji:'🏙️', desc:'Целый район под тобой. Следующая цель — легенда.'},
+  {max:30,   name:'Студент',         emoji:'🎓', desc:'Ты только начал путь. Попробуй ещё!'},
+  {max:70,   name:'ССОшник',         emoji:'👷', desc:'Уже в отряде. Ещё чуть-чуть — и станешь прорабом.'},
+  {max:130,  name:'Прораб',          emoji:'📋', desc:'На объекте тебя знают. Растёшь на глазах.'},
+  {max:200,  name:'Строитель',       emoji:'🏗️', desc:'Руки в деле. Дом сам себя не построит.'},
+  {max:300,  name:'Генподрядчик',    emoji:'🏢', desc:'Уже целой стройкой управляешь. Уважение.'},
+  {max:450,  name:'Застройщик',      emoji:'🏙️', desc:'Целый район под тобой. Следующая цель — легенда.'},
   {max:Infinity, name:'Легенда МГСУ', emoji:'👑', desc:'Всё, ты в истории университета. Сохрани скриншот!'}
+];
+
+/* ============ БОНУСЫ ============ */
+const BONUSES = [
+  {emoji:'📖', name:'Зачётка',  points:50,  weight:4},
+  {emoji:'☕', name:'Кофе',      points:30,  weight:4},
+  {emoji:'💰', name:'Стипендия', points:100, weight:2},
+  {emoji:'📜', name:'Диплом',    points:250, weight:1}
 ];
 
 function rankFor(score){
@@ -339,51 +426,75 @@ function rankFor(score){
   return RANKS[RANKS.length - 1];
 }
 
+function pickBonus(){
+  // взвешенный рандом
+  const total = BONUSES.reduce((s, b) => s + b.weight, 0);
+  let r = Math.random() * total;
+  for (const b of BONUSES){
+    r -= b.weight;
+    if (r <= 0) return b;
+  }
+  return BONUSES[0];
+}
+
 /* ============ ЭЛЕМЕНТЫ ============ */
-const badge      = document.getElementById('rankBadge');
-const btn        = document.getElementById('clickBtn');
-const timerEl    = document.getElementById('timer');
-const startOv    = document.getElementById('startOverlay');
-const finishOv   = document.getElementById('finishOverlay');
-const startBtn   = document.getElementById('startBtn');
-const againBtn   = document.getElementById('againBtn');
-const shareBtn   = document.getElementById('shareBtn');
-const finishEmoji= document.getElementById('finishEmoji');
-const finishRank = document.getElementById('finishRank');
-const finishDesc = document.getElementById('finishDesc');
-const finishScore= document.getElementById('finishScore');
-const toast      = document.getElementById('toast');
+const badge       = document.getElementById('rankBadge');
+const btn         = document.getElementById('clickBtn');
+const scoreVal    = document.getElementById('scoreVal');
+const timerVal    = document.getElementById('timerVal');
+const startOv     = document.getElementById('startOverlay');
+const finishOv    = document.getElementById('finishOverlay');
+const startBtn    = document.getElementById('startBtn');
+const againBtn    = document.getElementById('againBtn');
+const shareBtn    = document.getElementById('shareBtn');
+const finishEmoji = document.getElementById('finishEmoji');
+const finishRank  = document.getElementById('finishRank');
+const finishDesc  = document.getElementById('finishDesc');
+const finishScore = document.getElementById('finishScore');
+const toast       = document.getElementById('toast');
+const floatLayer  = document.getElementById('floatLayer');
 
 /* ============ СОСТОЯНИЕ ============ */
 const DURATION = 30;
-let score = 0;
+let score = 0;       // общий счёт (клики + бонусы)
+let clicks = 0;      // только клики (для ранга)
 let timeLeft = DURATION;
 let running = false;
 let timerId = null;
+let scorePopTimer = null;
 
 function updateRank(){
-  const r = rankFor(score);
+  const r = rankFor(clicks);
   if (badge.textContent !== r.name){
     badge.textContent = r.name;
     badge.classList.add('up');
-    setTimeout(() => badge.classList.remove('up'), 250);
+    setTimeout(() => badge.classList.remove('up'), 280);
   }
   btn.textContent = r.emoji;
 }
 
+function bumpScore(){
+  scoreVal.textContent = score;
+  scoreVal.style.transform = 'scale(1.15)';
+  clearTimeout(scorePopTimer);
+  scorePopTimer = setTimeout(() => scoreVal.style.transform = 'scale(1)', 100);
+}
+
 function tick(){
   timeLeft -= 1;
-  timerEl.textContent = timeLeft;
-  if (timeLeft <= 5) timerEl.classList.add('low');
+  timerVal.textContent = timeLeft;
+  if (timeLeft <= 5) timerVal.classList.add('low');
   if (timeLeft <= 0) stopGame();
 }
 
 function startGame(){
   score = 0;
+  clicks = 0;
   timeLeft = DURATION;
   running = true;
-  timerEl.textContent = timeLeft;
-  timerEl.classList.remove('low');
+  scoreVal.textContent = '0';
+  timerVal.textContent = timeLeft;
+  timerVal.classList.remove('low');
   badge.textContent = 'Студент';
   btn.textContent = '🎓';
   startOv.classList.add('hide');
@@ -394,7 +505,7 @@ function startGame(){
 function stopGame(){
   running = false;
   clearInterval(timerId);
-  const r = rankFor(score);
+  const r = rankFor(clicks);
   finishEmoji.textContent = r.emoji;
   finishRank.textContent = r.name;
   finishDesc.textContent = r.desc;
@@ -409,14 +520,72 @@ function showToast(text){
   setTimeout(() => toast.classList.remove('show'), 1800);
 }
 
-/* ============ ВВОД ============ */
+/* ============ АНИМАЦИИ ============ */
+function showFloatNum(text, cls){
+  const el = document.createElement('div');
+  el.className = 'float-num' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+  // случайный сдвиг по X, чтобы числа не накладывались
+  const offset = (Math.random() - 0.5) * 80;
+  el.style.marginLeft = offset + 'px';
+  floatLayer.appendChild(el);
+  setTimeout(() => el.remove(), 1100);
+}
+
+function showFallingBonus(bonus){
+  // выбираем случайную X-координату в пределах видимой части
+  const x = Math.random() * (window.innerWidth - 100) + 20;
+  const el = document.createElement('div');
+  el.className = 'falling';
+  el.textContent = bonus.emoji;
+  el.style.left = x + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1700);
+}
+
+/* ============ ОБРАБОТКА КЛИКА ============ */
 function handleClick(e){
   e.preventDefault();
   if (!running) return;
+
+  clicks += 1;
   score += 1;
-  updateRank();
+
+  // pop-эффект на кнопке
+  btn.classList.remove('pop');
+  void btn.offsetWidth;
   btn.classList.add('pop');
-  setTimeout(() => btn.classList.remove('pop'), 180);
+
+  // каждые 10 кликов — +10 бонус
+  if (clicks % 10 === 0){
+    score += 10;
+    showFloatNum('+10', 'big');
+  } else {
+    showFloatNum('+1');
+  }
+
+  // каждые 100 кликов — гарантированный бонус
+  if (clicks > 0 && clicks % 100 === 0){
+    const bonus = pickBonus();
+    score += bonus.points;
+    showFallingBonus(bonus);
+    setTimeout(() => {
+      showFloatNum(bonus.emoji + ' +' + bonus.points, 'mega');
+      bumpScore();
+    }, 800);
+  }
+  // плюс случайный бонус с шансом ~4% каждый клик
+  else if (Math.random() < 0.04){
+    const bonus = pickBonus();
+    score += bonus.points;
+    showFallingBonus(bonus);
+    setTimeout(() => {
+      showFloatNum(bonus.emoji + ' +' + bonus.points, 'big');
+    }, 700);
+  }
+
+  updateRank();
+  bumpScore();
 }
 
 btn.addEventListener('pointerdown', handleClick);
@@ -424,8 +593,8 @@ startBtn.addEventListener('click', startGame);
 againBtn.addEventListener('click', startGame);
 
 shareBtn.addEventListener('click', async () => {
-  const r = rankFor(score);
-  const text = `Я ${r.name} ${r.emoji} — ${score} кликов за 30 секунд в «Кликере МГСУ». А ты?`;
+  const r = rankFor(clicks);
+  const text = `Я ${r.name} ${r.emoji} — ${score} очков за 30 секунд в «Кликере МГСУ». А ты?`;
   try{
     if (navigator.share){
       await navigator.share({text});
@@ -443,7 +612,6 @@ shareBtn.addEventListener('click', async () => {
   }
 });
 
-/* ============ ОТПРАВКА РЕЗУЛЬТАТА (опционально) ============ */
 function saveScore(rank, sc){
   try{
     fetch('/clicker/score', {
@@ -453,11 +621,6 @@ function saveScore(rank, sc){
     }).catch(() => {});
   }catch(e){}
 }
-
-/* не даём странице скроллиться при кликах */
-document.addEventListener('touchmove', e => {
-  if (running) e.preventDefault();
-}, {passive:false});
 </script>
 
 </body></html>

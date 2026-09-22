@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Кампус · Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+body.campus-page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  padding-bottom:30px;
+}
+.campus-top{padding:14px 0 0;}
+
+/* ===== STATS ===== */
+.stats-bar{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:10px;
+  max-width:720px;
+  margin:16px auto 0;
+  padding:0 16px;
+  width:100%;
+  box-sizing:border-box;
+}
+.stat{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:12px;
+  padding:10px 12px;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.stat-head{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:rgba(255,255,255,0.6);
+  margin-bottom:8px;
+}
+.stat-track{
+  height:6px;border-radius:999px;
+  background:rgba(255,255,255,0.1);
+  overflow:hidden;
+}
+.stat-fill{
+  height:100%;border-radius:999px;
+  transition:width .4s ease;
+}
+#hungerFill{background:linear-gradient(90deg,#FFA94D,#FFD84D);}
+#moodFill{background:linear-gradient(90deg,#7BE37B,#34C759);}
+#healthFill{background:linear-gradient(90deg,#FF6B6B,#FF4D5E);}
+.stat-val{
+  font-size:11px;color:rgba(255,255,255,0.5);
+  font-weight:600;margin-top:6px;text-align:right;
+}
+
+/* ===== CAMPUS ===== */
+.campus-stage{
+  max-width:760px;margin:20px auto 0;
+  padding:0 16px;width:100%;box-sizing:border-box;
+}
+.stage-head{
+  display:flex;align-items:baseline;justify-content:center;
+  gap:12px;margin-bottom:12px;flex-wrap:wrap;
+}
+.stage-year{font-size:36px;font-weight:900;color:#fff;letter-spacing:-0.03em;line-height:1;}
+.stage-name{font-size:14px;font-weight:600;color:rgba(255,255,255,0.7);}
+.campus-frame{
+  position:relative;border-radius:20px;overflow:hidden;
+  border:1px solid rgba(255,255,255,0.14);
+  background:#0a1f3d;
+  box-shadow:0 24px 60px rgba(0,0,0,0.4);
+  cursor:pointer;
+  transition:transform .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.campus-frame:active{transform:scale(0.995);}
+.campus-svg{display:block;width:100%;height:auto;aspect-ratio:2/1;}
+.tap-hint{
+  position:absolute;left:50%;bottom:14px;
+  transform:translateX(-50%);
+  background:rgba(5,14,31,0.75);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  padding:8px 16px;border-radius:999px;
+  font-size:12px;font-weight:600;
+  color:rgba(255,255,255,0.85);
+  border:1px solid rgba(255,255,255,0.15);
+  pointer-events:none;
+  animation:breathe 2.5s ease-in-out infinite;
+}
+@keyframes breathe{
+  0%,100%{opacity:0.65;}
+  50%{opacity:1;}
+}
+.weather-badge{
+  position:absolute;top:14px;right:14px;
+  background:rgba(5,14,31,0.75);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  padding:8px 14px;border-radius:999px;
+  font-size:13px;font-weight:600;color:#fff;
+  border:1px solid rgba(255,255,255,0.15);
+  display:flex;align-items:center;gap:6px;
+}
+
+/* ===== COINS + XP ===== */
+.coins-bar{
+  max-width:760px;margin:20px auto 0;padding:14px 20px;
+  width:100%;box-sizing:border-box;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:16px;
+  backdrop-filter:blur(10px);
+  font-size:18px;font-weight:700;color:#fff;
+}
+.coins-left{display:flex;align-items:center;gap:8px;}
+.xp-wrap{
+  display:flex;flex-direction:column;align-items:flex-end;gap:4px;
+  font-size:11px;color:rgba(255,255,255,0.55);
+  font-weight:600;letter-spacing:0.08em;
+}
+.xp-track{
+  width:120px;height:5px;
+  background:rgba(255,255,255,0.1);
+  border-radius:999px;overflow:hidden;
+}
+.xp-fill{
+  height:100%;
+  background:linear-gradient(90deg,#5f9bea,#FFD84D);
+  border-radius:999px;
+  transition:width .3s;
+}
+
+/* ===== ACTIONS ===== */
+.actions{
+  max-width:760px;margin:14px auto 0;
+  padding:0 16px;width:100%;box-sizing:border-box;
+  display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;
+}
+.action{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:14px;
+  padding:14px 10px;
+  cursor:pointer;font-family:inherit;color:#fff;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  transition:transform .15s,background .15s,border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.action:hover{
+  background:rgba(255,255,255,0.12);
+  border-color:rgba(255,255,255,0.28);
+  transform:translateY(-2px);
+}
+.action:active{transform:scale(0.97);}
+.action:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.action-ic{font-size:26px;line-height:1;}
+.action-name{font-size:12px;font-weight:600;}
+.action-cost{font-size:10px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:0.05em;}
+.action-cost.free{color:#7BE37B;}
+
+/* ===== FLOAT COIN ===== */
+.float-coin{
+  position:fixed;
+  font-size:20px;font-weight:800;color:#FFD84D;
+  pointer-events:none;z-index:100;
+  animation:coinFly 1s ease-out forwards;
+  text-shadow:0 2px 8px rgba(0,0,0,0.5);
+  transform:translate(-50%,-50%);
+}
+@keyframes coinFly{
+  0%{opacity:0; transform:translate(-50%,-50%) scale(0.5);}
+  15%{opacity:1; transform:translate(-50%,-70%) scale(1.1);}
+  100%{opacity:0; transform:translate(-50%,-150%) scale(1);}
+}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;bottom:30px;left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:#fff;color:var(--blue);
+  padding:12px 24px;border-radius:999px;
+  font-size:14px;font-weight:600;
+  box-shadow:0 12px 32px rgba(0,0,0,0.3);
+  z-index:200;opacity:0;transition:all .3s;
+  pointer-events:none;text-align:center;max-width:90vw;
+}
+.toast.show{
+  transform:translateX(-50%) translateY(0);
+  opacity:1;
+}
+
+/* ===== LEVEL UP ===== */
+.levelup{
+  position:fixed;inset:0;
+  background:rgba(5,14,31,0.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;padding:32px;
+  z-index:150;opacity:0;pointer-events:none;
+  transition:opacity .3s;text-align:center;
+}
+.levelup.show{opacity:1;pointer-events:auto;}
+.levelup-emoji{font-size:80px;animation:popIn .5s ease-out;}
+@keyframes popIn{
+  0%{transform:scale(0.3);opacity:0;}
+  60%{transform:scale(1.15);opacity:1;}
+  100%{transform:scale(1);}
+}
+.levelup-title{font-size:32px;font-weight:900;color:#fff;letter-spacing:-0.02em;}
+.levelup-year{font-size:20px;font-weight:700;color:#FFD84D;letter-spacing:0.05em;}
+.levelup-desc{
+  font-size:15px;color:rgba(255,255,255,0.7);
+  max-width:400px;line-height:1.6;
+}
+.levelup-btn{
+  margin-top:8px;padding:14px 34px;
+  border-radius:999px;border:0;
+  background:#fff;color:var(--blue);
+  font-family:inherit;font-size:15px;font-weight:700;
+  cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,0.3);
+}
+
+@media(max-width:640px){
+  .stats-bar{gap:8px;}
+  .stat{padding:8px 10px;border-radius:10px;}
+  .stat-head{font-size:10px;}
+  .stat-val{font-size:10px;}
+  .stage-year{font-size:26px;}
+  .stage-name{font-size:12px;}
+  .campus-frame{border-radius:16px;}
+  .tap-hint{font-size:11px;padding:7px 12px;}
+  .weather-badge{font-size:11px;padding:6px 10px;}
+  .coins-bar{font-size:16px;padding:12px 16px;}
+  .xp-track{width:80px;}
+  .actions{grid-template-columns:repeat(2, 1fr);gap:8px;}
+  .action{padding:12px 8px;border-radius:12px;}
+  .action-ic{font-size:22px;}
+  .action-name{font-size:11px;}
+  .levelup-emoji{font-size:64px;}
+  .levelup-title{font-size:24px;}
+}
+</style>
+</head><body class="campus-page">
+
+<div class="campus-top">
+  <div class="wrap">
+    <div class="head">
+      <a class="brand" href="/games">
+        <img src="/assets/Logo/logo.svg" alt="Лого" class="brand-logo">
+        <span class="brand-label"><b>НИУ МГСУ</b> · Игры</span>
+      </a>
+      <nav>
+        <a href="/games">Игры</a>
+        <a href="/privacy">О проекте</a>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-head"><span>🍔</span> Сытость</div>
+    <div class="stat-track"><div class="stat-fill" id="hungerFill" style="width:70%"></div></div>
+    <div class="stat-val" id="hungerVal">70%</div>
+  </div>
+  <div class="stat">
+    <div class="stat-head"><span>😊</span> Настроение</div>
+    <div class="stat-track"><div class="stat-fill" id="moodFill" style="width:70%"></div></div>
+    <div class="stat-val" id="moodVal">70%</div>
+  </div>
+  <div class="stat">
+    <div class="stat-head"><span>❤️</span> Здоровье</div>
+    <div class="stat-track"><div class="stat-fill" id="healthFill" style="width:70%"></div></div>
+    <div class="stat-val" id="healthVal">70%</div>
+  </div>
+</div>
+
+<div class="campus-stage">
+  <div class="stage-head">
+    <div class="stage-year" id="stageYear">1930</div>
+    <div class="stage-name" id="stageName">Первый корпус</div>
+  </div>
+
+  <div class="campus-frame" id="campusFrame">
+    <div class="weather-badge" id="weatherBadge">☀️ Солнце</div>
+    <svg class="campus-svg" id="campusSvg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#5FA9DE"/>
+          <stop offset="1" stop-color="#B8DDF5"/>
+        </linearGradient>
+        <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#79A868"/>
+          <stop offset="1" stop-color="#4A6B41"/>
+        </linearGradient>
+      </defs>
+      <rect width="800" height="300" fill="url(#sky)"/>
+      <rect y="300" width="800" height="100" fill="url(#ground)"/>
+      <g id="clouds"></g>
+      <g id="buildingsLayer"></g>
+      <g id="treesLayer"></g>
+    </svg>
+    <div class="tap-hint">Тапни по кампусу — получишь ₽</div>
+  </div>
+</div>
+
+<div class="coins-bar">
+  <div class="coins-left"><span>💰</span><span id="coinsVal">100 ₽</span></div>
+  <div class="xp-wrap">
+    <div>XP: <span id="xpVal">0</span> / <span id="xpMax">100</span></div>
+    <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="action" id="feedBtn" onclick="doFeed()">
+    <span class="action-ic">🍔</span>
+    <span class="action-name">Покормить</span>
+    <span class="action-cost">20 ₽</span>
+  </button>
+  <button class="action" id="walkBtn" onclick="doWalk()">
+    <span class="action-ic">🚶</span>
+    <span class="action-name">Прогулка</span>
+    <span class="action-cost">10 ₽</span>
+  </button>
+  <button class="action" id="petBtn" onclick="doPet()">
+    <span class="action-ic">✋</span>
+    <span class="action-name">Погладить</span>
+    <span class="action-cost free">бесплатно</span>
+  </button>
+  <button class="action" id="healBtn" onclick="doHeal()">
+    <span class="action-ic">💊</span>
+    <span class="action-name">Полечить</span>
+    <span class="action-cost">50 ₽</span>
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="levelup" id="levelUp">
+  <div class="levelup-emoji" id="levelUpEmoji">🏗️</div>
+  <div class="levelup-title">Новый корпус!</div>
+  <div class="levelup-year" id="levelUpYear"></div>
+  <div class="levelup-desc" id="levelUpDesc"></div>
+  <button class="levelup-btn" onclick="closeLevelUp()">Смотреть →</button>
+</div>
+
+<script>
+/* ============ СТАДИИ ============ */
+const STAGES = [
+  {
+    year: '1930', name: 'Первый корпус',
+    desc: 'С этого начался МИСИ — маленькое здание, вокруг которого вырос целый университет.',
+    xpToNext: 100,
+    buildings: [
+      {x:280, y:220, w:120, h:80, floors:2, cols:4, fill:'#E8DFC8', stroke:'#8B7355', roof:true}
+    ]
+  },
+  {
+    year: '1955', name: 'Свечка',
+    desc: 'Вырос главный корпус — высотка, которую сегодня знает каждый студент.',
+    xpToNext: 250,
+    buildings: [
+      {x:280, y:220, w:120, h:80, floors:2, cols:4, fill:'#E8DFC8', stroke:'#8B7355', roof:true},
+      {x:170, y:40, w:80, h:260, floors:9, cols:3, fill:'#E8EBEF', stroke:'#9CA3AF', spire:true}
+    ]
+  },
+  {
+    year: '1975', name: 'КМК и Ромашка',
+    desc: 'Появились большие корпуса: КМК и круглая Ромашка.',
+    xpToNext: 500,
+    buildings: [
+      {x:280, y:220, w:120, h:80, floors:2, cols:4, fill:'#E8DFC8', stroke:'#8B7355', roof:true},
+      {x:170, y:40, w:80, h:260, floors:9, cols:3, fill:'#E8EBEF', stroke:'#9CA3AF', spire:true},
+      {x:400, y:140, w:150, h:160, floors:5, cols:5, fill:'#C4CAD3', stroke:'#6B7280'},
+      {x:30, y:180, w:110, h:120, floors:3, cols:5, fill:'#D1D5DB', stroke:'#6B7280', round:true}
+    ]
+  },
+  {
+    year: '1995', name: 'УЛК',
+    desc: 'Построен учебно-лабораторный корпус — новые аудитории и лаборатории.',
+    xpToNext: 900,
+    buildings: [
+      {x:280, y:220, w:120, h:80, floors:2, cols:4, fill:'#E8DFC8', stroke:'#8B7355', roof:true},
+      {x:170, y:40, w:80, h:260, floors:9, cols:3, fill:'#E8EBEF', stroke:'#9CA3AF', spire:true},
+      {x:400, y:140, w:150, h:160, floors:5, cols:5, fill:'#C4CAD3', stroke:'#6B7280'},
+      {x:30, y:180, w:110, h:120, floors:3, cols:5, fill:'#D1D5DB', stroke:'#6B7280', round:true},
+      {x:590, y:170, w:110, h:130, floors:4, cols:4, fill:'#DDE1E6', stroke:'#6B7280'}
+    ]
+  },
+  {
+    year: '2015', name: 'УЛБ',
+    desc: 'Появился учебно-лабораторный блок — светлый и современный.',
+    xpToNext: 1400,
+    buildings: [
+      {x:280, y:220, w:120, h:80, floors:2, cols:4, fill:'#E8DFC8', stroke:'#8B7355', roof:true},
+      {x:170, y:40, w:80, h:260, floors:9, cols:3, fill:'#E8EBEF', stroke:'#9CA3AF', spire:true},
+      {x:400, y:140, w:150, h:160, floors:5, cols:5, fill:'#C4CAD3', stroke:'#6B7280'},
+      {x:30, y:180, w:110, h:120, floors:3, cols:5, fill:'#D1D5DB', stroke:'#6B7280', round:true},
+      {x:590, y:170, w:110, h:130, floors:4, cols:4, fill:'#DDE1E6', stroke:'#6B7280'},
+      {x:720, y:160, w:80, h:140, floors:5, cols:3, fill:'#F0F2F5', stroke:'#4B5563'}
+    ]
+  },
+  {
+    year: '2027', name: 'Новый кампус',
+    desc: 'Светлые современные корпуса и зелёный двор — таким кампус станет уже скоро.',
+    xpToNext: 999999,
+    buildings: [
+      {x:280, y:220, w:120, h:80, floors:2, cols:4, fill:'#F5F1E4', stroke:'#B8A47E', roof:true},
+      {x:170, y:40, w:80, h:260, floors:9, cols:3, fill:'#F0F2F5', stroke:'#9CA3AF', spire:true},
+      {x:400, y:140, w:150, h:160, floors:5, cols:5, fill:'#E8EBEF', stroke:'#6B7280'},
+      {x:30, y:180, w:110, h:120, floors:3, cols:5, fill:'#EDF0F3', stroke:'#6B7280', round:true},
+      {x:590, y:170, w:110, h:130, floors:4, cols:4, fill:'#F0F2F5', stroke:'#6B7280'},
+      {x:720, y:160, w:80, h:140, floors:5, cols:3, fill:'#FAFBFC', stroke:'#4B5563'}
+    ]
+  }
+];
+
+/* ============ СОСТОЯНИЕ ============ */
+const SAVE_KEY = 'mgsu_campus_v1';
+const state = {
+  stage: 0, xp: 0, coins: 100,
+  hunger: 70, mood: 70, health: 70,
+  lastTick: Date.now(), petCooldown: 0
+};
+
+function save(){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return;
+    Object.assign(state, JSON.parse(raw));
+    const now = Date.now();
+    const offline = Math.max(0, (now - (state.lastTick || now)) / 1000);
+    const decay = Math.min(20, Math.floor(offline / 30));
+    state.hunger = Math.max(0, state.hunger - decay);
+    state.mood   = Math.max(0, state.mood   - decay);
+    state.health = Math.max(0, state.health - decay);
+    state.lastTick = now;
+  }catch(e){}
+}
+
+/* ============ РЕНДЕР ============ */
+function renderStage(){
+  const stage = STAGES[state.stage];
+  document.getElementById('stageYear').textContent = stage.year;
+  document.getElementById('stageName').textContent = stage.name;
+
+  const layer = document.getElementById('buildingsLayer');
+  let html = '';
+  for (const b of stage.buildings){
+    // тень
+    html += `<rect x="${b.x+4}" y="${b.y+4}" width="${b.w}" height="${b.h}" fill="rgba(0,0,0,0.15)" rx="3"/>`;
+    // корпус
+    if (b.round){
+      html += `<ellipse cx="${b.x+b.w/2}" cy="${b.y+b.h/2}" rx="${b.w/2}" ry="${b.h/2}" fill="${b.fill}" stroke="${b.stroke}" stroke-width="1.5"/>`;
+    } else {
+      html += `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="${b.fill}" stroke="${b.stroke}" stroke-width="1.5" rx="3"/>`;
+    }
+    // крыша
+    if (b.roof){
+      html += `<polygon points="${b.x-6},${b.y} ${b.x+b.w/2},${b.y-30} ${b.x+b.w+6},${b.y}" fill="#8B7355" stroke="#6B5B45" stroke-width="1.5"/>`;
+    }
+    // шпиль
+    if (b.spire){
+      html += `<polygon points="${b.x+b.w/2-4},${b.y} ${b.x+b.w/2},${b.y-40} ${b.x+b.w/2+4},${b.y}" fill="#9CA3AF" stroke="#6B7280" stroke-width="1.5"/>`;
+    }
+    // окна
+    const padX = 10, padY = 10;
+    const cols = b.cols || 3, floors = b.floors || 2;
+    const winW = Math.max(4, (b.w - padX*(cols+1)) / cols);
+    const winH = Math.max(4, (b.h - padY*(floors+1)) / floors);
+    for (let r = 0; r < floors; r++){
+      for (let c = 0; c < cols; c++){
+        const wx = b.x + padX + c*(winW + padX);
+        const wy = b.y + padY + r*(winH + padY);
+        html += `<rect x="${wx}" y="${wy}" width="${winW}" height="${winH}" fill="#3D4A5C" opacity="0.85" rx="1"/>`;
+      }
+    }
+  }
+  layer.innerHTML = html;
+}
+
+function renderClouds(){
+  document.getElementById('clouds').innerHTML = `
+    <g opacity="0.85">
+      <ellipse cx="140" cy="60" rx="45" ry="18" fill="#fff"/>
+      <ellipse cx="170" cy="55" rx="30" ry="20" fill="#fff"/>
+      <ellipse cx="110" cy="58" rx="25" ry="14" fill="#fff"/>
+    </g>
+    <g opacity="0.7">
+      <ellipse cx="640" cy="90" rx="40" ry="16" fill="#fff"/>
+      <ellipse cx="670" cy="85" rx="28" ry="18" fill="#fff"/>
+    </g>
+  `;
+}
+
+function renderTrees(){
+  let html = '';
+  const xs = [30, 240, 320, 520, 640, 770];
+  for (const x of xs){
+    html += `<rect x="${x-3}" y="300" width="6" height="30" fill="#5B3D22"/>`;
+    html += `<ellipse cx="${x}" cy="285" rx="22" ry="28" fill="#4B7A3F"/>`;
+    html += `<ellipse cx="${x-12}" cy="295" rx="16" ry="20" fill="#5B8A4F"/>`;
+    html += `<ellipse cx="${x+12}" cy="292" rx="14" ry="18" fill="#3D6B33"/>`;
+  }
+  document.getElementById('treesLayer').innerHTML = html;
+}
+
+function renderWeather(){
+  const avg = (state.hunger + state.mood + state.health) / 3;
+  const badge = document.getElementById('weatherBadge');
+  let emoji = '☀️', label = 'Солнце', sky1 = '#5FA9DE', sky2 = '#B8DDF5';
+
+  if (avg < 30){
+    emoji = '🌧️'; label = 'Дождь'; sky1 = '#3D4F63'; sky2 = '#7A8A9B';
+  } else if (avg < 60){
+    emoji = '☁️'; label = 'Облачно'; sky1 = '#7C93A8'; sky2 = '#B8C7D4';
+  } else if (avg > 90){
+    emoji = '🌈'; label = 'Радуга'; sky1 = '#5FA9DE'; sky2 = '#FFD9C8';
+  }
+
+  badge.innerHTML = emoji + ' ' + label;
+  const stops = document.querySelectorAll('#sky stop');
+  if (stops.length >= 2){
+    stops[0].setAttribute('stop-color', sky1);
+    stops[1].setAttribute('stop-color', sky2);
+  }
+}
+
+function renderStats(){
+  const setBar = (id, valId, val) => {
+    document.getElementById(id).style.width = Math.round(val) + '%';
+    document.getElementById(valId).textContent = Math.round(val) + '%';
+  };
+  setBar('hungerFill', 'hungerVal', state.hunger);
+  setBar('moodFill',   'moodVal',   state.mood);
+  setBar('healthFill', 'healthVal', state.health);
+  document.getElementById('coinsVal').textContent = Math.round(state.coins) + ' ₽';
+  document.getElementById('xpVal').textContent = Math.round(state.xp);
+  document.getElementById('xpMax').textContent = STAGES[state.stage].xpToNext;
+  const pct = Math.min(100, (state.xp / STAGES[state.stage].xpToNext) * 100);
+  document.getElementById('xpFill').style.width = pct + '%';
+
+  document.getElementById('feedBtn').disabled = state.coins < 20;
+  document.getElementById('walkBtn').disabled = state.coins < 10;
+  document.getElementById('healBtn').disabled = state.coins < 50;
+}
+
+function showToast(text){
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.classList.add('show');
+  clearTimeout(t._id);
+  t._id = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function showFloat(x, y, text){
+  const el = document.createElement('div');
+  el.className = 'float-coin';
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+/* ============ ДЕЙСТВИЯ ============ */
+function doFeed(){
+  if (state.coins < 20) return;
+  state.coins -= 20;
+  state.hunger = Math.min(100, state.hunger + 30);
+  showToast('🍔 Вкусно! +30 сытости');
+  renderStats(); renderWeather(); save();
+}
+function doWalk(){
+  if (state.coins < 10) return;
+  state.coins -= 10;
+  state.mood   = Math.min(100, state.mood   + 20);
+  state.health = Math.min(100, state.health + 5);
+  showToast('🚶 Прогулка! +20 настроения');
+  renderStats(); renderWeather(); save();
+}
+function doPet(){
+  const now = Date.now();
+  if (now - state.petCooldown < 3000){
+    showToast('Подожди немного...');
+    return;
+  }
+  state.petCooldown = now;
+  state.mood = Math.min(100, state.mood + 8);
+  showToast('✋ Приятно! +8 настроения');
+  renderStats(); renderWeather(); save();
+}
+function doHeal(){
+  if (state.coins < 50) return;
+  state.coins -= 50;
+  state.health = Math.min(100, state.health + 30);
+  showToast('💊 Стало легче! +30 здоровья');
+  renderStats(); renderWeather(); save();
+}
+
+/* ============ ТАП ПО КАМПУСУ ============ */
+document.getElementById('campusFrame').addEventListener('pointerdown', function(e){
+  state.coins += 1;
+  showFloat(e.clientX, e.clientY, '+1 ₽');
+  renderStats(); save();
+});
+
+/* ============ ГЛАВНЫЙ ЦИКЛ ============ */
+function gameTick(){
+  state.hunger = Math.max(0, state.hunger - 1.5);
+  state.mood   = Math.max(0, state.mood   - 1);
+  state.health = Math.max(0, state.health - 0.8);
+
+  if (state.hunger < 10 || state.mood < 10){
+    state.health = Math.max(0, state.health - 1);
+  }
+
+  if (state.hunger > 50 && state.mood > 50 && state.health > 50){
+    state.xp += 1;
+  }
+
+  const need = STAGES[state.stage].xpToNext;
+  if (state.xp >= need && state.stage < STAGES.length - 1){
+    state.xp -= need;
+    state.stage += 1;
+    showLevelUp();
+  }
+
+  state.lastTick = Date.now();
+  renderStats(); renderWeather(); save();
+}
+
+/* ============ LEVEL UP ============ */
+function showLevelUp(){
+  const s = STAGES[state.stage];
+  document.getElementById('levelUpYear').textContent = s.year + ' · ' + s.name;
+  document.getElementById('levelUpDesc').textContent = s.desc;
+  const emojis = ['🏗️','🏢','🏛️','🌆','🌇','✨'];
+  document.getElementById('levelUpEmoji').textContent = emojis[Math.min(state.stage - 1, emojis.length - 1)];
+  renderStage();
+  document.getElementById('levelUp').classList.add('show');
+}
+function closeLevelUp(){
+  document.getElementById('levelUp').classList.remove('show');
+}
+
+/* ============ СТАРТ ============ */
+load();
+renderStage();
+renderClouds();
+renderTrees();
+renderWeather();
+renderStats();
+setInterval(gameTick, 3000);
+window.addEventListener('beforeunload', save);
+</script>
+
+</body></html>

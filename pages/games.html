@@ -71,11 +71,11 @@
         <span class="tile-arrow">→</span>
       </button>
 
-      <button type="button" class="tile soon" onclick="openGame('click')">
-        <span class="tile-tag grey">Скоро</span>
-        <span class="tile-title">Гонка кликов</span>
-        <span class="tile-arrow">→</span>
-      </button>
+     <button type="button" class="tile live" onclick="openGame('clicker')">
+  <span class="tile-tag">Доступно</span>
+  <span class="tile-title">Кликер</span>
+  <span class="tile-arrow">→</span>
+</button>
 
       <button type="button" class="tile soon" onclick="openGame('memory')">
         <span class="tile-tag grey">Скоро</span>
@@ -213,6 +213,21 @@ const GAMES = {
     playUrl: null,
     playLabel: 'Скоро'
   },
+    clicker: {
+    title: 'Кликер',
+    rules: `
+      <p class="rule-text">За 30 секунд накликай как можно больше. Ты растёшь от студента до легенды МГСУ.</p>
+      <ul class="rule-list">
+        <li>жми на большую кнопку как можно быстрее;</li>
+        <li>с каждым кликом меняется твой ранг и эмодзи;</li>
+        <li>в конце покажи результат другу — пусть попробует побить;</li>
+        <li>7 рангов: Студент → ССОшник → Прораб → Строитель → Генподрядчик → Застройщик → Легенда МГСУ.</li>
+      </ul>
+    `,
+    playUrl: '/clicker',
+    playLabel: 'Играть'
+  },
+  
   memory: {
     title: 'Мемори',
     rules: `

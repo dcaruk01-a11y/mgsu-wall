@@ -77,12 +77,11 @@
   <span class="tile-arrow">→</span>
 </button>
 
-      <button type="button" class="tile soon" onclick="openGame('memory')">
-        <span class="tile-tag grey">Скоро</span>
-        <span class="tile-title">Мемори</span>
-        <span class="tile-arrow">→</span>
-      </button>
-    </div>
+    <button type="button" class="tile live" onclick="openGame('campus')">
+  <span class="tile-tag">Доступно</span>
+  <span class="tile-title">Кампус</span>
+  <span class="tile-arrow">→</span>
+</button>
 
     <button class="carousel-arrow right" type="button" onclick="scrollCarousel(1)" aria-label="Вперёд">›</button>
   </div>
@@ -225,6 +224,21 @@ const GAMES = {
       </ul>
     `,
     playUrl: '/clicker',
+    playLabel: 'Играть'
+  },
+    campus: {
+    title: 'Кампус',
+    rules: `
+      <p class="rule-text">Твой питомец — сам кампус МГСУ. Ухаживай за ним, и он вырастет от одного корпуса 1930 года до нового кампуса 2027-го.</p>
+      <ul class="rule-list">
+        <li>тапай по кампусу — получаешь ₽;</li>
+        <li>корми, гуляй, гладь, лечи — следи за тремя статами;</li>
+        <li>когда всё хорошо — растёт XP и появляется новый корпус;</li>
+        <li>6 стадий: 1930 → Свечка → КМК → УЛК → УЛБ → Новый кампус;</li>
+        <li>прогресс сохраняется — можно вернуться позже.</li>
+      </ul>
+    `,
+    playUrl: '/campus',
     playLabel: 'Играть'
   },
   

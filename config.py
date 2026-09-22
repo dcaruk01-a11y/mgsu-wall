@@ -17,8 +17,8 @@ SNAPSHOT_DIR = "snapshots"
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
 # Рабочие часы (по Москве)
-OPEN_HOUR = 8
-CLOSE_HOUR = 17
+OPEN_HOUR = 0
+CLOSE_HOUR = 24
 
 MSK = timezone(timedelta(hours=3))
 

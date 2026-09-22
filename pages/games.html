@@ -88,6 +88,13 @@
   <span class="tile-title">Грабли</span>
   <span class="tile-arrow">→</span>
 </button>
+
+<button type="button" class="tile live" onclick="openGame('brodway')">
+  <span class="tile-tag">Доступно</span>
+  <span class="tile-title">Бродвей</span>
+  <span class="tile-arrow">→</span>
+</button>
+      
     <button class="carousel-arrow right" type="button" onclick="scrollCarousel(1)" aria-label="Вперёд">›</button>
   </div>
 </section>
@@ -260,6 +267,22 @@ const GAMES = {
       </ul>
     `,
     playUrl: '/grabli',
+    playLabel: 'Играть'
+  },
+
+    brodway: {
+    title: 'Бродвей',
+    rules: `
+      <p class="rule-text">Ты зашёл в вуз без пропуска. За тобой бежит охранник Альфа-легиона. Беги по Бродвею до пары и уворачивайся от препятствий!</p>
+      <ul class="rule-list">
+        <li>свайп влево/вправо (или стрелки ← →, или A/D) — сменить полосу;</li>
+        <li>на пути — студенты, преподават��ли и вещи (стулья, книги, рюкзаки);</li>
+        <li>врезался — охранник догнал, игра окончена;</li>
+        <li>чем дольше бежишь — тем быстрее и сложнее;</li>
+        <li>за каждый уворот и за каждый метр — очки.</li>
+      </ul>
+    `,
+    playUrl: '/brodway',
     playLabel: 'Играть'
   },
   

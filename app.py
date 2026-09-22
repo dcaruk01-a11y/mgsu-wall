@@ -215,6 +215,9 @@ async def games():
 async def kiosk():
     return FileResponse("pages/kiosk.html")
 
+@app.get("/clicker")
+async def clicker():
+    return FileResponse("pages/clicker.html")
 
 @app.get("/privacy")
 async def privacy():

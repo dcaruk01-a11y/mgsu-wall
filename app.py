@@ -218,7 +218,11 @@ async def kiosk():
 @app.get("/clicker")
 async def clicker():
     return FileResponse("pages/clicker.html")
-    
+
+@app.get("/grabli")
+async def grabli():
+    return FileResponse("pages/grabli.html")
+
 @app.get("/campus")
 async def campus():
     return FileResponse("pages/campus.html")

@@ -14,56 +14,45 @@ body.clicker-page{
   user-select:none;
   -webkit-user-select:none;
   -webkit-tap-highlight-color:transparent;
+  overflow:hidden;
 }
 
-.clicker-stage{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  padding:20px 16px 60px;
-  width:100%;
-  box-sizing:border-box;
-  min-height:0;
-}
-
-/* ===== ВЕРХНЯЯ ПАНЕЛЬ СО СЧЁТОМ ===== */
-.score-bar{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:24px;
-  margin-bottom:24px;
-  flex-wrap:wrap;
-}
-.score-cell{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:2px;
-  min-width:100px;
+/* ===== ВЕРХ: СЧЁТ ===== */
+.top-score{
+  flex-shrink:0;
+  padding:20px 16px 8px;
+  text-align:center;
+  z-index:3;
 }
 .score-label{
   font-size:10px;
   font-weight:700;
-  letter-spacing:0.18em;
+  letter-spacing:0.20em;
   text-transform:uppercase;
   color:rgba(255,255,255,0.45);
+  margin-bottom:4px;
 }
 .score-val{
-  font-size:42px;
+  font-size:clamp(48px, 14vw, 72px);
   font-weight:900;
   color:#fff;
-  letter-spacing:-0.03em;
-  font-variant-numeric:tabular-nums;
+  letter-spacing:-0.04em;
   line-height:1;
+  font-variant-numeric:tabular-nums;
+  transition:transform .1s, color .15s;
 }
-.score-val.low{color:#FF4D5E;}
+.score-val.flash-up{
+  color:#7BE37B;
+  transform:scale(1.15);
+}
+.score-val.flash-down{
+  color:#FF4D5E;
+  transform:scale(0.92);
+}
 
-/* ===== РАНГ ===== */
 .rank-badge{
+  display:inline-block;
+  margin-top:14px;
   font-size:12px;
   font-weight:700;
   letter-spacing:0.16em;
@@ -75,7 +64,6 @@ body.clicker-page{
   background:rgba(255,255,255,0.05);
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
-  margin-bottom:22px;
   transition:all .25s;
 }
 .rank-badge.up{
@@ -85,7 +73,18 @@ body.clicker-page{
   color:#fff;
 }
 
-/* ===== КНОПКА КЛИКА ===== */
+/* ===== ИГРОВАЯ ЗОНА ===== */
+.play-field{
+  flex:1;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:0;
+  overflow:hidden;
+  padding:8px 0;
+}
+
 .btn-wrap{
   position:relative;
   display:inline-flex;
@@ -93,8 +92,8 @@ body.clicker-page{
   justify-content:center;
 }
 .click-btn{
-  width:clamp(160px, 32vw, 230px);
-  height:clamp(160px, 32vw, 230px);
+  width:clamp(150px, 28vw, 200px);
+  height:clamp(150px, 28vw, 200px);
   border-radius:50%;
   border:3px solid rgba(255,255,255,0.25);
   background:
@@ -103,7 +102,7 @@ body.clicker-page{
   box-shadow:
     0 20px 60px rgba(15,60,115,0.5),
     inset 0 -8px 24px rgba(0,0,0,0.35);
-  font-size:clamp(64px, 13vw, 100px);
+  font-size:clamp(60px, 11vw, 90px);
   line-height:1;
   cursor:pointer;
   display:flex;
@@ -116,12 +115,8 @@ body.clicker-page{
   touch-action:manipulation;
   will-change:transform;
 }
-.click-btn:active{
-  transform:scale(0.93);
-}
-.click-btn.pop{
-  animation:pop .16s ease-out;
-}
+.click-btn:active{transform:scale(0.93);}
+.click-btn.pop{animation:pop .16s ease-out;}
 @keyframes pop{
   0%{transform:scale(0.93);}
   45%{transform:scale(1.06);}
@@ -138,57 +133,109 @@ body.clicker-page{
 }
 @keyframes spin{ to{transform:rotate(360deg);} }
 
-/* ===== ВСПЛЫВАЮЩИЕ ЧИСЛА (+1, +10, +50...) ===== */
+/* ===== ВСПЛЫВАЮЩИЕ ЧИСЛА ===== */
 .float-num{
   position:absolute;
   left:50%;
   top:0;
   transform:translate(-50%, -50%);
-  font-size:32px;
+  font-size:30px;
   font-weight:900;
   color:#fff;
   pointer-events:none;
   text-shadow:0 2px 12px rgba(0,0,0,0.6);
   animation:floatUp 1s ease-out forwards;
   font-variant-numeric:tabular-nums;
-  z-index:5;
+  z-index:8;
 }
-.float-num.big{
-  font-size:46px;
-  color:#FFD84D;
-  text-shadow:0 2px 20px rgba(255,216,77,0.5);
-}
-.float-num.mega{
-  font-size:56px;
-  color:#FF4D5E;
-  text-shadow:0 2px 24px rgba(255,77,94,0.6);
-}
+.float-num.big{font-size:42px;color:#FFD84D;text-shadow:0 2px 20px rgba(255,216,77,0.5);}
+.float-num.mega{font-size:52px;color:#FF4D5E;text-shadow:0 2px 24px rgba(255,77,94,0.6);}
+.float-num.minus{color:#FF4D5E;}
 @keyframes floatUp{
   0%{opacity:0; transform:translate(-50%, -30%) scale(0.6);}
   15%{opacity:1; transform:translate(-50%, -70%) scale(1.1);}
   100%{opacity:0; transform:translate(-50%, -180%) scale(1);}
 }
 
-/* ===== БОНУСЫ, ПАДАЮЩИЕ СВЕРХУ ===== */
-.falling{
-  position:fixed;
-  top:-100px;
-  font-size:64px;
-  pointer-events:none;
-  animation:fall 1.6s ease-in forwards;
-  z-index:20;
-  filter:drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+/* ===== ПАДАЮЩИЕ ПРЕДМЕТЫ ===== */
+.falling-item{
+  position:absolute;
+  top:-80px;
+  width:70px;
+  height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:52px;
+  line-height:1;
+  cursor:pointer;
+  z-index:6;
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+  transition:transform .1s;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  animation:itemFall linear forwards;
+  will-change:top;
 }
-@keyframes fall{
-  0%{top:-100px; opacity:0; transform:rotate(0deg) scale(0.6);}
-  15%{opacity:1;}
-  85%{opacity:1; transform:rotate(360deg) scale(1);}
-  100%{top:100%; opacity:0; transform:rotate(540deg) scale(1);}
+.falling-item:active{transform:scale(0.85);}
+.falling-item.caught{
+  animation:caughtBoom .3s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes caughtBoom{
+  0%{transform:scale(1); opacity:1;}
+  50%{transform:scale(1.5); opacity:0.9;}
+  100%{transform:scale(2); opacity:0;}
 }
 
-/* ===== СТАРТОВЫЙ ОВЕРЛЕЙ ===== */
-.start-overlay{
+/* пульсация привлекает внимание */
+.falling-item::before{
+  content:'';
   position:absolute;
+  inset:-6px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,216,77,0.4) 0%, transparent 70%);
+  animation:glow 1s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+@keyframes glow{
+  from{opacity:0.3; transform:scale(0.9);}
+  to{opacity:0.8; transform:scale(1.1);}
+}
+
+/* ===== НИЗ: ВРЕМЯ ===== */
+.bottom-timer{
+  flex-shrink:0;
+  padding:8px 16px 24px;
+  text-align:center;
+  z-index:3;
+}
+.timer-label{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.20em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.45);
+  margin-bottom:4px;
+}
+.timer-val{
+  font-size:clamp(40px, 12vw, 64px);
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-0.04em;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  transition:color .2s;
+}
+.timer-val.low{color:#FF4D5E; animation:pulse .5s ease-in-out infinite alternate;}
+@keyframes pulse{
+  from{opacity:1;}
+  to{opacity:0.55;}
+}
+
+/* ===== ОВЕРЛЕИ ===== */
+.overlay{
+  position:fixed;
   inset:0;
   background:rgba(5,14,31,0.88);
   backdrop-filter:blur(10px);
@@ -197,36 +244,46 @@ body.clicker-page{
   align-items:center;
   justify-content:center;
   flex-direction:column;
-  gap:20px;
+  gap:18px;
   padding:32px 24px;
   text-align:center;
-  z-index:10;
+  z-index:50;
   transition:opacity .3s;
   overflow-y:auto;
 }
-.start-overlay.hide{
-  opacity:0;
-  pointer-events:none;
-}
-.start-title{
-  font-size:clamp(24px, 6vw, 36px);
+.overlay.hide{opacity:0; pointer-events:none;}
+
+.ov-title{
+  font-size:clamp(24px, 6vw, 34px);
   font-weight:800;
   color:#fff;
   letter-spacing:-0.02em;
   line-height:1.15;
 }
-.start-sub{
+.ov-sub{
   font-size:15px;
   color:rgba(255,255,255,0.7);
-  max-width:360px;
+  max-width:400px;
   line-height:1.6;
 }
+.ov-list{
+  font-size:14px;
+  color:rgba(255,255,255,0.7);
+  line-height:1.8;
+  text-align:left;
+  max-width:360px;
+  margin:0;
+  padding-left:22px;
+}
+.ov-list li{margin-bottom:6px;}
+.ov-list b{color:#fff;}
+
 .btn-big{
   display:inline-flex;
   align-items:center;
   justify-content:center;
   gap:10px;
-  padding:16px 36px;
+  padding:16px 40px;
   border-radius:999px;
   background:#fff;
   color:var(--blue);
@@ -240,10 +297,7 @@ body.clicker-page{
   box-shadow:0 12px 30px rgba(0,0,0,0.3);
   min-width:220px;
 }
-.btn-big:hover{
-  transform:translateY(-2px);
-  box-shadow:0 16px 36px rgba(0,0,0,0.35);
-}
+.btn-big:hover{transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,0.35);}
 .btn-big:active{transform:scale(0.98);}
 .btn-ghost{
   background:rgba(255,255,255,0.08);
@@ -251,38 +305,30 @@ body.clicker-page{
   border:1px solid rgba(255,255,255,0.2);
   box-shadow:none;
 }
-.btn-ghost:hover{
-  background:rgba(255,255,255,0.14);
-  box-shadow:none;
-}
+.btn-ghost:hover{background:rgba(255,255,255,0.14); box-shadow:none;}
 
-/* ===== ФИНАЛЬНЫЙ ЭКРАН ===== */
 .finish-emoji{
-  font-size:clamp(72px, 18vw, 110px);
+  font-size:clamp(72px, 18vw, 100px);
   line-height:1;
-  margin-bottom:8px;
   filter:drop-shadow(0 12px 40px rgba(255,255,255,0.15));
 }
 .finish-rank{
-  font-size:clamp(26px, 7vw, 38px);
+  font-size:clamp(24px, 7vw, 34px);
   font-weight:800;
   color:#fff;
   letter-spacing:-0.02em;
-  margin-bottom:8px;
 }
 .finish-desc{
   font-size:15px;
   color:rgba(255,255,255,0.65);
-  margin-bottom:24px;
   max-width:360px;
   line-height:1.6;
 }
 .finish-score{
-  font-size:clamp(48px, 14vw, 76px);
+  font-size:clamp(44px, 13vw, 68px);
   font-weight:900;
   color:#fff;
   letter-spacing:-0.04em;
-  margin-bottom:4px;
   font-variant-numeric:tabular-nums;
   line-height:1;
 }
@@ -292,14 +338,12 @@ body.clicker-page{
   letter-spacing:0.18em;
   text-transform:uppercase;
   color:rgba(255,255,255,0.5);
-  margin-bottom:32px;
 }
 .finish-actions{
   display:flex;
   gap:12px;
   flex-wrap:wrap;
   justify-content:center;
-  padding-bottom:20px;
 }
 
 /* ===== ТОСТ ===== */
@@ -320,18 +364,10 @@ body.clicker-page{
   transition:all .3s;
   pointer-events:none;
 }
-.toast.show{
-  transform:translateX(-50%) translateY(0);
-  opacity:1;
-}
+.toast.show{transform:translateX(-50%) translateY(0); opacity:1;}
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
 @media(max-width:640px){
-  .clicker-stage{padding:16px 12px 40px;}
-  .score-bar{gap:16px;margin-bottom:18px;}
-  .score-val{font-size:34px;}
-  .score-cell{min-width:80px;}
-  .rank-badge{margin-bottom:16px;font-size:11px;padding:7px 16px;}
+  .falling-item{width:60px;height:60px;font-size:44px;}
   .finish-actions{flex-direction:column;width:100%;max-width:280px;}
   .btn-big{width:100%;}
 }
@@ -353,50 +389,51 @@ body.clicker-page{
   </div>
 </div>
 
-<div class="clicker-stage">
-
-  <div class="score-bar">
-    <div class="score-cell">
-      <span class="score-label">Клики</span>
-      <span class="score-val" id="scoreVal">0</span>
-    </div>
-    <div class="score-cell">
-      <span class="score-label">Время</span>
-      <span class="score-val" id="timerVal">30</span>
-    </div>
-  </div>
-
+<!-- ВЕРХ: СЧЁТ -->
+<div class="top-score">
+  <div class="score-label">Очки</div>
+  <div class="score-val" id="scoreVal">0</div>
   <div class="rank-badge" id="rankBadge">Студент</div>
+</div>
 
+<!-- ЦЕНТР: КНОПКА И ПАДАЮЩИЕ ПРЕДМЕТЫ -->
+<div class="play-field" id="playField">
   <div class="btn-wrap">
     <button class="click-btn" id="clickBtn" type="button">🎓</button>
     <div id="floatLayer"></div>
   </div>
+</div>
 
-  <!-- стартовый оверлей -->
-  <div class="start-overlay" id="startOverlay">
-    <div class="start-title">Кликер МГСУ</div>
-    <div class="start-sub">
-      За 30 секунд накликай как можно больше.<br>
-      Каждые 10 кликов — бонус +10.<br>
-      Лови падающие подарки: зачётку, кофе, стипендию, диплом.
-    </div>
-    <button class="btn-big" id="startBtn" type="button">Начать →</button>
+<!-- НИЗ: ВРЕМЯ -->
+<div class="bottom-timer">
+  <div class="timer-label">Осталось</div>
+  <div class="timer-val" id="timerVal">30</div>
+</div>
+
+<!-- СТАРТ -->
+<div class="overlay" id="startOv">
+  <div class="ov-title">Кликер МГСУ</div>
+  <div class="ov-sub">За 30 секунд накликай как можно больше и лови падающие предметы.</div>
+  <ul class="ov-list">
+    <li>тыкай на <b>большую кнопку</b> — это +1 очко;</li>
+    <li>каждые <b>10 кликов</b> — бонус +10;</li>
+    <li>лови <b>падающие предметы</b>: 📖 +50, ☕ +30, 💰 +100, 📜 +250;</li>
+    <li>не поймал предмет — <b>минус очки</b> и минус время.</li>
+  </ul>
+  <button class="btn-big" id="startBtn" type="button">Начать →</button>
+</div>
+
+<!-- ФИНИШ -->
+<div class="overlay hide" id="finishOv">
+  <div class="finish-emoji" id="finishEmoji">🎓</div>
+  <div class="finish-rank" id="finishRank">Студент</div>
+  <div class="finish-desc" id="finishDesc"></div>
+  <div class="finish-score" id="finishScore">0</div>
+  <div class="finish-label">очков за 30 секунд</div>
+  <div class="finish-actions">
+    <button class="btn-big" id="shareBtn" type="button">Показать другу</button>
+    <button class="btn-big btn-ghost" id="againBtn" type="button">Ещё раз</button>
   </div>
-
-  <!-- финальный оверлей -->
-  <div class="start-overlay hide" id="finishOverlay">
-    <div class="finish-emoji" id="finishEmoji">🎓</div>
-    <div class="finish-rank" id="finishRank">Студент</div>
-    <div class="finish-desc" id="finishDesc">Ты только начал путь. Попробуй ещё!</div>
-    <div class="finish-score" id="finishScore">0</div>
-    <div class="finish-label">кликов за 30 секунд</div>
-    <div class="finish-actions">
-      <button class="btn-big" id="shareBtn" type="button">Показать другу</button>
-      <button class="btn-big btn-ghost" id="againBtn" type="button">Ещё раз</button>
-    </div>
-  </div>
-
 </div>
 
 <div class="toast" id="toast">Скопировано!</div>
@@ -413,12 +450,17 @@ const RANKS = [
   {max:Infinity, name:'Легенда МГСУ', emoji:'👑', desc:'Всё, ты в истории университета. Сохрани скриншот!'}
 ];
 
-/* ============ БОНУСЫ ============ */
-const BONUSES = [
-  {emoji:'📖', name:'Зачётка',  points:50,  weight:4},
-  {emoji:'☕', name:'Кофе',      points:30,  weight:4},
-  {emoji:'💰', name:'Стипендия', points:100, weight:2},
-  {emoji:'📜', name:'Диплом',    points:250, weight:1}
+/* ============ ПАДАЮЩИЕ ПРЕДМЕТЫ ============ */
+/* points — сколько даёт за поимку
+   penalty — сколько списывается, если не поймал (и сколько секунд снимается)
+   weight — шанс выпадения (чем больше, тем чаще)
+   speed — базовая скорость падения (мс), меньше = быстрее
+   color — цвет подсветки при поймке */
+const FALLING = [
+  {emoji:'📖', name:'Зачётка',   points:50,  penalty:10, timeLost:0, weight:5, speed:3200},
+  {emoji:'☕', name:'Кофе',       points:30,  penalty:5,  timeLost:0, weight:5, speed:2800},
+  {emoji:'💰', name:'Стипендия',  points:100, penalty:20, timeLost:1, weight:2, speed:2400},
+  {emoji:'📜', name:'Диплом',     points:250, penalty:50, timeLost:2, weight:1, speed:2000}
 ];
 
 function rankFor(score){
@@ -426,15 +468,14 @@ function rankFor(score){
   return RANKS[RANKS.length - 1];
 }
 
-function pickBonus(){
-  // взвешенный рандом
-  const total = BONUSES.reduce((s, b) => s + b.weight, 0);
+function pickFalling(){
+  const total = FALLING.reduce((s, b) => s + b.weight, 0);
   let r = Math.random() * total;
-  for (const b of BONUSES){
+  for (const b of FALLING){
     r -= b.weight;
     if (r <= 0) return b;
   }
-  return BONUSES[0];
+  return FALLING[0];
 }
 
 /* ============ ЭЛЕМЕНТЫ ============ */
@@ -442,8 +483,8 @@ const badge       = document.getElementById('rankBadge');
 const btn         = document.getElementById('clickBtn');
 const scoreVal    = document.getElementById('scoreVal');
 const timerVal    = document.getElementById('timerVal');
-const startOv     = document.getElementById('startOverlay');
-const finishOv    = document.getElementById('finishOverlay');
+const startOv     = document.getElementById('startOv');
+const finishOv    = document.getElementById('finishOv');
 const startBtn    = document.getElementById('startBtn');
 const againBtn    = document.getElementById('againBtn');
 const shareBtn    = document.getElementById('shareBtn');
@@ -453,18 +494,22 @@ const finishDesc  = document.getElementById('finishDesc');
 const finishScore = document.getElementById('finishScore');
 const toast       = document.getElementById('toast');
 const floatLayer  = document.getElementById('floatLayer');
+const playField   = document.getElementById('playField');
 
 /* ============ СОСТОЯНИЕ ============ */
 const DURATION = 30;
-let score = 0;       // общий счёт (клики + бонусы)
-let clicks = 0;      // только клики (для ранга)
+let score = 0;
+let clicks = 0;
 let timeLeft = DURATION;
 let running = false;
 let timerId = null;
-let scorePopTimer = null;
+let spawnId = null;
+let scoreTimer = null;
+let activeItems = 0;
 
+/* ============ ОБНОВЛЕНИЕ UI ============ */
 function updateRank(){
-  const r = rankFor(clicks);
+  const r = rankFor(score);
   if (badge.textContent !== r.name){
     badge.textContent = r.name;
     badge.classList.add('up');
@@ -473,11 +518,15 @@ function updateRank(){
   btn.textContent = r.emoji;
 }
 
-function bumpScore(){
+function flashScore(direction){
   scoreVal.textContent = score;
-  scoreVal.style.transform = 'scale(1.15)';
-  clearTimeout(scorePopTimer);
-  scorePopTimer = setTimeout(() => scoreVal.style.transform = 'scale(1)', 100);
+  scoreVal.classList.remove('flash-up', 'flash-down');
+  void scoreVal.offsetWidth;
+  scoreVal.classList.add(direction === 'up' ? 'flash-up' : 'flash-down');
+  clearTimeout(scoreTimer);
+  scoreTimer = setTimeout(() => {
+    scoreVal.classList.remove('flash-up', 'flash-down');
+  }, 200);
 }
 
 function tick(){
@@ -487,11 +536,15 @@ function tick(){
   if (timeLeft <= 0) stopGame();
 }
 
+/* ============ СТАРТ / СТОП ============ */
 function startGame(){
+  // очищаем всё
+  document.querySelectorAll('.falling-item').forEach(el => el.remove());
   score = 0;
   clicks = 0;
   timeLeft = DURATION;
   running = true;
+  activeItems = 0;
   scoreVal.textContent = '0';
   timerVal.textContent = timeLeft;
   timerVal.classList.remove('low');
@@ -500,12 +553,17 @@ function startGame(){
   startOv.classList.add('hide');
   finishOv.classList.add('hide');
   timerId = setInterval(tick, 1000);
+  // спавним предметы
+  scheduleSpawn(1500);
 }
 
 function stopGame(){
   running = false;
   clearInterval(timerId);
-  const r = rankFor(clicks);
+  clearTimeout(spawnId);
+  // убираем все падающие
+  document.querySelectorAll('.falling-item').forEach(el => el.remove());
+  const r = rankFor(score);
   finishEmoji.textContent = r.emoji;
   finishRank.textContent = r.name;
   finishDesc.textContent = r.desc;
@@ -514,36 +572,143 @@ function stopGame(){
   saveScore(r.name, score);
 }
 
-function showToast(text){
-  toast.textContent = text;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 1800);
+/* ============ ПАДАЮЩИЕ ПРЕДМЕТЫ ============ */
+function scheduleSpawn(delay){
+  if (!running) return;
+  spawnId = setTimeout(() => {
+    spawnItem();
+    // каждый следующий спавн — через 900–1600 мс
+    const next = 900 + Math.random() * 700;
+    scheduleSpawn(next);
+  }, delay);
 }
 
-/* ============ АНИМАЦИИ ============ */
+function spawnItem(){
+  if (!running) return;
+
+  const data = pickFalling();
+  const el = document.createElement('div');
+  el.className = 'falling-item';
+  el.textContent = data.emoji;
+
+  // позиция по X — в пределах play-field
+  const fieldW = playField.clientWidth;
+  const itemW = 70;
+  const maxX = Math.max(0, fieldW - itemW);
+  const x = Math.random() * maxX;
+  el.style.left = x + 'px';
+
+  // высота падения = высота play-field
+  const fieldH = playField.clientHeight;
+  const duration = data.speed;
+
+  el.dataset.name = data.name;
+  el.dataset.points = data.points;
+  el.dataset.penalty = data.penalty;
+  el.dataset.timeLost = data.timeLost;
+
+  el.style.animationDuration = duration + 'ms';
+
+  // по завершении падения — не поймали
+  el.addEventListener('animationend', () => {
+    if (el.classList.contains('caught')) return;
+    missItem(el);
+  });
+
+  // клик = поимка
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    catchItem(el);
+  });
+
+  playField.appendChild(el);
+  activeItems++;
+}
+
+function catchItem(el){
+  if (el.classList.contains('caught')) return;
+  el.classList.add('caught');
+
+  const points = +el.dataset.points;
+  score += points;
+  flashScore('up');
+  updateRank();
+
+  // всплывающее число у места поимки
+  const rect = el.getBoundingClientRect();
+  const fieldRect = playField.getBoundingClientRect();
+  showFloatNumAt(
+    '+' + points,
+    rect.left - fieldRect.left + rect.width / 2,
+    rect.top - fieldRect.top + rect.height / 2,
+    'big'
+  );
+
+  setTimeout(() => el.remove(), 320);
+  activeItems--;
+}
+
+function missItem(el){
+  const penalty = +el.dataset.penalty;
+  const timeLost = +el.dataset.timeLost;
+
+  score = Math.max(0, score - penalty);
+  if (timeLost > 0){
+    timeLeft = Math.max(0, timeLeft - timeLost);
+    timerVal.textContent = timeLeft;
+  }
+  flashScore('down');
+  updateRank();
+
+  const rect = el.getBoundingClientRect();
+  const fieldRect = playField.getBoundingClientRect();
+  showFloatNumAt(
+    '−' + penalty,
+    rect.left - fieldRect.left + rect.width / 2,
+    fieldRect.height - 20,
+    'minus'
+  );
+
+  // вспышка на границе экрана
+  playField.style.boxShadow = 'inset 0 -20px 40px rgba(255,77,94,0.5)';
+  setTimeout(() => playField.style.boxShadow = '', 250);
+
+  el.remove();
+  activeItems--;
+
+  if (timeLeft <= 0 && running) stopGame();
+}
+
+/* ============ ВСПЛЫВАЮЩИЕ ЧИСЛА ============ */
+function showFloatNumAt(text, x, y, cls){
+  const el = document.createElement('div');
+  el.className = 'float-num' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.transform = 'translate(-50%, -50%)';
+  floatLayer.appendChild(el);
+  setTimeout(() => el.remove(), 1100);
+}
+
 function showFloatNum(text, cls){
   const el = document.createElement('div');
   el.className = 'float-num' + (cls ? ' ' + cls : '');
   el.textContent = text;
-  // случайный сдвиг по X, чтобы числа не накладывались
   const offset = (Math.random() - 0.5) * 80;
   el.style.marginLeft = offset + 'px';
   floatLayer.appendChild(el);
   setTimeout(() => el.remove(), 1100);
 }
 
-function showFallingBonus(bonus){
-  // выбираем случайную X-координату в пределах видимой части
-  const x = Math.random() * (window.innerWidth - 100) + 20;
-  const el = document.createElement('div');
-  el.className = 'falling';
-  el.textContent = bonus.emoji;
-  el.style.left = x + 'px';
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 1700);
+function showToast(text){
+  toast.textContent = text;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1800);
 }
 
-/* ============ ОБРАБОТКА КЛИКА ============ */
+/* ============ КЛИК ПО КНОПКЕ ============ */
 function handleClick(e){
   e.preventDefault();
   if (!running) return;
@@ -551,41 +716,20 @@ function handleClick(e){
   clicks += 1;
   score += 1;
 
-  // pop-эффект на кнопке
   btn.classList.remove('pop');
   void btn.offsetWidth;
   btn.classList.add('pop');
 
-  // каждые 10 кликов — +10 бонус
   if (clicks % 10 === 0){
     score += 10;
     showFloatNum('+10', 'big');
+    flashScore('up');
   } else {
     showFloatNum('+1');
   }
 
-  // каждые 100 кликов — гарантированный бонус
-  if (clicks > 0 && clicks % 100 === 0){
-    const bonus = pickBonus();
-    score += bonus.points;
-    showFallingBonus(bonus);
-    setTimeout(() => {
-      showFloatNum(bonus.emoji + ' +' + bonus.points, 'mega');
-      bumpScore();
-    }, 800);
-  }
-  // плюс случайный бонус с шансом ~4% каждый клик
-  else if (Math.random() < 0.04){
-    const bonus = pickBonus();
-    score += bonus.points;
-    showFallingBonus(bonus);
-    setTimeout(() => {
-      showFloatNum(bonus.emoji + ' +' + bonus.points, 'big');
-    }, 700);
-  }
-
   updateRank();
-  bumpScore();
+  if (clicks % 10 !== 0) scoreVal.textContent = score;
 }
 
 btn.addEventListener('pointerdown', handleClick);
@@ -593,7 +737,7 @@ startBtn.addEventListener('click', startGame);
 againBtn.addEventListener('click', startGame);
 
 shareBtn.addEventListener('click', async () => {
-  const r = rankFor(clicks);
+  const r = rankFor(score);
   const text = `Я ${r.name} ${r.emoji} — ${score} очков за 30 секунд в «Кликере МГСУ». А ты?`;
   try{
     if (navigator.share){

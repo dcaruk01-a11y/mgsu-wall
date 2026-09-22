@@ -223,6 +223,10 @@ async def clicker():
 async def grabli():
     return FileResponse("pages/grabli.html")
 
+@app.get("/brodway")
+async def brodway():
+    return FileResponse("pages/brodway.html")
+
 @app.get("/campus")
 async def campus():
     return FileResponse("pages/campus.html")

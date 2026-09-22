@@ -586,8 +586,8 @@ body.modal-open{
   background:rgba(15,60,115,1);
   transform:translateY(-50%) scale(1.08);
 }
-.carousel-arrow.left{left:14px;}
-.carousel-arrow.right{right:14px;}
+.carousel-arrow.left{left:0;}
+.carousel-arrow.right{right:0;}
 
 @media(max-width:720px){
   .games-carousel-wrap{padding:0 16px;}

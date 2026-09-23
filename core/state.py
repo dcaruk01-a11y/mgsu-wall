@@ -1,7 +1,52 @@
 import time
-from config import today_str
+from datetime import datetime, timedelta
+from datetime import timezone
+from config import today_str, MSK
 
 
+# ============ РАСПИСАНИЕ ДОСТУПА ============
+schedule_config = {
+    "open_hour": 8,
+    "open_minute": 30,
+    "close_hour": 17,
+    "close_minute": 20,
+    "force_override": None,  # None = по расписанию, True = всегда открыто, False = всегда закрыто
+}
+
+
+def is_open_now() -> bool:
+    """Проверяет, доступны ли игры сейчас."""
+    force = schedule_config.get("force_override")
+    if force is True:
+        return True
+    if force is False:
+        return False
+
+    now = datetime.now(MSK)
+    open_t = now.replace(
+        hour=schedule_config["open_hour"],
+        minute=schedule_config["open_minute"],
+        second=0, microsecond=0,
+    )
+    close_t = now.replace(
+        hour=schedule_config["close_hour"],
+        minute=schedule_config["close_minute"],
+        second=0, microsecond=0,
+    )
+    return open_t <= now < close_t
+
+
+def schedule_str() -> dict:
+    return {
+        "open_hour": schedule_config["open_hour"],
+        "open_minute": schedule_config["open_minute"],
+        "close_hour": schedule_config["close_hour"],
+        "close_minute": schedule_config["close_minute"],
+        "force_override": schedule_config.get("force_override"),
+    }
+
+
+# ============ ИГРЫ ============
 games_config = {
     "wall":     {"enabled": True,  "title": "Стена",          "url": "/games/wall",     "status": "available"},
     "clicker":  {"enabled": True,  "title": "Кликер",         "url": "/games/clicker",  "status": "available"},

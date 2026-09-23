@@ -51,50 +51,9 @@
 
   <div class="games-carousel-wrap">
     <button class="carousel-arrow left" type="button" onclick="scrollCarousel(-1)" aria-label="Назад">‹</button>
-
     <div class="games-carousel" id="gamesCarousel">
-      <button type="button" class="tile live" onclick="openGame('wall')">
-        <span class="tile-tag">Доступно</span>
-        <span class="tile-title">Стена</span>
-        <span class="tile-arrow">→</span>
-      </button>
-
-      <button type="button" class="tile soon" onclick="openGame('snake')">
-        <span class="tile-tag grey">Скоро</span>
-        <span class="tile-title">Змейка</span>
-        <span class="tile-arrow">→</span>
-      </button>
-
-      <button type="button" class="tile soon" onclick="openGame('poll')">
-        <span class="tile-tag grey">Скоро</span>
-        <span class="tile-title">Опрос дня</span>
-        <span class="tile-arrow">→</span>
-      </button>
-
-     <button type="button" class="tile live" onclick="openGame('clicker')">
-  <span class="tile-tag">Доступно</span>
-  <span class="tile-title">Кликер</span>
-  <span class="tile-arrow">→</span>
-</button>
-
-    <button type="button" class="tile live" onclick="openGame('campus')">
-  <span class="tile-tag">Доступно</span>
-  <span class="tile-title">Кампус</span>
-  <span class="tile-arrow">→</span>
-</button>
-      
-<button type="button" class="tile live" onclick="openGame('grabli')">
-  <span class="tile-tag">Доступно</span>
-  <span class="tile-title">Грабли</span>
-  <span class="tile-arrow">→</span>
-</button>
-
-<button type="button" class="tile live" onclick="openGame('brodway')">
-  <span class="tile-tag">Доступно</span>
-  <span class="tile-title">Бродвей</span>
-  <span class="tile-arrow">→</span>
-</button>
-      
+      <!-- сюда JS вставит плитки -->
+    </div>
     <button class="carousel-arrow right" type="button" onclick="scrollCarousel(1)" aria-label="Вперёд">›</button>
   </div>
 </section>
@@ -114,31 +73,27 @@
   </div>
 </footer>
 
-<!-- ============ МОДАЛКА: ПРАВИЛА ИГРЫ ============ -->
+<!-- МОДАЛКА ПРАВИЛ -->
 <div id="gameModal" class="modal-overlay" role="dialog" aria-modal="true">
   <div class="modal-box glass">
     <button class="modal-close" onclick="closeGame()" aria-label="Закрыть">✕</button>
     <div class="modal-content">
       <div class="section-eyebrow">Правила</div>
       <h2 id="gameTitle" style="margin-bottom:20px;">Стена</h2>
-
       <div id="gameRules"></div>
-
       <div id="gameActions" style="margin-top:36px;"></div>
     </div>
   </div>
 </div>
 
-<!-- ============ МОДАЛКА: ПОЛИТИКА ============ -->
+<!-- МОДАЛКА ПОЛИТИКИ -->
 <div id="privacyModal" class="modal-overlay" role="dialog" aria-modal="true">
   <div class="modal-box">
     <button class="modal-close" onclick="closePrivacy()" aria-label="Закрыть">✕</button>
     <div class="modal-content">
       <div class="section-eyebrow">Документы</div>
       <h2 style="margin-bottom:14px;">Политика конфиденциальности</h2>
-      <p style="color:var(--grey);font-size:14px;margin-bottom:36px;">
-        Последнее обновление: сентябрь 2026
-      </p>
+      <p style="color:var(--grey);font-size:14px;margin-bottom:36px;">Последнее обновление: сентябрь 2026</p>
 
       <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:28px;">
         «Игры МГСУ» — студенческий некоммерческий проект. Мы стараемся собирать как можно меньше данных о пользователях и не передавать их третьим лицам.
@@ -181,8 +136,8 @@
 </div>
 
 <script>
-/* ============ ДАННЫЕ ИГР ============ */
-const GAMES = {
+/* ============ ПРАВИЛА И URL ИГР (клиентские) ============ */
+const GAMES_INFO = {
   wall: {
     title: 'Стена',
     rules: `
@@ -195,6 +150,20 @@ const GAMES = {
       </ul>
     `,
     playUrl: '/',
+    playLabel: 'Играть'
+  },
+  clicker: {
+    title: 'Кликер',
+    rules: `
+      <p class="rule-text">За 30 секунд накликай как можно больше. Ты растёшь от студента до легенды МГСУ.</p>
+      <ul class="rule-list">
+        <li>жми на большую кнопку как можно быстрее;</li>
+        <li>с каждым кликом меняется твой ранг и эмодзи;</li>
+        <li>в конце покажи результат другу — пусть попробует побить;</li>
+        <li>7 рангов: Студент → ССОшник → Прораб → Строитель → Генподрядчик → Застройщик → Легенда МГСУ.</li>
+      </ul>
+    `,
+    playUrl: '/clicker',
     playLabel: 'Играть'
   },
   snake: {
@@ -223,79 +192,54 @@ const GAMES = {
     `,
     playUrl: null,
     playLabel: 'Скоро'
-  },
-    clicker: {
-    title: 'Кликер',
-    rules: `
-      <p class="rule-text">За 30 секунд накликай как можно больше. Ты растёшь от студента до легенды МГСУ.</p>
-      <ul class="rule-list">
-        <li>жми на большую кнопку как можно быстрее;</li>
-        <li>с каждым кликом меняется твой ранг и эмодзи;</li>
-        <li>в конце покажи результат другу — пусть попробует побить;</li>
-        <li>7 рангов: Студент → ССОшник → Прораб → Строитель → Генподрядчик → Застройщик → Легенда МГСУ.</li>
-      </ul>
-    `,
-    playUrl: '/clicker',
-    playLabel: 'Играть'
-  },
-    campus: {
-    title: 'Кампус',
-    rules: `
-      <p class="rule-text">Твой питомец — сам кампус МГСУ. Ухаживай за ним, и он вырастет от одного корпуса 1930 года до нового кампуса 2027-го.</p>
-      <ul class="rule-list">
-        <li>тапай по кампусу — получаешь ₽;</li>
-        <li>корми, гуляй, гладь, лечи — следи за тремя статами;</li>
-        <li>когда всё хорошо — растёт XP и появляется новый корпус;</li>
-        <li>6 стадий: 1930 → Свечка → КМК → УЛК → УЛБ → Новый кампус;</li>
-        <li>прогресс сохраняется — можно вернуться позже.</li>
-      </ul>
-    `,
-    playUrl: '/campus',
-    playLabel: 'Играть'
-  },
-    grabli: {
-    title: 'Грабли',
-    rules: `
-      <p class="rule-text">Студент заказывает еду в столовой — собери правильный поднос и подай. Как Comfy Cakes, только с борщом и котлетами.</p>
-      <ul class="rule-list">
-        <li>выбери столовую: Буфет на Бродвее, Нижние или Верхние Грабли;</li>
-        <li>посмотри заказ — какие блюда хочет студент;</li>
-        <li>жми на кнопки-машины: первое, второе, салат, напиток;</li>
-        <li>каждый пункт попадает на поднос — можно перетыкать;</li>
-        <li>когда всё собрано — жми «Подать заказ»;</li>
-        <li>всё верно — очки и серия, ошибся — штраф и серия сгорает.</li>
-      </ul>
-    `,
-    playUrl: '/grabli',
-    playLabel: 'Играть'
-  },
-
-    brodway: {
-    title: 'Бродвей',
-    rules: `
-      <p class="rule-text">Ты зашёл в вуз без пропуска. За тобой бежит охранник Альфа-легиона. Беги по Бродвею до пары и уворачивайся от препятствий!</p>
-      <ul class="rule-list">
-        <li>свайп влево/вправо (или стрелки ← →, или A/D) — сменить полосу;</li>
-        <li>на пути — студенты, преподават��ли и вещи (стулья, книги, рюкзаки);</li>
-        <li>врезался — охранник догнал, игра окончена;</li>
-        <li>чем дольше бежишь — тем быстрее и сложнее;</li>
-        <li>за каждый уворот и за каждый метр — очки.</li>
-      </ul>
-    `,
-    playUrl: '/brodway',
-    playLabel: 'Играть'
-  },
-  
-  memory: {
-    title: 'Мемори',
-    rules: `
-      <p class="rule-text">Найди все пары карточек быстрее остальных. Играй с телефона, следи за результатом на большом экране.</p>
-      <p class="rule-text">Игра пока в разработке. Следи за обновлениями в Telegram-канале проекта.</p>
-    `,
-    playUrl: null,
-    playLabel: 'Скоро'
   }
 };
+
+/* ============ ЗАГРУЗКА СПИСКА С СЕРВЕРА ============ */
+async function loadGames(){
+  try{
+    const r = await fetch('/api/games');
+    const data = await r.json();
+    const enabledGames = (data.games || []).filter(g => g.enabled);
+    renderTiles(enabledGames);
+  }catch(e){
+    // fallback: если сервер не ответил — показываем все
+    const all = Object.keys(GAMES_INFO).map(k => ({key:k, title: GAMES_INFO[k].title, enabled:true, status: GAMES_INFO[k].playUrl ? 'available' : 'soon'}));
+    renderTiles(all);
+  }
+}
+
+function renderTiles(games){
+  const box = document.getElementById('gamesCarousel');
+  box.innerHTML = '';
+
+  if (!games.length){
+    box.innerHTML = '<div style="color:rgba(255,255,255,0.5);padding:60px 20px;text-align:center;width:100%;">Пока нет доступных игр. Заходи позже!</div>';
+    return;
+  }
+
+  games.forEach(g => {
+    const info = GAMES_INFO[g.key];
+    if (!info) return;
+
+    const isAvailable = g.status === 'available' || !!info.playUrl;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tile ' + (isAvailable ? 'live' : 'soon');
+
+    const tag = isAvailable ? 'Доступно' : 'Скоро';
+    const tagClass = isAvailable ? '' : ' grey';
+
+    btn.innerHTML =
+      '<span class="tile-tag' + tagClass + '">' + tag + '</span>' +
+      '<span class="tile-title"></span>' +
+      '<span class="tile-arrow">→</span>';
+    btn.querySelector('.tile-title').textContent = g.title || info.title;
+
+    btn.onclick = () => openGame(g.key);
+    box.appendChild(btn);
+  });
+}
 
 /* ============ КАРУСЕЛЬ ============ */
 function scrollCarousel(dir){
@@ -308,17 +252,17 @@ function scrollCarousel(dir){
 
 /* ============ МОДАЛКА ИГРЫ ============ */
 function openGame(key){
-  const g = GAMES[key];
-  if (!g) return;
+  const info = GAMES_INFO[key];
+  if (!info) return;
 
-  document.getElementById('gameTitle').textContent = g.title;
-  document.getElementById('gameRules').innerHTML = g.rules;
+  document.getElementById('gameTitle').textContent = info.title;
+  document.getElementById('gameRules').innerHTML = info.rules;
 
   const actions = document.getElementById('gameActions');
-  if (g.playUrl) {
-    actions.innerHTML = '<a class="btn-play" href="' + g.playUrl + '">' + g.playLabel + ' →</a>';
+  if (info.playUrl){
+    actions.innerHTML = '<a class="btn-play" href="' + info.playUrl + '">' + info.playLabel + ' →</a>';
   } else {
-    actions.innerHTML = '<span class="btn-play disabled">' + g.playLabel + '</span>';
+    actions.innerHTML = '<span class="btn-play disabled">' + info.playLabel + '</span>';
   }
 
   lockScroll();
@@ -340,7 +284,7 @@ function closePrivacy(){
   unlockScroll();
 }
 
-/* ============ СКРОЛЛ-ЛОК БЕЗ СДВИГА ============ */
+/* ============ БЛОКИРОВКА СКРОЛЛА ============ */
 function lockScroll(){
   var sw = window.innerWidth - document.documentElement.clientWidth;
   document.documentElement.style.setProperty('--scrollbar-width', sw + 'px');
@@ -357,18 +301,17 @@ document.addEventListener('DOMContentLoaded', function(){
     var modal = document.getElementById(id);
     if (!modal) return;
     modal.addEventListener('click', function(e){
-      if (e.target === modal) {
+      if (e.target === modal){
         if (id === 'gameModal') closeGame();
         else closePrivacy();
       }
     });
   });
   document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape') {
-      closeGame();
-      closePrivacy();
-    }
+    if (e.key === 'Escape'){ closeGame(); closePrivacy(); }
   });
+
+  loadGames();
 });
 </script>
 

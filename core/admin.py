@@ -5,6 +5,7 @@ import psutil
 
 from config import ADMIN_PASSWORD
 import core.state as state
+import core.analytics as analytics
 from core.websocket import hub
 
 router = APIRouter()
@@ -56,35 +57,16 @@ async def admin_check():
     }
 
 
-def _mem_mb():
-    try:
-        return round(psutil.Process().memory_info().rss / 1024 / 1024, 1)
-    except Exception:
-        return None
-
-
-def _cpu_pct():
-    try:
-        return round(psutil.cpu_percent(interval=0.1), 1)
-    except Exception:
-        return None
-
-
 @router.get("/admin/api/stats")
 async def admin_stats(token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
-    state.stats_reset_if_needed()
+    analytics.cleanup_old()
     state.clicker_reset_if_needed()
-    uptime_sec = int(time.time() - state.stats["started_at"])
     return {
-        "online": len(hub.clients),
-        "visits_today": state.stats["visits_today"],
-        "uniques_today": len(state.stats["uniques_today"]),
-        "games_played": state.stats["games_played"],
-        "memory_mb": _mem_mb(),
-        "cpu_pct": _cpu_pct(),
-        "uptime_sec": uptime_sec,
+        "health": analytics.project_health(),
+        "metrics": analytics.all_metrics(),
+        "uptime_sec": int(time.time() - state.started_at),
         "clicker_top": [
             {"nick": e["nick"], "score": e["score"], "rank": e["rank"]}
             for e in state.clicker_top

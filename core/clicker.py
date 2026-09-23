@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import core.state as state
 import core.analytics as analytics
 import core.users as users
+import core.top as top
 
 router = APIRouter()
 clicker_lock = asyncio.Lock()
@@ -46,6 +47,10 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
         else:
             is_record = score > 0
         progress = await users.apply_score_and_coins(uid, score, "clicker", is_record)
+                try:
+            await top.save_score(uid, nick, "clicker", score)
+        except Exception as e:
+            print("top save error:", e)
     else:
         nick = state.sanitize_nick(payload.nick)
         uid = ""

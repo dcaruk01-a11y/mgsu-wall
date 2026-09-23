@@ -49,19 +49,20 @@ async def clicker():
 @router.get("/games/ekran")
 async def kiosk():
     return FileResponse("pages/games/kiosk.html")
+    
 @router.get("/games/broadway")
 async def broadway():
-    return FileResponse("pages/broadway.html")
+    return FileResponse("pages/games/broadway.html")
 
 
 @router.get("/games/campus")
 async def campus():
-    return FileResponse("pages/campus.html")
+    return FileResponse("pages/games/campus.html")
 
 
 @router.get("/games/grable")
 async def grable():
-    return FileResponse("pages/grable.html")
+    return FileResponse("pages/games/grable.html")
 
 
 # Общие страницы

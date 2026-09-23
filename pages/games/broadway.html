@@ -13,17 +13,25 @@ body{height:100vh;overflow:hidden;display:flex;flex-direction:column;background:
 .top .brand-label{font-size:13px;}
 .top nav a{padding:6px 12px;font-size:13px;}
 
+.status-banner{
+  position:fixed;top:0;left:0;right:0;z-index:99;
+  background:#AC1422;color:#fff;padding:12px 20px;
+  text-align:center;font-size:13px;font-weight:600;display:none;
+  box-shadow:0 4px 20px rgba(172,20,34,0.4);
+}
+.status-banner.show{display:block;}
+.status-banner small{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:2px;}
+
 .game-wrap{flex:1;position:relative;overflow:hidden;background:#0a0f1e;min-height:0;}
 #c{display:block;width:100%;height:100%;}
-
 .hud{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;pointer-events:none;z-index:3;}
-.hud-box{background:rgba(15,60,115,0.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.14);border-radius:999px;padding:8px 16px;font-size:14px;font-weight:700;}
+.hud-box{background:rgba(15,60,115,0.8);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.14);border-radius:999px;padding:8px 16px;font-size:14px;font-weight:700;}
 .hud-box span{color:rgba(255,255,255,0.5);font-weight:500;margin-right:6px;}
 
-.overlay{position:absolute;inset:0;background:rgba(5,14,31,0.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;z-index:5;transition:opacity .3s;}
+.overlay{position:absolute;inset:0;background:rgba(5,14,31,0.88);backdrop-filter:blur(10px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;z-index:5;transition:opacity .3s;}
 .overlay.hide{opacity:0;pointer-events:none;}
 .overlay h2{font-size:28px;font-weight:800;letter-spacing:-0.02em;}
-.overlay p{font-size:15px;color:rgba(255,255,255,0.7);max-width:320px;line-height:1.5;}
+.overlay p{font-size:15px;color:rgba(255,255,255,0.7);max-width:340px;line-height:1.5;}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:999px;background:#fff;color:#0F3C73;font-family:inherit;font-size:15px;font-weight:700;border:0;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,0.3);transition:transform .1s;}
 .btn:active{transform:scale(0.97);}
 .btn-ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);box-shadow:none;}
@@ -33,6 +41,11 @@ body{height:100vh;overflow:hidden;display:flex;flex-direction:column;background:
 .hint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:13px;color:rgba(255,255,255,0.5);pointer-events:none;z-index:2;}
 </style>
 </head><body>
+
+<div class="status-banner" id="statusBanner">
+  🔒 Технический перерыв
+  <small id="statusBannerSub">Игры доступны только в учебное время</small>
+</div>
 
 <div class="top"><div class="wrap"><div class="head">
   <a class="brand" href="/glavnaya"><img src="/assets/Logo/logo.svg" alt="Лого" class="brand-logo"><span class="brand-label"><b>НИУ МГСУ</b> · Игры</span></a>
@@ -68,14 +81,33 @@ body{height:100vh;overflow:hidden;display:flex;flex-direction:column;background:
 </div>
 
 <script>
+/* ============ ПРОВЕРКА РАСПИСАНИЯ ============ */
+let scheduleOpen = true;
+async function checkScheduleStatus(){
+  try{
+    const r = await fetch('/status');
+    const s = await r.json();
+    scheduleOpen = !!s.open;
+    const banner = document.getElementById('statusBanner');
+    const sub = document.getElementById('statusBannerSub');
+    if (!scheduleOpen){
+      sub.textContent = 'Игры доступны только в учебное время: с ' + s.opens_at + ' до ' + s.closes_at;
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }catch(e){}
+}
+checkScheduleStatus();
+setInterval(checkScheduleStatus, 60000);
+
 const c = document.getElementById('c');
 const ctx = c.getContext('2d');
 let W, H;
-
 function resize(){
   const r = c.parentElement.getBoundingClientRect();
-  W = c.width = r.width * devicePixelRatio;
-  H = c.height = r.height * devicePixelRatio;
+  c.width = r.width * devicePixelRatio;
+  c.height = r.height * devicePixelRatio;
   c.style.width = r.width + 'px';
   c.style.height = r.height + 'px';
   ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
@@ -88,27 +120,24 @@ let running = false, timeLeft = DURATION;
 let distance = 0, speed = 0;
 let items = [], particles = [];
 let timerId = null;
-let t0 = 0;
 
 function startGame(){
+  if (!scheduleOpen){ checkScheduleStatus(); return; }
   running = true;
   timeLeft = DURATION;
   distance = 0; speed = 0;
   items = []; particles = [];
-  t0 = performance.now();
   document.getElementById('startOv').classList.add('hide');
   document.getElementById('finishOv').classList.add('hide');
   document.getElementById('dist').textContent = '0';
   document.getElementById('time').textContent = DURATION;
   timerId = setInterval(tick, 1000);
 }
-
 function tick(){
   timeLeft--;
   document.getElementById('time').textContent = timeLeft;
   if (timeLeft <= 0) stopGame();
 }
-
 function stopGame(){
   running = false;
   clearInterval(timerId);
@@ -118,7 +147,6 @@ function stopGame(){
   document.getElementById('finishScore').textContent = Math.floor(distance);
   document.getElementById('finishOv').classList.remove('hide');
 }
-
 function rankFor(d){
   if (d < 100) return {name:'Студент', emoji:'🚶'};
   if (d < 250) return {name:'Знаток Бродвея', emoji:'🚶‍♂️'};
@@ -127,69 +155,47 @@ function rankFor(d){
   return {name:'Легенда Бродвея', emoji:'👑'};
 }
 
-// ввод
 let tapBoost = 0;
 function tap(){
-  if (!running) return;
+  if (!running || !scheduleOpen) return;
   tapBoost = Math.min(tapBoost + 1.5, 3);
   for (let i = 0; i < 4; i++) particles.push({
-    x: W/2 + (Math.random()-0.5)*60,
-    y: H - 100 + Math.random()*20,
-    vx: (Math.random()-0.5)*80,
-    vy: -60 - Math.random()*40,
-    life: 0.6,
-    size: 3 + Math.random()*3
+    x: W/2 + (Math.random()-0.5)*60, y: H - 100 + Math.random()*20,
+    vx: (Math.random()-0.5)*80, vy: -60 - Math.random()*40,
+    life: 0.6, size: 3 + Math.random()*3
   });
 }
-
 c.addEventListener('pointerdown', tap);
 document.addEventListener('keydown', e => { if (e.code === 'Space') tap(); });
 
 function spawnItem(){
   const types = ['☕','📓','📱','🍎','💧'];
   const type = types[Math.floor(Math.random()*types.length)];
-  items.push({
-    x: 60 + Math.random() * (W - 120),
-    y: H - 200,
-    text: type,
-    collected: false,
-    speed: 0.8 + Math.random() * 0.4
-  });
+  items.push({x: 60 + Math.random()*(W-120), y: H-200, text: type, collected: false});
 }
-
 let lastSpawn = 0;
 function loop(now){
   requestAnimationFrame(loop);
-  if (!running && !lastFrameInit){ lastFrameInit = true; resize(); return; }
   if (!W || !H) resize();
-
   const dt = Math.min(0.05, (now - (loop.last || now)) / 1000);
   loop.last = now;
 
-  // движение вперёд
   if (running){
     speed += tapBoost * dt * 15;
     tapBoost *= 0.85;
     speed *= 0.97;
     distance += speed * dt;
-
     lastSpawn += dt;
     if (lastSpawn > 0.55){ lastSpawn = 0; spawnItem(); }
   }
 
-  // очистка
   ctx.fillStyle = '#0a1f3d';
   ctx.fillRect(0, 0, W, H);
 
-  // пол — «полосы скорости»
   const offset = (distance * 3) % 80;
   ctx.fillStyle = 'rgba(255,255,255,0.04)';
-  for (let y = H + 40; y > H/2; y -= 80){
-    const yy = y + offset;
-    ctx.fillRect(0, yy, W, 40);
-  }
+  for (let y = H + 40; y > H/2; y -= 80) ctx.fillRect(0, y + offset, W, 40);
 
-  // стены — перспектива
   ctx.strokeStyle = 'rgba(255,255,255,0.08)';
   ctx.lineWidth = 2;
   for (let i = 0; i < 12; i++){
@@ -200,7 +206,6 @@ function loop(now){
     ctx.stroke();
   }
 
-  // предметы
   items = items.filter(it => {
     it.y -= speed * 6 * dt * 60 * 0.016;
     it.y += (H/2 - it.y) * 0.008;
@@ -209,7 +214,7 @@ function loop(now){
       speed += 4;
       distance += 15;
       for (let i = 0; i < 8; i++) particles.push({
-        x: it.x, y: it.y, vx: (Math.random()-0.5)*120, vy: -Math.random()*80 - 20, life: 0.7, size: 4
+        x: it.x, y: it.y, vx: (Math.random()-0.5)*120, vy: -Math.random()*80-20, life: 0.7, size: 4
       });
     }
     if (it.collected || it.y < -50) return false;
@@ -219,26 +224,17 @@ function loop(now){
     return true;
   });
 
-  // частицы
   particles = particles.filter(p => {
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.vy += 200 * dt;
-    p.life -= dt;
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 200 * dt; p.life -= dt;
     if (p.life <= 0) return false;
     ctx.fillStyle = 'rgba(255,255,255,' + p.life + ')';
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
     return true;
   });
 
-  // персонаж — смайл-лого
   const cx = W/2, cy = H - 100;
   ctx.fillStyle = 'rgba(255,255,255,0.9)';
-  ctx.beginPath();
-  ctx.arc(cx, cy, 24, 0, Math.PI*2);
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, 24, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle = '#0a1f3d';
   ctx.beginPath();
   ctx.arc(cx-8, cy-6, 3, 0, Math.PI*2);
@@ -246,16 +242,11 @@ function loop(now){
   ctx.fill();
   ctx.beginPath();
   ctx.arc(cx, cy+4, 10, 0.1, Math.PI - 0.1);
-  ctx.strokeStyle = '#0a1f3d';
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  ctx.strokeStyle = '#0a1f3d'; ctx.lineWidth = 2; ctx.stroke();
 
   if (running) document.getElementById('dist').textContent = Math.floor(distance);
-
-  // финиш по дистанции
   if (distance >= 1000 && running) stopGame();
 }
-let lastFrameInit = false;
 requestAnimationFrame(loop);
 resize();
 

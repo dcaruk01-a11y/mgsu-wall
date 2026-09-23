@@ -358,6 +358,13 @@ async def manual_snapshot():
 async def admin_page():
     return FileResponse("pages/admin.html")
 
+@app.get("/admin/api/check")
+async def admin_check():
+    return {
+        "admin_password_set": bool(ADMIN_PASSWORD),
+        "length": len(ADMIN_PASSWORD) if ADMIN_PASSWORD else 0,
+    }
+
 @app.post("/admin/api/login")
 async def admin_login(payload: dict):
     pw = str(payload.get("password", ""))

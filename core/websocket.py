@@ -45,7 +45,7 @@ async def ws_endpoint(ws: WebSocket):
                 continue
             t = msg.get("type")
             if t == "stroke":
-                if not is_open():
+                if not state.is_open_now():
                     continue
                 stroke = {
                     "x0": float(msg["x0"]), "y0": float(msg["y0"]),

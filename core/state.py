@@ -30,14 +30,14 @@ def track_game(name: str):
 
 
 games_config = {
-    "wall":     {"enabled": True, "title": "Стена",         "url": "/games/wall",     "status": "available"},
-    "clicker":  {"enabled": True, "title": "Кликер",        "url": "/games/clicker",  "status": "available"},
-    "broadway": {"enabled": True, "title": "Бродвей",       "url": "",                "status": "soon"},
-    "campus":   {"enabled": True, "title": "Построй кампус","url": "",                "status": "soon"},
-    "grable":   {"enabled": True, "title": "Грабли",        "url": "",                "status": "soon"},
-    "snake":    {"enabled": False, "title": "Змейка",       "url": "",                "status": "soon"},
-    "poll":     {"enabled": False, "title": "Опрос дня",    "url": "",                "status": "soon"},
-    "click":    {"enabled": False, "title": "Гонка кликов", "url": "",                "status": "soon"},
+    "wall":     {"enabled": True, "title": "Стена",          "url": "/games/wall",     "status": "available"},
+    "clicker":  {"enabled": True, "title": "Кликер",         "url": "/games/clicker",  "status": "available"},
+    "broadway": {"enabled": True, "title": "Бродвей",        "url": "/games/broadway", "status": "available"},
+    "campus":   {"enabled": True, "title": "Построй кампус", "url": "/games/campus",   "status": "available"},
+    "grable":   {"enabled": True, "title": "Грабли",         "url": "/games/grable",   "status": "available"},
+    "snake":    {"enabled": False, "title": "Змейка",        "url": "",                "status": "soon"},
+    "poll":     {"enabled": False, "title": "Опрос дня",     "url": "",                "status": "soon"},
+    "click":    {"enabled": False, "title": "Гонка кликов",  "url": "",                "status": "soon"},
 }
 
 theme_config = {"current": "classic"}

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Вход · Админка Игр МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/static/admin.css">
+</head><body class="admin-page">
+
+<div class="admin-wrap">
+  <div class="login-card">
+    <h1>Админка Игр МГСУ</h1>
+    <p>Доступ только для разработчика проекта.</p>
+    <div class="pw-wrap">
+      <input type="password" id="pwInput" class="admin-input" placeholder="Пароль" autocomplete="current-password">
+      <button type="button" class="pw-toggle" id="pwToggle" aria-label="Показать пароль">
+        <svg id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        <svg id="eyeClosed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+        </svg>
+      </button>
+    </div>
+    <button class="admin-btn" id="loginBtn">Войти</button>
+    <div class="admin-err" id="loginErr"></div>
+  </div>
+</div>
+
+<script>
+const LS_KEY = 'mgsu_admin_token';
+const pwInput = document.getElementById('pwInput');
+const loginBtn = document.getElementById('loginBtn');
+const loginErr = document.getElementById('loginErr');
+const pwToggle = document.getElementById('pwToggle');
+const eyeOpen = document.getElementById('eyeOpen');
+const eyeClosed = document.getElementById('eyeClosed');
+
+pwToggle.addEventListener('click', e => {
+  e.preventDefault();
+  const isPw = pwInput.type === 'password';
+  pwInput.type = isPw ? 'text' : 'password';
+  eyeOpen.style.display = isPw ? 'none' : 'block';
+  eyeClosed.style.display = isPw ? 'block' : 'none';
+  pwInput.focus();
+});
+
+async function doLogin(){
+  const pw = pwInput.value;
+  loginErr.textContent = '';
+  if (!pw){ loginErr.textContent = 'Введите пароль'; return; }
+  loginErr.textContent = 'Проверяю...';
+  try{
+    const res = await fetch('/admin/api/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: pw})
+    });
+    const data = await res.json();
+    if (data.ok){
+      localStorage.setItem(LS_KEY, data.token);
+      location.href = '/admin';
+    } else {
+      loginErr.textContent = data.error || 'Неверный пароль';
+      pwInput.value = ''; pwInput.focus();
+    }
+  }catch(e){
+    loginErr.textContent = 'Ошибка соединения: ' + e.message;
+  }
+}
+
+loginBtn.addEventListener('click', doLogin);
+pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// если уже залогинен — сразу в дашборд
+if (localStorage.getItem(LS_KEY)) location.href = '/admin';
+</script>
+
+</body></html>

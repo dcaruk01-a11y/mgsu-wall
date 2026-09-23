@@ -23,6 +23,7 @@ async def daily_loop():
                 await post_to_telegram(path)
                 await clear_today()
                 await hub.broadcast({"type": "reset"})
+                await analytics.archive_day()
                 print("Готово!")
             else:
                 print("Холст пустой — снимок не делаем")

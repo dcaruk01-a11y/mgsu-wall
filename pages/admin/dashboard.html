@@ -175,7 +175,49 @@
   </div>
 
   <div class="metrics-grid" id="metricsGrid">Загрузка…</div>
+<div class="section-admin">
+  <h2>Расписание и доступ</h2>
+  <div class="schedule-block">
 
+    <div class="schedule-status" id="scheduleStatus">
+      <div class="dot"></div>
+      <strong id="scheduleStatusText">—</strong>
+      <span id="scheduleCurrentTime">—</span>
+    </div>
+
+    <div class="schedule-row">
+      <div class="schedule-input-group">
+        <label>Открытие — час</label>
+        <input type="number" id="openHour" min="0" max="23" value="8">
+      </div>
+      <div class="schedule-input-group">
+        <label>Открытие — минуты</label>
+        <input type="number" id="openMinute" min="0" max="59" value="30">
+      </div>
+      <div class="schedule-input-group">
+        <label>Закрытие — час</label>
+        <input type="number" id="closeHour" min="0" max="23" value="17">
+      </div>
+      <div class="schedule-input-group">
+        <label>Закрытие — минуты</label>
+        <input type="number" id="closeMinute" min="0" max="59" value="20">
+      </div>
+    </div>
+
+    <div>
+      <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;">
+        Режим принудительно
+      </label>
+      <div class="override-row">
+        <button class="override-btn" data-override="auto">По расписанию</button>
+        <button class="override-btn" data-override="open">Всегда открыто</button>
+        <button class="override-btn" data-override="close">Всегда закрыто</button>
+      </div>
+    </div>
+
+    <button class="save-schedule-btn" id="saveScheduleBtn">Сохранить расписание</button>
+  </div>
+</div>
   <div class="section-admin">
     <h2>Топ кликера сегодня</h2>
     <div class="card-block" id="clickerTopBox">Загрузка…</div>

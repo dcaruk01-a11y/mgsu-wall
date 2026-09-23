@@ -2,7 +2,7 @@
 Аналитика с сохранением в SQLite.
 Хранит 30 дней, переживает перезапуск сервера (но не деплой).
 """
-import os, json, time, aiosqlite
+import json, time, aiosqlite
 from datetime import datetime, timedelta
 from config import MSK, today_str, DB_PATH
 
@@ -51,7 +51,7 @@ def cleanup_old():
 async def db_init_stats():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
-                        CREATE TABLE IF NOT EXISTS daily_stats (
+            CREATE TABLE IF NOT EXISTS daily_stats (
                 day TEXT PRIMARY KEY,
                 visits INTEGER,
                 uniques INTEGER,
@@ -72,7 +72,7 @@ async def archive_day(date_str=None):
         return
     day = history[d]
     async with aiosqlite.connect(DB_PATH) as db:
-                await db.execute("""
+        await db.execute("""
             INSERT OR REPLACE INTO daily_stats
             (day, visits, uniques, new, returning_count, games, clicker_scores, sessions, saved_at)
             VALUES (?,?,?,?,?,?,?,?,?)
@@ -95,7 +95,7 @@ async def load_history():
     cutoff = (datetime.now(MSK) - timedelta(days=HISTORY_DAYS)).strftime("%Y-%m-%d")
     try:
         async with aiosqlite.connect(DB_PATH) as db:
-                       cur = await db.execute(
+            cur = await db.execute(
                 "SELECT day, visits, uniques, new, returning_count, games, clicker_scores, sessions "
                 "FROM daily_stats WHERE day >= ? ORDER BY day",
                 (cutoff,)
@@ -105,15 +105,15 @@ async def load_history():
         print("load_history error:", e)
         return
     for r in rows:
-                d, visits, uniques, new, returning_count, games, scores, sessions = r
+        d, visits, uniques, new, returning_count, games, scores, sessions = r
         try:
             history[d] = {
                 "visits": visits or 0,
                 "uniques": set(),
                 "uniques_count": uniques or 0,
                 "new": new or 0,
-                "returning": returning or 0,
-                "games": json.loads(games) if games else {"wall":0,"clicker":0,"broadway":0,"campus":0,"grable":0},
+                "returning": returning_count or 0,
+                "games": json.loads(games) if games else {"wall": 0, "clicker": 0, "broadway": 0, "campus": 0, "grable": 0},
                 "clicker_scores": json.loads(scores) if scores else [],
                 "sessions": json.loads(sessions) if sessions else [],
             }
@@ -240,7 +240,7 @@ def m_retention_d1():
     y_uniques = y_day.get("uniques") or set()
     if not y_uniques:
         return _metric("ret_d1", "Возврат на следующий день (D1)", "—", "neutral",
-                       "Вчера не сохранилось список uid'ов (данные из БД).", "")
+                       "Вчера не сохранилось список uid'ов.", "")
     t_uniques = _ensure_day().get("uniques") or set()
     returned = y_uniques & t_uniques
     pct = round(len(returned) / len(y_uniques) * 100)
@@ -261,7 +261,7 @@ def m_avg_session():
     s = _ensure_day()["sessions"]
     if not s:
         return _metric("avg_sess", "Средняя сессия", "—", "neutral",
-                       "Сессии пока не измеряются на всех страницах.", "")
+                       "Сессии пока не измеряются.", "")
     avg = round(_avg(s))
     value = f"{avg} сек"
     if avg >= 120:
@@ -333,7 +333,7 @@ def m_clicker_avg():
     value = f"{avg} ({len(scores)} партий)"
     if avg >= 200:
         return _metric("clicker_avg", "Средний счёт в кликере", value, "good",
-                       "Высокие результаты — игроки опытные или игра лёгкая.",
+                       "Высокие результаты — игроки опытные.",
                        "Можно добавить уровни сложности.")
     if avg >= 80:
         return _metric("clicker_avg", "Средний счёт в кликере", value, "good",
@@ -343,7 +343,7 @@ def m_clicker_avg():
                        "Низковато — игра сложная или игроки новички.", "")
     return _metric("clicker_avg", "Средний счёт в кликере", value, "bad",
                    "Слишком низкие результаты.",
-                   "Возможно, правила непонятны или кнопка не отзывается.")
+                   "Возможно, правила непонятны.")
 
 
 def m_memory():
@@ -398,14 +398,17 @@ def project_health():
     score = 0
     for m in metrics:
         s = m["status"]
-        if s == "good": score += 2
-        elif s == "warn": score += 1
-        elif s == "bad": score -= 1
+        if s == "good":
+            score += 2
+        elif s == "warn":
+            score += 1
+        elif s == "bad":
+            score -= 1
     if score >= 6:
-        return {"status":"good","label":"Проект здоров","text":"Всё идёт хорошо. Продолжай в том же духе."}
+        return {"status": "good", "label": "Проект здоров", "text": "Всё идёт хорошо. Продолжай в том же духе."}
     if score >= 2:
-        return {"status":"warn","label":"Есть что улучшить","text":"Проект живой, но есть слабые места. Посмотри вердикты ниже."}
-    return {"status":"bad","label":"Нужно внимание","text":"Проект просел. Смотри рекомендации в карточках ниже."}
+        return {"status": "warn", "label": "Есть что улучшить", "text": "Проект живой, но есть слабые места."}
+    return {"status": "bad", "label": "Нужно внимание", "text": "Проект просел. Смотри рекомендации ниже."}
 
 
 def all_metrics():

@@ -399,6 +399,95 @@ function renderLinks(){
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+/* ============ РАСПИСАНИЕ ============ */
+let currentOverride = null;
+
+async function loadSchedule(){
+  try{
+    const res = await api('/admin/api/schedule');
+    const s = res.schedule;
+    document.getElementById('openHour').value = s.open_hour;
+    document.getElementById('openMinute').value = s.open_minute;
+    document.getElementById('closeHour').value = s.close_hour;
+    document.getElementById('closeMinute').value = s.close_minute;
+    currentOverride = s.force_override;
+    renderOverrideButtons();
+    renderScheduleStatus(res);
+  }catch(e){}
+}
+
+function renderScheduleStatus(res){
+  const el = document.getElementById('scheduleStatus');
+  const txt = document.getElementById('scheduleStatusText');
+  const cur = document.getElementById('scheduleCurrentTime');
+  const s = res.schedule;
+
+  if (res.is_open_now){
+    el.classList.add('open');
+    el.classList.remove('closed');
+    txt.textContent = 'Игры доступны';
+  } else {
+    el.classList.add('closed');
+    el.classList.remove('open');
+    txt.textContent = 'Технический перерыв';
+  }
+
+  let mode = '';
+  if (s.force_override === true) mode = ' · принудительно открыто';
+  else if (s.force_override === false) mode = ' · принудительно закрыто';
+  else mode = ' · по расписанию';
+
+  cur.textContent = 'Сейчас: ' + new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) + mode;
+}
+
+function renderOverrideButtons(){
+  document.querySelectorAll('.override-btn').forEach(b => {
+    b.classList.remove('active', 'open-active', 'closed-active');
+    const v = b.dataset.override;
+    if (v === 'auto' && currentOverride === null){
+      b.classList.add('active');
+    } else if (v === 'open' && currentOverride === true){
+      b.classList.add('active', 'open-active');
+    } else if (v === 'close' && currentOverride === false){
+      b.classList.add('active', 'closed-active');
+    }
+  });
+}
+
+document.querySelectorAll('.override-btn').forEach(b => {
+  b.addEventListener('click', async () => {
+    const v = b.dataset.override;
+    const val = v === 'auto' ? null : (v === 'open');
+    try{
+      const res = await api('/admin/api/schedule', {
+        method:'POST',
+        body: JSON.stringify({force_override: val})
+      });
+      currentOverride = res.schedule.force_override;
+      renderOverrideButtons();
+      renderScheduleStatus(res);
+    }catch(e){}
+  });
+});
+
+document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
+  const body = {
+    open_hour: parseInt(document.getElementById('openHour').value) || 0,
+    open_minute: parseInt(document.getElementById('openMinute').value) || 0,
+    close_hour: parseInt(document.getElementById('closeHour').value) || 0,
+    close_minute: parseInt(document.getElementById('closeMinute').value) || 0,
+  };
+  try{
+    const res = await api('/admin/api/schedule', {
+      method:'POST',
+      body: JSON.stringify(body)
+    });
+    renderScheduleStatus(res);
+    alert('Расписание сохранено');
+  }catch(e){}
+});
+
+loadSchedule();
 
 refreshAll();
 refreshTimer = setInterval(refreshAll, 5000);

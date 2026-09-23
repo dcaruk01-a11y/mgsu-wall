@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Вход · Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/theme.css">
+<style>
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;}
+.auth-card{
+  width:100%;max-width:440px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:20px;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  padding:36px 32px;
+}
+.auth-title{font-size:26px;font-weight:800;margin-bottom:8px;text-align:center;}
+.auth-sub{font-size:14px;opacity:0.65;text-align:center;margin-bottom:28px;line-height:1.5;}
+.tabs{display:flex;background:rgba(255,255,255,0.05);border-radius:999px;padding:4px;margin-bottom:24px;}
+.tab{flex:1;padding:10px;border:0;background:transparent;color:inherit;font-family:inherit;font-size:14px;font-weight:700;border-radius:999px;cursor:pointer;opacity:0.6;transition:all .15s;}
+.tab.active{background:#fff;color:#0F3C73;opacity:1;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.55;margin-bottom:8px;}
+.field input{
+  width:100%;padding:14px 18px;border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.15);
+  color:inherit;font-family:inherit;font-size:16px;
+  outline:none;box-sizing:border-box;
+}
+.field input:focus{border-color:rgba(255,255,255,0.5);}
+.field input.pin{letter-spacing:0.6em;text-align:center;font-size:22px;font-weight:800;}
+.btn{
+  width:100%;padding:16px;margin-top:8px;
+  border-radius:12px;border:0;
+  background:#fff;color:#0F3C73;
+  font-family:inherit;font-size:15px;font-weight:800;
+  cursor:pointer;transition:transform .1s;
+}
+.btn:hover{transform:translateY(-1px);}
+.btn:disabled{opacity:0.5;cursor:wait;}
+.error{margin-top:12px;font-size:13px;color:#FF4D5E;min-height:18px;text-align:center;}
+.hint{margin-top:20px;font-size:12px;opacity:0.5;text-align:center;line-height:1.5;}
+.hide{display:none;}
+</style>
+</head><body>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-title">Игры МГСУ</div>
+    <div class="auth-sub">Создай аккаунт, чтобы попасть в рейтинг и копить монеты</div>
+
+    <div class="tabs">
+      <button class="tab active" id="tabRegister">Создать</button>
+      <button class="tab" id="tabLogin">Войти</button>
+    </div>
+
+    <!-- РЕГИСТРАЦИЯ -->
+    <div id="formRegister">
+      <div class="field">
+        <label>Как тебя зовут</label>
+        <input type="text" id="regName" placeholder="Например, Дима" maxlength="20" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Придумай PIN (4 цифры)</label>
+        <input type="tel" id="regPin" class="pin" placeholder="••••" maxlength="4" inputmode="numeric" autocomplete="off">
+      </div>
+      <button class="btn" id="btnRegister">Создать аккаунт</button>
+    </div>
+
+    <!-- ВХОД -->
+    <div id="formLogin" class="hide">
+      <div class="field">
+        <label>Твой ID</label>
+        <input type="text" id="logUid" placeholder="MGSU-XXXXX" maxlength="12" autocomplete="off" style="text-transform:uppercase;">
+      </div>
+      <div class="field">
+        <label>PIN (4 цифры)</label>
+        <input type="tel" id="logPin" class="pin" placeholder="••••" maxlength="4" inputmode="numeric" autocomplete="off">
+      </div>
+      <button class="btn" id="btnLogin">Войти</button>
+    </div>
+
+    <div class="error" id="err"></div>
+
+    <div class="hint">
+      Играть можно и без аккаунта.<br>
+      Но рейтинг, монеты и серия дней доступны только зарегистрированным.
+    </div>
+  </div>
+</div>
+
+<script>
+const LS_TOKEN = 'mgsu_token';
+const LS_UID = 'mgsu_uid';
+
+// если уже вошёл — сразу в профиль
+if (localStorage.getItem(LS_TOKEN)){
+  location.href = '/profile';
+}
+
+const tabReg = document.getElementById('tabRegister');
+const tabLog = document.getElementById('tabLogin');
+const formReg = document.getElementById('formRegister');
+const formLog = document.getElementById('formLogin');
+const errEl = document.getElementById('err');
+
+tabReg.onclick = () => {
+  tabReg.classList.add('active'); tabLog.classList.remove('active');
+  formReg.classList.remove('hide'); formLog.classList.add('hide');
+  errEl.textContent = '';
+};
+tabLog.onclick = () => {
+  tabLog.classList.add('active'); tabReg.classList.remove('active');
+  formLog.classList.remove('hide'); formReg.classList.add('hide');
+  errEl.textContent = '';
+};
+
+function saveAuth(data){
+  localStorage.setItem(LS_TOKEN, data.token);
+  localStorage.setItem(LS_UID, data.uid);
+  location.href = '/profile';
+}
+
+document.getElementById('btnRegister').onclick = async () => {
+  const name = document.getElementById('regName').value.trim();
+  const pin = document.getElementById('regPin').value.trim();
+  errEl.textContent = '';
+  if (!name){ errEl.textContent = 'Введи имя'; return; }
+  if (!/^\d{4}$/.test(pin)){ errEl.textContent = 'PIN — 4 цифры'; return; }
+
+  const btn = document.getElementById('btnRegister');
+  btn.disabled = true;
+  try{
+    const r = await fetch('/api/auth/register', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name, pin})
+    });
+    const data = await r.json();
+    if (!r.ok){ errEl.textContent = data.detail || 'Ошибка'; return; }
+    // показать UID пользователю
+    alert('Твой ID: ' + data.uid + '\n\nЗапиши его — по нему можно войти с другого устройства.');
+    saveAuth(data);
+  }catch(e){
+    errEl.textContent = 'Ошибка соединения';
+  }finally{
+    btn.disabled = false;
+  }
+};
+
+document.getElementById('btnLogin').onclick = async () => {
+  const uid = document.getElementById('logUid').value.trim();
+  const pin = document.getElementById('logPin').value.trim();
+  errEl.textContent = '';
+  if (!uid){ errEl.textContent = 'Введи ID'; return; }
+  if (!/^\d{4}$/.test(pin)){ errEl.textContent = 'PIN — 4 цифры'; return; }
+
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true;
+  try{
+    const r = await fetch('/api/auth/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({uid, pin})
+    });
+    const data = await r.json();
+    if (!r.ok){ errEl.textContent = data.detail || 'Ошибка'; return; }
+    saveAuth(data);
+  }catch(e){
+    errEl.textContent = 'Ошибка соединения';
+  }finally{
+    btn.disabled = false;
+  }
+};
+
+document.getElementById('regPin').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);
+});
+document.getElementById('logPin').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);
+});
+</script>
+
+</body></html>

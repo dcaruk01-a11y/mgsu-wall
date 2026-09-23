@@ -154,6 +154,20 @@ function renderTheme(theme){
   });
 }
 
+async function applyTheme(theme){
+  try{
+    await api('/admin/api/theme', {method:'POST', body: JSON.stringify({theme})});
+    renderTheme(theme);
+  }catch(e){}
+}
+
+document.querySelectorAll('.theme-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.classList.contains('disabled')) return;
+    applyTheme(b.dataset.theme);
+  });
+});
+
 document.querySelectorAll('.theme-btn').forEach(b => {
   b.addEventListener('click', async () => {
     if (b.classList.contains('disabled')) return;

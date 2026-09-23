@@ -6,6 +6,7 @@ TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID", "")
 TG_FEEDBACK_BOT_TOKEN = os.environ.get("TG_FEEDBACK_BOT_TOKEN", "")
 TG_ADMIN_ID = os.environ.get("TG_ADMIN_ID", "")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
 # Холст
 CANVAS_W, CANVAS_H = 1920, 1080

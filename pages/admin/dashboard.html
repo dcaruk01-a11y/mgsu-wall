@@ -8,18 +8,13 @@
 <style>
 .health-banner{
   display:flex;align-items:center;gap:16px;
-  padding:20px 24px;border-radius:14px;
-  margin-bottom:28px;
-  border:1px solid;
-  background:rgba(255,255,255,0.04);
+  padding:20px 24px;border-radius:14px;margin-bottom:28px;
+  border:1px solid;background:rgba(255,255,255,0.04);
 }
 .health-banner.good{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08);}
 .health-banner.warn{border-color:rgba(255,189,46,0.4);background:rgba(255,189,46,0.08);}
 .health-banner.bad{border-color:rgba(255,77,94,0.4);background:rgba(255,77,94,0.08);}
-.health-dot{
-  width:16px;height:16px;border-radius:50%;flex-shrink:0;
-  box-shadow:0 0 12px currentColor;
-}
+.health-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;box-shadow:0 0 12px currentColor;}
 .health-banner.good .health-dot{background:#4ADE80;color:#4ADE80;}
 .health-banner.warn .health-dot{background:#FFBD2E;color:#FFBD2E;}
 .health-banner.bad .health-dot{background:#FF4D5E;color:#FF4D5E;}
@@ -27,178 +22,59 @@
 .health-label{font-size:16px;font-weight:800;margin-bottom:4px;}
 .health-text{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.5;}
 
-.metrics-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:14px;
-  margin-bottom:32px;
-}
-.metric-card{
-  position:relative;
-  padding:20px 22px;
-  border-radius:14px;
-  background:rgba(255,255,255,0.045);
-  border:1px solid rgba(255,255,255,0.10);
-  transition:background .15s;
-}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:32px;}
+.metric-card{position:relative;padding:20px 22px;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);transition:background .15s;}
 .metric-card.good{border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.05);}
 .metric-card.warn{border-color:rgba(255,189,46,0.35);background:rgba(255,189,46,0.05);}
 .metric-card.bad{border-color:rgba(255,77,94,0.35);background:rgba(255,77,94,0.05);}
-
-.metric-head{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:10px;
-}
-.metric-dot{
-  width:9px;height:9px;border-radius:50%;flex-shrink:0;
-}
+.metric-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.metric-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .metric-card.good .metric-dot{background:#4ADE80;box-shadow:0 0 8px #4ADE80;}
 .metric-card.warn .metric-dot{background:#FFBD2E;box-shadow:0 0 8px #FFBD2E;}
 .metric-card.bad .metric-dot{background:#FF4D5E;box-shadow:0 0 8px #FF4D5E;}
 .metric-card.neutral .metric-dot{background:rgba(255,255,255,0.3);}
-.metric-title{
-  font-size:11px;font-weight:700;letter-spacing:0.12em;
-  text-transform:uppercase;color:rgba(255,255,255,0.6);
-}
-.metric-value{
-  font-size:30px;font-weight:900;
-  color:#fff;font-variant-numeric:tabular-nums;
-  letter-spacing:-0.02em;
-  margin-bottom:14px;
-  line-height:1.1;
-}
+.metric-title{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.6);}
+.metric-value{font-size:30px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;margin-bottom:14px;line-height:1.1;}
 .metric-value.small{font-size:18px;}
-.metric-verdict{
-  font-size:13px;color:rgba(255,255,255,0.85);
-  line-height:1.55;
-  margin-bottom:6px;
-}
-.metric-hint{
-  font-size:12px;color:rgba(255,255,255,0.5);
-  line-height:1.55;font-style:italic;
-  padding-top:6px;
-  border-top:1px solid rgba(255,255,255,0.06);
-}
+.metric-verdict{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.55;margin-bottom:6px;}
+.metric-hint{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.55;font-style:italic;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);}
 .metric-hint:empty{display:none;}
-  /* Блок экспорта */
-.export-block{
-  padding:22px;
-  background:rgba(255,255,255,0.045);
-  border:1px solid rgba(255,255,255,0.10);
-  border-radius:14px;
-  display:flex;
-  align-items:center;
-  gap:16px;
-  flex-wrap:wrap;
-}
-.export-block select{
-  padding:12px 16px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.15);
-  border-radius:10px;
-  color:#fff;
-  font-family:inherit;
-  font-size:14px;
-  outline:none;
-  cursor:pointer;
-  min-width:180px;
-}
+
+.export-block{padding:22px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);border-radius:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.export-block select{padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-family:inherit;font-size:14px;outline:none;cursor:pointer;min-width:180px;}
 .export-block select option{background:#0F1524;color:#fff;}
-.export-btn{
-  padding:12px 22px;
-  border-radius:10px;
-  border:0;
-  background:#fff;
-  color:#0F3C73;
-  font-family:inherit;
-  font-size:14px;
-  font-weight:800;
-  cursor:pointer;
-  transition:transform .1s;
-}
+.export-btn{padding:12px 22px;border-radius:10px;border:0;background:#fff;color:#0F3C73;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:transform .1s;}
 .export-btn:hover{transform:translateY(-1px);}
 .export-btn:disabled{opacity:0.5;cursor:wait;}
-.export-hint{
-  font-size:12px;
-  color:rgba(255,255,255,0.5);
-  line-height:1.5;
-  flex:1;
-  min-width:200px;
-}
-  /* Блок расписания */
-.schedule-block{
-  padding:24px;
-  background:rgba(255,255,255,0.045);
-  border:1px solid rgba(255,255,255,0.10);
-  border-radius:14px;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-}
-.schedule-status{
-  display:flex;align-items:center;gap:12px;
-  padding:14px 18px;border-radius:10px;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);
-}
-.schedule-status .dot{
-  width:12px;height:12px;border-radius:50%;
-  box-shadow:0 0 10px currentColor;
-}
+.export-hint{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;flex:1;min-width:200px;}
+
+.schedule-block{padding:24px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);border-radius:14px;display:flex;flex-direction:column;gap:18px;}
+.schedule-status{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);}
+.schedule-status .dot{width:12px;height:12px;border-radius:50%;box-shadow:0 0 10px currentColor;}
 .schedule-status.open .dot{background:#4ADE80;color:#4ADE80;}
 .schedule-status.closed .dot{background:#FF4D5E;color:#FF4D5E;}
 .schedule-status strong{font-size:14px;font-weight:800;color:#fff;}
 .schedule-status span{font-size:13px;color:rgba(255,255,255,0.6);margin-left:auto;}
-
-.schedule-row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
-.schedule-input-group label{
-  display:block;font-size:11px;font-weight:700;
-  letter-spacing:0.12em;text-transform:uppercase;
-  color:rgba(255,255,255,0.5);
-  margin-bottom:8px;
-}
-.schedule-input-group input{
-  width:100%;padding:12px 14px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.15);
-  border-radius:10px;color:#fff;
-  font-family:inherit;font-size:15px;
-  outline:none;
-  box-sizing:border-box;
-}
+.schedule-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.schedule-input-group label{display:block;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.schedule-input-group input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-family:inherit;font-size:15px;outline:none;box-sizing:border-box;}
 .schedule-input-group input:focus{border-color:rgba(255,255,255,0.4);}
-
-.override-row{
-  display:flex;gap:10px;flex-wrap:wrap;
-}
-.override-btn{
-  flex:1;min-width:140px;
-  padding:12px 18px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.15);
-  background:rgba(255,255,255,0.04);
-  color:rgba(255,255,255,0.8);
-  font-family:inherit;font-size:13px;font-weight:700;
-  cursor:pointer;transition:all .15s;
-}
+.override-row{display:flex;gap:10px;flex-wrap:wrap;}
+.override-btn{flex:1;min-width:140px;padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.8);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
 .override-btn:hover{background:rgba(255,255,255,0.10);color:#fff;}
 .override-btn.active{background:#fff;color:#0F3C73;border-color:#fff;}
 .override-btn.active.open-active{background:#4ADE80;color:#0a1f0f;border-color:#4ADE80;}
 .override-btn.active.closed-active{background:#FF4D5E;color:#fff;border-color:#FF4D5E;}
-
-.save-schedule-btn{
-  padding:14px;
-  border-radius:10px;border:0;
-  background:#fff;color:#0F3C73;
-  font-family:inherit;font-size:14px;font-weight:800;
-  cursor:pointer;
-  transition:transform .1s;
-}
+.save-schedule-btn{padding:14px;border-radius:10px;border:0;background:#fff;color:#0F3C73;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:transform .1s;}
 .save-schedule-btn:hover{transform:translateY(-1px);}
+
+.error-box{
+  padding:16px 20px;border-radius:12px;
+  background:rgba(255,77,94,0.1);border:1px solid rgba(255,77,94,0.4);
+  color:#FFB8BF;font-size:13px;line-height:1.6;
+  margin-bottom:20px;display:none;
+}
+.error-box.show{display:block;}
 </style>
 </head><body class="admin-page">
 
@@ -211,6 +87,8 @@
     <button class="logout-btn" id="logoutBtn">Выйти</button>
   </div>
 
+  <div class="error-box" id="errorBox"></div>
+
   <div class="health-banner" id="healthBanner">
     <div class="health-dot"></div>
     <div class="health-info">
@@ -220,62 +98,59 @@
   </div>
 
   <div class="metrics-grid" id="metricsGrid">Загрузка…</div>
+
   <div class="section-admin">
-  <h2>Экспорт статистики</h2>
-  <div class="export-block">
-    <select id="exportPeriod">
-      <option value="1">За сегодня</option>
-      <option value="7" selected>За 7 дней</option>
-      <option value="30">За 30 дней</option>
-      <option value="90">За 90 дней</option>
-    </select>
-    <button class="export-btn" id="exportBtn">Скачать Excel</button>
-    <div class="export-hint" id="storageHint">—</div>
+    <h2>Экспорт статистики</h2>
+    <div class="export-block">
+      <select id="exportPeriod">
+        <option value="1">За сегодня</option>
+        <option value="7" selected>За 7 дней</option>
+        <option value="30">За 30 дней</option>
+        <option value="90">За 90 дней</option>
+      </select>
+      <button class="export-btn" id="exportBtn">Скачать Excel</button>
+      <div class="export-hint" id="storageHint">—</div>
+    </div>
   </div>
-</div>
-<div class="section-admin">
-  <h2>Расписание и доступ</h2>
-  <div class="schedule-block">
 
-    <div class="schedule-status" id="scheduleStatus">
-      <div class="dot"></div>
-      <strong id="scheduleStatusText">—</strong>
-      <span id="scheduleCurrentTime">—</span>
+  <div class="section-admin">
+    <h2>Расписание и доступ</h2>
+    <div class="schedule-block">
+      <div class="schedule-status" id="scheduleStatus">
+        <div class="dot"></div>
+        <strong id="scheduleStatusText">—</strong>
+        <span id="scheduleCurrentTime">—</span>
+      </div>
+      <div class="schedule-row">
+        <div class="schedule-input-group">
+          <label>Открытие — час</label>
+          <input type="number" id="openHour" min="0" max="23" value="8">
+        </div>
+        <div class="schedule-input-group">
+          <label>Открытие — минуты</label>
+          <input type="number" id="openMinute" min="0" max="59" value="30">
+        </div>
+        <div class="schedule-input-group">
+          <label>Закрытие — час</label>
+          <input type="number" id="closeHour" min="0" max="23" value="17">
+        </div>
+        <div class="schedule-input-group">
+          <label>Закрытие — минуты</label>
+          <input type="number" id="closeMinute" min="0" max="59" value="20">
+        </div>
+      </div>
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;">Режим принудительно</label>
+        <div class="override-row">
+          <button class="override-btn" data-override="auto">По расписанию</button>
+          <button class="override-btn" data-override="open">Всегда открыто</button>
+          <button class="override-btn" data-override="close">Всегда закрыто</button>
+        </div>
+      </div>
+      <button class="save-schedule-btn" id="saveScheduleBtn">Сохранить расписание</button>
     </div>
-
-    <div class="schedule-row">
-      <div class="schedule-input-group">
-        <label>Открытие — час</label>
-        <input type="number" id="openHour" min="0" max="23" value="8">
-      </div>
-      <div class="schedule-input-group">
-        <label>Открытие — минуты</label>
-        <input type="number" id="openMinute" min="0" max="59" value="30">
-      </div>
-      <div class="schedule-input-group">
-        <label>Закрытие — час</label>
-        <input type="number" id="closeHour" min="0" max="23" value="17">
-      </div>
-      <div class="schedule-input-group">
-        <label>Закрытие — минуты</label>
-        <input type="number" id="closeMinute" min="0" max="59" value="20">
-      </div>
-    </div>
-
-    <div>
-      <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;">
-        Режим принудительно
-      </label>
-      <div class="override-row">
-        <button class="override-btn" data-override="auto">По расписанию</button>
-        <button class="override-btn" data-override="open">Всегда открыто</button>
-        <button class="override-btn" data-override="close">Всегда закрыто</button>
-      </div>
-    </div>
-
-    <button class="save-schedule-btn" id="saveScheduleBtn">Сохранить расписание</button>
   </div>
-</div>
+
   <div class="section-admin">
     <h2>Топ кликера сегодня</h2>
     <div class="card-block" id="clickerTopBox">Загрузка…</div>
@@ -312,7 +187,16 @@ let refreshTimer = null;
 
 if (!token) location.href = '/admin/login';
 
-const logoutBtn = document.getElementById('logoutBtn');
+function showError(msg){
+  const box = document.getElementById('errorBox');
+  if (!box) return;
+  box.textContent = '⚠ ' + msg;
+  box.classList.add('show');
+}
+function hideError(){
+  const box = document.getElementById('errorBox');
+  if (box) box.classList.remove('show');
+}
 
 async function api(path, opts = {}){
   const headers = Object.assign({'Content-Type':'application/json'}, opts.headers || {});
@@ -323,10 +207,13 @@ async function api(path, opts = {}){
     location.href = '/admin/login';
     throw new Error('unauthorized');
   }
+  if (!res.ok){
+    throw new Error('HTTP ' + res.status + ' для ' + path);
+  }
   return res.json();
 }
 
-logoutBtn.addEventListener('click', async () => {
+document.getElementById('logoutBtn').addEventListener('click', async () => {
   try{ await api('/admin/api/logout', {method:'POST'}); }catch(e){}
   localStorage.removeItem(LS_KEY);
   location.href = '/admin/login';
@@ -343,43 +230,52 @@ function fmtUptime(sec){
 }
 
 async function refreshAll(){
+  hideError();
   try{
     const s = await api('/admin/api/stats');
-    document.getElementById('uptimeLabel').textContent = 'Сервер работает: ' + fmtUptime(s.uptime_sec);
+
+    const uptimeEl = document.getElementById('uptimeLabel');
+    if (uptimeEl) uptimeEl.textContent = 'Сервер работает: ' + fmtUptime(s.uptime_sec);
+
     renderHealth(s.health);
     renderMetrics(s.metrics || []);
     renderClickerTop(s.clicker_top || []);
-    const g = await api('/admin/api/games');
-    renderGames(g.games);
-    renderTheme(g.theme);
-    renderLinks();
-  }catch(e){}
-}
 
-  function renderMetrics(metrics){
-  const grid = document.getElementById('metricsGrid');
-  grid.innerHTML = '';
-  metrics.forEach(m => {
-    // ... код существующий ...
-  });
-  // Дополнительно: обновляем подсказку о хранилище
-  const st = metrics.find(x => x.key === 'storage');
-  if (st){
-    const h = document.getElementById('storageHint');
-    if (h) h.textContent = 'Хранится: ' + st.value + '. ' + (st.hint || '');
+    const g = await api('/admin/api/games');
+    renderGames(g.games || []);
+    renderTheme(g.theme || 'classic');
+    renderLinks();
+  }catch(e){
+    if (e.message !== 'unauthorized'){
+      showError('Ошибка загрузки статистики: ' + e.message + '. Проверь, что задеплоен core/analytics.py и core/admin.py с новыми эндпоинтами.');
+    }
   }
 }
 
 function renderHealth(h){
   const banner = document.getElementById('healthBanner');
+  const label = document.getElementById('healthLabel');
+  const text = document.getElementById('healthText');
+  if (!h){
+    banner.className = 'health-banner';
+    label.textContent = 'Нет данных о здоровье проекта';
+    text.textContent = 'Проверь, что core/analytics.py задеплоен.';
+    return;
+  }
   banner.className = 'health-banner ' + (h.status || 'neutral');
-  document.getElementById('healthLabel').textContent = h.label || '';
-  document.getElementById('healthText').textContent = h.text || '';
+  label.textContent = h.label || '';
+  text.textContent = h.text || '';
 }
 
 function renderMetrics(metrics){
   const grid = document.getElementById('metricsGrid');
   grid.innerHTML = '';
+
+  if (!metrics || !metrics.length){
+    grid.innerHTML = '<div style="color:rgba(255,255,255,0.5);padding:20px;">Нет метрик. Проверь, что core/analytics.py задеплоен.</div>';
+    return;
+  }
+
   metrics.forEach(m => {
     const el = document.createElement('div');
     el.className = 'metric-card ' + (m.status || 'neutral');
@@ -394,6 +290,17 @@ function renderMetrics(metrics){
       '<div class="metric-hint">' + escapeHtml(m.hint || '') + '</div>';
     grid.appendChild(el);
   });
+
+  // Подсказка о хранилище
+  const st = metrics.find(x => x.key === 'storage');
+  const hintEl = document.getElementById('storageHint');
+  if (hintEl){
+    if (st){
+      hintEl.textContent = 'Хранится: ' + st.value + '. ' + (st.hint || '');
+    } else {
+      hintEl.textContent = 'История статистики пока недоступна.';
+    }
+  }
 }
 
 function renderClickerTop(top){
@@ -442,6 +349,121 @@ document.querySelectorAll('.theme-btn').forEach(b => {
   });
 });
 
+/* ============ РАСПИСАНИЕ ============ */
+let currentOverride = null;
+
+async function loadSchedule(){
+  try{
+    const res = await api('/admin/api/schedule');
+    const s = res.schedule;
+    document.getElementById('openHour').value = s.open_hour;
+    document.getElementById('openMinute').value = s.open_minute;
+    document.getElementById('closeHour').value = s.close_hour;
+    document.getElementById('closeMinute').value = s.close_minute;
+    currentOverride = s.force_override;
+    renderOverrideButtons();
+    renderScheduleStatus(res);
+  }catch(e){
+    console.warn('schedule load error:', e.message);
+  }
+}
+
+function renderScheduleStatus(res){
+  const el = document.getElementById('scheduleStatus');
+  const txt = document.getElementById('scheduleStatusText');
+  const cur = document.getElementById('scheduleCurrentTime');
+  const s = res.schedule;
+
+  if (res.is_open_now){
+    el.classList.add('open'); el.classList.remove('closed');
+    txt.textContent = 'Игры доступны';
+  } else {
+    el.classList.add('closed'); el.classList.remove('open');
+    txt.textContent = 'Технический перерыв';
+  }
+
+  let mode = '';
+  if (s.force_override === true) mode = ' · принудительно открыто';
+  else if (s.force_override === false) mode = ' · принудительно закрыто';
+  else mode = ' · по расписанию';
+
+  cur.textContent = 'Сейчас: ' + new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) + mode;
+}
+
+function renderOverrideButtons(){
+  document.querySelectorAll('.override-btn').forEach(b => {
+    b.classList.remove('active', 'open-active', 'closed-active');
+    const v = b.dataset.override;
+    if (v === 'auto' && currentOverride === null) b.classList.add('active');
+    else if (v === 'open' && currentOverride === true) b.classList.add('active', 'open-active');
+    else if (v === 'close' && currentOverride === false) b.classList.add('active', 'closed-active');
+  });
+}
+
+document.querySelectorAll('.override-btn').forEach(b => {
+  b.addEventListener('click', async () => {
+    const v = b.dataset.override;
+    const val = v === 'auto' ? null : (v === 'open');
+    try{
+      const res = await api('/admin/api/schedule', {
+        method:'POST',
+        body: JSON.stringify({force_override: val})
+      });
+      currentOverride = res.schedule.force_override;
+      renderOverrideButtons();
+      renderScheduleStatus(res);
+    }catch(e){}
+  });
+});
+
+document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
+  const body = {
+    open_hour: parseInt(document.getElementById('openHour').value) || 0,
+    open_minute: parseInt(document.getElementById('openMinute').value) || 0,
+    close_hour: parseInt(document.getElementById('closeHour').value) || 0,
+    close_minute: parseInt(document.getElementById('closeMinute').value) || 0,
+  };
+  try{
+    const res = await api('/admin/api/schedule', {
+      method:'POST', body: JSON.stringify(body)
+    });
+    renderScheduleStatus(res);
+    alert('Расписание сохранено');
+  }catch(e){}
+});
+
+/* ============ ЭКСПОРТ ============ */
+async function downloadExcel(){
+  const btn = document.getElementById('exportBtn');
+  const period = document.getElementById('exportPeriod').value;
+  btn.disabled = true;
+  btn.textContent = 'Готовлю файл…';
+  try{
+    const res = await fetch('/admin/api/export?period=' + period, {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mgsu-stats-' + period + 'd.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    btn.textContent = 'Готово ✓';
+    setTimeout(() => { btn.textContent = 'Скачать Excel'; }, 1500);
+  }catch(e){
+    alert('Ошибка скачивания: ' + e.message + '. Проверь, что core/admin.py содержит эндпоинт /admin/api/export и openpyxl в requirements.txt.');
+    btn.textContent = 'Скачать Excel';
+  }finally{
+    btn.disabled = false;
+  }
+}
+document.getElementById('exportBtn').addEventListener('click', downloadExcel);
+
+/* ============ ССЫЛКИ ============ */
 function renderLinks(){
   const host = location.origin;
   const links = [
@@ -471,126 +493,9 @@ function renderLinks(){
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-/* ============ РАСПИСАНИЕ ============ */
-let currentOverride = null;
 
-async function loadSchedule(){
-  try{
-    const res = await api('/admin/api/schedule');
-    const s = res.schedule;
-    document.getElementById('openHour').value = s.open_hour;
-    document.getElementById('openMinute').value = s.open_minute;
-    document.getElementById('closeHour').value = s.close_hour;
-    document.getElementById('closeMinute').value = s.close_minute;
-    currentOverride = s.force_override;
-    renderOverrideButtons();
-    renderScheduleStatus(res);
-  }catch(e){}
-}
-
-function renderScheduleStatus(res){
-  const el = document.getElementById('scheduleStatus');
-  const txt = document.getElementById('scheduleStatusText');
-  const cur = document.getElementById('scheduleCurrentTime');
-  const s = res.schedule;
-
-  if (res.is_open_now){
-    el.classList.add('open');
-    el.classList.remove('closed');
-    txt.textContent = 'Игры доступны';
-  } else {
-    el.classList.add('closed');
-    el.classList.remove('open');
-    txt.textContent = 'Технический перерыв';
-  }
-
-  let mode = '';
-  if (s.force_override === true) mode = ' · принудительно открыто';
-  else if (s.force_override === false) mode = ' · принудительно закрыто';
-  else mode = ' · по расписанию';
-
-  cur.textContent = 'Сейчас: ' + new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) + mode;
-}
-
-function renderOverrideButtons(){
-  document.querySelectorAll('.override-btn').forEach(b => {
-    b.classList.remove('active', 'open-active', 'closed-active');
-    const v = b.dataset.override;
-    if (v === 'auto' && currentOverride === null){
-      b.classList.add('active');
-    } else if (v === 'open' && currentOverride === true){
-      b.classList.add('active', 'open-active');
-    } else if (v === 'close' && currentOverride === false){
-      b.classList.add('active', 'closed-active');
-    }
-  });
-}
-
-document.querySelectorAll('.override-btn').forEach(b => {
-  b.addEventListener('click', async () => {
-    const v = b.dataset.override;
-    const val = v === 'auto' ? null : (v === 'open');
-    try{
-      const res = await api('/admin/api/schedule', {
-        method:'POST',
-        body: JSON.stringify({force_override: val})
-      });
-      currentOverride = res.schedule.force_override;
-      renderOverrideButtons();
-      renderScheduleStatus(res);
-    }catch(e){}
-  });
-});
-
-document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
-  const body = {
-    open_hour: parseInt(document.getElementById('openHour').value) || 0,
-    open_minute: parseInt(document.getElementById('openMinute').value) || 0,
-    close_hour: parseInt(document.getElementById('closeHour').value) || 0,
-    close_minute: parseInt(document.getElementById('closeMinute').value) || 0,
-  };
-  try{
-    const res = await api('/admin/api/schedule', {
-      method:'POST',
-      body: JSON.stringify(body)
-    });
-    renderScheduleStatus(res);
-    alert('Расписание сохранено');
-  }catch(e){}
-});
-/* ============ ЭКСПОРТ В EXCEL ============ */
-async function downloadExcel(){
-  const btn = document.getElementById('exportBtn');
-  const period = document.getElementById('exportPeriod').value;
-  btn.disabled = true;
-  btn.textContent = 'Готовлю файл…';
-  try{
-    const res = await fetch('/admin/api/export?period=' + period, {
-      headers: {'Authorization': 'Bearer ' + token}
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'mgsu-stats-' + period + 'd.xlsx';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    btn.textContent = 'Готово ✓';
-    setTimeout(() => { btn.textContent = 'Скачать Excel'; }, 1500);
-  }catch(e){
-    alert('Ошибка скачивания: ' + e.message);
-    btn.textContent = 'Скачать Excel';
-  }finally{
-    btn.disabled = false;
-  }
-}
-document.getElementById('exportBtn').addEventListener('click', downloadExcel);
-
+/* ============ СТАРТ ============ */
 loadSchedule();
-
 refreshAll();
 refreshTimer = setInterval(refreshAll, 5000);
 </script>

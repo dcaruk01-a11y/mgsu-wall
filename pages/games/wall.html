@@ -181,7 +181,7 @@ async function checkStatus(){
     const b = document.getElementById('banner');
     if (!s.open){
       b.style.display = 'block';
-      b.textContent = 'Стена закрыта. Откроется в ' + s.opens_at + ':00 по Москве';
+      b.innerHTML = '🔒 Технический перерыв<br><span style="font-size:11px;font-weight:400;opacity:0.9;">Игры доступны только в учебное время: с ' + s.opens_at + ' до ' + s.closes_at + '</span>';
       c.style.pointerEvents = 'none';
       c.style.opacity = '0.4';
     } else {

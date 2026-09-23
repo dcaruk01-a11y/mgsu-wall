@@ -75,6 +75,48 @@
   margin-bottom:20px;display:none;
 }
 .error-box.show{display:block;}
+  /* IP-адреса */
+.ip-table{width:100%;border-collapse:collapse;font-size:13px;}
+.ip-table th{
+  text-align:left;padding:10px 12px;
+  font-size:11px;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;color:rgba(255,255,255,0.5);
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+.ip-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
+.ip-table tr:last-child td{border-bottom:none;}
+.ip-subnet{font-family:monospace;font-size:13px;color:#fff;}
+.ip-visits{font-weight:700;font-variant-numeric:tabular-nums;}
+.ip-select{
+  padding:6px 10px;border-radius:8px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.15);
+  color:#fff;font-family:inherit;font-size:12px;cursor:pointer;
+}
+.ip-select option{background:#0F1524;color:#fff;}
+.geo-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.geo-chip{
+  padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+}
+.geo-chip b{color:#fff;margin-left:6px;}
+
+/* Часы */
+.hours-chart{display:flex;align-items:flex-end;gap:4px;height:160px;padding:20px 0;}
+.hour-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;}
+.hour-bar{
+  width:100%;min-height:2px;background:#6FA8FF;border-radius:3px 3px 0 0;
+  transition:background .15s;
+}
+.hour-bar:hover{background:#fff;}
+.hour-label{font-size:9px;color:rgba(255,255,255,0.4);font-variant-numeric:tabular-nums;}
+.hour-col.peak .hour-bar{background:#4ADE80;}
+.devices{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+.device-chip{
+  padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+}
+.device-chip b{color:#fff;margin-left:6px;}
 </style>
 </head><body class="admin-page">
 
@@ -150,6 +192,32 @@
       <button class="save-schedule-btn" id="saveScheduleBtn">Сохранить расписание</button>
     </div>
   </div>
+<div class="section-admin">
+  <h2>По часам</h2>
+  <div class="card-block">
+    <div class="hours-chart" id="hoursChart">Загрузка…</div>
+    <div class="devices" id="devicesBox"></div>
+  </div>
+</div>
+
+<div class="section-admin">
+  <h2>Откуда заходят (IP)</h2>
+  <div class="card-block">
+    <div class="geo-row" id="geoRow">Загрузка…</div>
+    <div style="overflow-x:auto;">
+      <table class="ip-table" id="ipTable">
+        <thead>
+          <tr>
+            <th>Подсеть</th>
+            <th>Заходов</th>
+            <th>Категория</th>
+          </tr>
+        </thead>
+        <tbody id="ipTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
   <div class="section-admin">
     <h2>Топ кликера сегодня</h2>
@@ -493,11 +561,116 @@ function renderLinks(){
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+/* ============ ЧАСЫ ============ */
+async function loadHours(){
+  try{
+    const r = await api('/admin/api/hours?days=1');
+    renderHours(r.hours || []);
+    renderDevices(r.devices || []);
+  }catch(e){ console.warn('hours error:', e.message); }
+}
+
+function renderHours(hours){
+  const box = document.getElementById('hoursChart');
+  if (!box) return;
+  if (!hours.length){ box.textContent = 'Нет данных'; return; }
+  const max = Math.max(...hours.map(h => h.visits), 1);
+  box.innerHTML = '';
+  hours.forEach(h => {
+    const pct = (h.visits / max) * 100;
+    const isPeak = h.visits === max && h.visits > 0;
+    const col = document.createElement('div');
+    col.className = 'hour-col' + (isPeak ? ' peak' : '');
+    col.title = h.hour + ':00 — ' + h.visits + ' заходов, ' + h.uniques + ' уник.';
+    col.innerHTML =
+      '<div class="hour-bar" style="height:' + Math.max(2, pct) + '%"></div>' +
+      '<div class="hour-label">' + h.hour + '</div>';
+    box.appendChild(col);
+  });
+}
+
+function renderDevices(devices){
+  const box = document.getElementById('devicesBox');
+  if (!box) return;
+  if (!devices.length){ box.innerHTML = ''; return; }
+  const labels = {mobile:'📱 Телефон', desktop:'💻 ПК', tablet:'📱 Планшет', unknown:'—'};
+  box.innerHTML = '';
+  devices.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'device-chip';
+    el.innerHTML = (labels[d.device] || d.device) + '<b>' + d.pct + '%</b>';
+    box.appendChild(el);
+  });
+}
+
+/* ============ IP ============ */
+async function loadIps(){
+  try{
+    const r = await api('/admin/api/ips');
+    renderGeo(r.geo || []);
+    renderIpTable(r.ips || []);
+  }catch(e){ console.warn('ips error:', e.message); }
+}
+
+function renderGeo(geo){
+  const box = document.getElementById('geoRow');
+  if (!box) return;
+  if (!geo.length){ box.textContent = 'Пока нет данных'; return; }
+  box.innerHTML = '';
+  geo.forEach(g => {
+    const el = document.createElement('div');
+    el.className = 'geo-chip';
+    el.innerHTML = g.label + '<b>' + g.pct + '%</b>';
+    box.appendChild(el);
+  });
+}
+
+function renderIpTable(ips){
+  const body = document.getElementById('ipTableBody');
+  if (!body) return;
+  if (!ips.length){
+    body.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;opacity:0.5;">Пока пусто — никто не заходил</td></tr>';
+    return;
+  }
+  body.innerHTML = '';
+  ips.forEach(ip => {
+    const tr = document.createElement('tr');
+    const sel = document.createElement('select');
+    sel.className = 'ip-select';
+    [['unknown','Не размечено'],['mgsu','МГСУ'],['dorm','Общежитие'],['mobile','Мобильный'],['other','Другое']].forEach(([v,l]) => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = l;
+      if (v === ip.tag) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.onchange = async () => {
+      try{
+        await api('/admin/api/ips/tag', {
+          method:'POST',
+          body: JSON.stringify({subnet: ip.subnet, tag: sel.value, label: ip.label || ''})
+        });
+        loadIps();
+      }catch(e){}
+    };
+
+    tr.innerHTML =
+      '<td class="ip-subnet">' + escapeHtml(ip.subnet) + '.*</td>' +
+      '<td class="ip-visits">' + ip.visits + '</td>';
+    const td = document.createElement('td');
+    td.appendChild(sel);
+    tr.appendChild(td);
+    body.appendChild(tr);
+  });
+}
 
 /* ============ СТАРТ ============ */
 loadSchedule();
 refreshAll();
+loadHours();
+loadIps();
 refreshTimer = setInterval(refreshAll, 5000);
+setInterval(loadHours, 30000);
+setInterval(loadIps, 60000);
 </script>
 
 </body></html>

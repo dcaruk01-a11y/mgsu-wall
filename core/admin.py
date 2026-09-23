@@ -103,6 +103,69 @@ async def admin_games_set(payload: dict, token: str = Header(default="", alias="
         "games": [{"key": k, "title": v["title"], "enabled": v["enabled"], "status": v.get("status"), "url": v.get("url","")} for k, v in state.games_config.items()],
     }
 
+@router.get("/admin/api/schedule")
+async def admin_schedule_get(token: str = Header(default="", alias="authorization")):
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {
+        "schedule": state.schedule_str(),
+        "is_open_now": state.is_open_now(),
+    }
+
+
+@router.post("/admin/api/schedule")
+async def admin_schedule_set(payload: dict, token: str = Header(default="", alias="authorization")):
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    if "open_hour" in payload:
+        try:
+            h = int(payload["open_hour"])
+            if 0 <= h <= 23:
+                state.schedule_config["open_hour"] = h
+        except Exception:
+            pass
+    if "open_minute" in payload:
+        try:
+            m = int(payload["open_minute"])
+            if 0 <= m <= 59:
+                state.schedule_config["open_minute"] = m
+        except Exception:
+            pass
+    if "close_hour" in payload:
+        try:
+            h = int(payload["close_hour"])
+            if 0 <= h <= 23:
+                state.schedule_config["close_hour"] = h
+        except Exception:
+            pass
+    if "close_minute" in payload:
+        try:
+            m = int(payload["close_minute"])
+            if 0 <= m <= 59:
+                state.schedule_config["close_minute"] = m
+        except Exception:
+            pass
+
+    if "force_override" in payload:
+        v = payload["force_override"]
+        if v is None:
+            state.schedule_config["force_override"] = None
+        elif isinstance(v, bool):
+            state.schedule_config["force_override"] = v
+        elif v in ("open", "on", True):
+            state.schedule_config["force_override"] = True
+        elif v in ("close", "off", False):
+            state.schedule_config["force_override"] = False
+        elif v == "auto":
+            state.schedule_config["force_override"] = None
+
+    return {
+        "ok": True,
+        "schedule": state.schedule_str(),
+        "is_open_now": state.is_open_now(),
+    }
+
 
 @router.post("/admin/api/theme")
 async def admin_theme_set(payload: dict, token: str = Header(default="", alias="authorization")):

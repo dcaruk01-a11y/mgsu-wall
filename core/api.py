@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from datetime import datetime
-from config import MSK, is_open
+from config import MSK
 import core.state as state
 import core.analytics as analytics
 from core.storage import make_snapshot, post_to_telegram
@@ -11,11 +11,17 @@ router = APIRouter()
 @router.get("/status")
 async def status_endpoint():
     now = datetime.now(MSK)
+    sch = state.schedule_str()
     return {
-        "open": is_open(),
-        "opens_at": 8,
-        "closes_at": 17,
-        "current_hour_msk": now.hour,
+        "open": state.is_open_now(),
+        "opens_at": f"{sch['open_hour']:02d}:{sch['open_minute']:02d}",
+        "closes_at": f"{sch['close_hour']:02d}:{sch['close_minute']:02d}",
+        "open_hour": sch["open_hour"],
+        "open_minute": sch["open_minute"],
+        "close_hour": sch["close_hour"],
+        "close_minute": sch["close_minute"],
+        "force_override": sch["force_override"],
+        "current_time_msk": now.strftime("%H:%M"),
     }
 
 

@@ -138,7 +138,7 @@ function tick(){
   document.getElementById('time').textContent = timeLeft;
   if (timeLeft <= 0) stopGame();
 }
-function stopGame(){
+async function stopGame(){
   running = false;
   clearInterval(timerId);
   const r = rankFor(distance);
@@ -146,6 +146,52 @@ function stopGame(){
   document.getElementById('finishRank').textContent = r.name;
   document.getElementById('finishScore').textContent = Math.floor(distance);
   document.getElementById('finishOv').classList.remove('hide');
+
+  // === отправляем результат ===
+  const token = localStorage.getItem('mgsu_token') || '';
+  const block = document.getElementById('broadwayProgress');
+  if (block){
+    block.style.display = 'block';
+    block.textContent = 'Отправляю результат…';
+  }
+  try{
+    const headers = {'Content-Type':'application/json'};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch('/api/game/finish', {
+      method:'POST',
+      headers,
+      body: JSON.stringify({game: 'broadway', raw_score: Math.floor(distance)})
+    });
+    const data = await res.json();
+    renderBroadwayProgress(data);
+  }catch(e){
+    if (block) block.textContent = '';
+    if (block) block.style.display = 'none';
+  }
+}
+
+function renderBroadwayProgress(data){
+  const block = document.getElementById('broadwayProgress');
+  if (!block) return;
+  if (!data.logged_in){
+    block.innerHTML = '💡 Хочешь монеты и топ? <a href="/auth" style="color:#4ADE80;text-decoration:none;font-weight:700;">Создай аккаунт</a>';
+    return;
+  }
+  let html = '';
+  html += '<div>🎯 Очков: <b>+' + data.points + '</b></div>';
+  if (data.progress){
+    html += '<div>💰 Монет: <b>' + data.progress.coins + '</b></div>';
+    html += '<div>🔥 Серия: <b>' + data.progress.streak + '</b> дней';
+    if (data.progress.streak_changed) html += ' <span style="color:#4ADE80;">+1</span>';
+    html += '</div>';
+  }
+  if (data.tasks_completed && data.tasks_completed.length){
+    data.tasks_completed.forEach(t => {
+      html += '<div style="color:#4ADE80;">✓ ' + t.text + ' (+' + t.reward + ')</div>';
+    });
+  }
+  html += '<div style="margin-top:8px;"><a href="/profile" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;font-weight:600;">Открыть профиль →</a></div>';
+  block.innerHTML = html;
 }
 function rankFor(d){
   if (d < 100) return {name:'Студент', emoji:'🚶'};

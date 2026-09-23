@@ -9,6 +9,7 @@ THEME_FILES = {
     "retro":     "static/retro.css",
     "notebook":  "static/notebook.css",
     "cyberpunk": "static/cyberpunk.css",
+    "cozy":      "static/cozy.css",
 }
 
 

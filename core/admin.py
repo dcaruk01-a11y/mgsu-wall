@@ -1,12 +1,11 @@
-import io
+import io, time, secrets, asyncio
 from datetime import datetime, timedelta
-from openpyxl import Workbook
-import time, secrets, asyncio
 from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import FileResponse, Response
+from openpyxl import Workbook
 import psutil
 
-from config import ADMIN_PASSWORD
+from config import ADMIN_PASSWORD, MSK
 import core.state as state
 import core.analytics as analytics
 from core.websocket import hub
@@ -106,6 +105,7 @@ async def admin_games_set(payload: dict, token: str = Header(default="", alias="
         "games": [{"key": k, "title": v["title"], "enabled": v["enabled"], "status": v.get("status"), "url": v.get("url","")} for k, v in state.games_config.items()],
     }
 
+
 @router.get("/admin/api/schedule")
 async def admin_schedule_get(token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
@@ -156,9 +156,9 @@ async def admin_schedule_set(payload: dict, token: str = Header(default="", alia
             state.schedule_config["force_override"] = None
         elif isinstance(v, bool):
             state.schedule_config["force_override"] = v
-        elif v in ("open", "on", True):
+        elif v in ("open", "on"):
             state.schedule_config["force_override"] = True
-        elif v in ("close", "off", False):
+        elif v in ("close", "off"):
             state.schedule_config["force_override"] = False
         elif v == "auto":
             state.schedule_config["force_override"] = None
@@ -199,7 +199,6 @@ async def admin_export(period: str = "7", token: str = Header(default="", alias=
     ws = wb.active
     ws.title = "Статистика"
 
-    # Заголовки
     headers = [
         "Дата", "Заходы", "Уникальные", "Новые", "Вернувшиеся",
         "Стена", "Кликер", "Бродвей", "Кампус", "Грабли",
@@ -207,11 +206,9 @@ async def admin_export(period: str = "7", token: str = Header(default="", alias=
     ]
     ws.append(headers)
 
-    # Жирная строка заголовков
     for cell in ws[1]:
         cell.font = cell.font.copy(bold=True)
 
-    # Данные
     for d in sorted(analytics.history.keys()):
         if d < cutoff:
             continue
@@ -231,7 +228,6 @@ async def admin_export(period: str = "7", token: str = Header(default="", alias=
             avg_sess,
         ])
 
-    # Ширина колонок
     widths = [12, 10, 12, 10, 12, 8, 10, 10, 10, 8, 16, 16]
     for i, w in enumerate(widths, start=1):
         ws.column_dimensions[chr(64 + i)].width = w

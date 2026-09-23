@@ -2,6 +2,7 @@ import time, asyncio
 from fastapi import APIRouter
 from pydantic import BaseModel
 import core.state as state
+import core.analytics as analytics
 
 router = APIRouter()
 clicker_lock = asyncio.Lock()
@@ -16,7 +17,8 @@ class ClickerScore(BaseModel):
 @router.post("/clicker/score")
 async def clicker_score(payload: ClickerScore):
     state.clicker_reset_if_needed()
-    state.track_game("clicker")
+    analytics.track_game("clicker")
+    analytics.track_clicker_score(score)
     nick = state.sanitize_nick(payload.nick)
     score = max(0, min(int(payload.score or 0), 10000))
     rank = (payload.rank or "")[:30]

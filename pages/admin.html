@@ -197,6 +197,21 @@ const pwInput = document.getElementById('pwInput');
 const loginBtn = document.getElementById('loginBtn');
 const loginErr = document.getElementById('loginErr');
 const logoutBtn = document.getElementById('logoutBtn');
+const pwToggle = document.getElementById('pwToggle');
+const eyeOpen = document.getElementById('eyeOpen');
+const eyeClosed = document.getElementById('eyeClosed');
+
+/* глазик */
+if (pwToggle && eyeOpen && eyeClosed){
+  pwToggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    const isPw = pwInput.type === 'password';
+    pwInput.type = isPw ? 'text' : 'password';
+    eyeOpen.style.display = isPw ? 'none' : 'block';
+    eyeClosed.style.display = isPw ? 'block' : 'none';
+    pwInput.focus();
+  });
+}
 
 function showDash(){
   loginView.classList.add('hide');
@@ -231,6 +246,7 @@ async function doLogin(){
     loginErr.textContent = 'Введите пароль';
     return;
   }
+  loginErr.textContent = 'Проверяю...';
   try{
     const res = await fetch('/admin/api/login', {
       method:'POST',
@@ -243,28 +259,18 @@ async function doLogin(){
       localStorage.setItem(LS_KEY, token);
       showDash();
     } else {
-      loginErr.textContent = data.error || 'Неверный пароль. Проверь переменную ADMIN_PASSWORD в Render.';
+      loginErr.textContent = 'Неверный пароль. В Render значение должно быть ровно: mgsu-admin-2026-mgsu';
       pwInput.value = '';
       pwInput.focus();
     }
   }catch(e){
-    loginErr.textContent = 'Ошибка соединения. Проверь интернет.';
+    loginErr.textContent = 'Ошибка соединения: ' + e.message;
   }
 }
 
 loginBtn.addEventListener('click', doLogin);
 pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  const pwToggle = document.getElementById('pwToggle');
-const eyeOpen = document.getElementById('eyeOpen');
-const eyeClosed = document.getElementById('eyeClosed');
-if (pwToggle){
-  pwToggle.addEventListener('click', () => {
-    const isPw = pwInput.type === 'password';
-    pwInput.type = isPw ? 'text' : 'password';
-    eyeOpen.style.display = isPw ? 'none' : 'block';
-    eyeClosed.style.display = isPw ? 'block' : 'none';
-  });
-}
+
 logoutBtn.addEventListener('click', async () => {
   try{ await api('/admin/api/logout', {method:'POST'}); }catch(e){}
   localStorage.removeItem(LS_KEY);
@@ -298,7 +304,6 @@ function renderStats(s){
   document.getElementById('uptimeLabel').textContent = 'Сервер работает: ' + fmtUptime(s.uptime_sec);
   const grid = document.getElementById('statsGrid');
   const memPct = s.memory_mb ? Math.round(s.memory_mb / 512 * 100) : null;
-
   const cards = [
     {label:'Онлайн', value: s.online, sub:'WebSocket-подключений'},
     {label:'Заходов сегодня', value: s.visits_today, sub:'страница /games'},
@@ -307,7 +312,6 @@ function renderStats(s){
     {label:'CPU', value: s.cpu_pct !== null ? s.cpu_pct + '%' : '—', sub:'загрузка'},
     {label:'Игр сыграно', value: Object.values(s.games_played).reduce((a,b)=>a+b,0), sub:'за сегодня'},
   ];
-
   grid.innerHTML = '';
   cards.forEach(c => {
     const el = document.createElement('div');
@@ -317,11 +321,7 @@ function renderStats(s){
                  + '<div class="stat-sub">' + c.sub + '</div>';
     grid.appendChild(el);
   });
-
-  const perGame = Object.entries(s.games_played)
-    .filter(([k,v]) => v > 0)
-    .map(([k,v]) => k + ': ' + v)
-    .join(' · ');
+  const perGame = Object.entries(s.games_played).filter(([k,v]) => v > 0).map(([k,v]) => k + ': ' + v).join(' · ');
   if (perGame){
     const el = document.createElement('div');
     el.className = 'stat-card';
@@ -360,10 +360,7 @@ function renderGames(games){
       const newVal = !sw.classList.contains('on');
       sw.classList.toggle('on', newVal);
       try{
-        await api('/admin/api/games', {
-          method:'POST',
-          body: JSON.stringify({key: g.key, enabled: newVal})
-        });
+        await api('/admin/api/games', {method:'POST', body: JSON.stringify({key: g.key, enabled: newVal})});
       }catch(e){}
     };
     row.appendChild(sw);
@@ -393,15 +390,16 @@ function renderLinks(){
   const host = location.origin;
   const links = [
     {label:'Главная (Игры)', url: host + '/games'},
-    {label:'Стена (рисовалка)', url: host + '/'),
-    {label:'Киоск (большой экран)', url: host + '/kiosk'},
+    {label:'Стена (рисовалка)', url: host + '/'},
+    {label:'Киоск', url: host + '/kiosk'},
     {label:'Кликер', url: host + '/clicker'},
     {label:'О проекте', url: host + '/privacy'},
     {label:'Статус (API)', url: host + '/status'},
-    {label:'Снимок вручную (API)', url: host + '/snapshot'},
-    {label:'GitHub репозиторий', url: 'https://github.com/dcaruk01-a11y/mgsu-wall'},
-    {label:'Render дашборд', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug'},
-    {label:'Telegram-канал (архив)', url: 'https://t.me/mgsu_wall_archive'},
+    {label:'Снимок вручную', url: host + '/snapshot'},
+    {label:'Проверка пароля', url: host + '/admin/api/check'},
+    {label:'GitHub', url: 'https://github.com/dcaruk01-a11y/mgsu-wall'},
+    {label:'Render', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug'},
+    {label:'Telegram-канал', url: 'https://t.me/mgsu_wall_archive'},
     {label:'Feedback-бот', url: 'https://t.me/mgsu_feedback_bot'},
   ];
   const box = document.getElementById('linksBox');

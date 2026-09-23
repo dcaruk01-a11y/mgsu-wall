@@ -1,1 +1,771 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Кликер · Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+body.clicker-page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  overflow:hidden;
+}
+
+/* ===== ВЕРХ: СЧЁТ ===== */
+.top-score{
+  flex-shrink:0;
+  padding:20px 16px 8px;
+  text-align:center;
+  z-index:3;
+}
+.score-label{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.20em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.45);
+  margin-bottom:4px;
+}
+.score-val{
+  font-size:clamp(48px, 14vw, 72px);
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-0.04em;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  transition:transform .1s, color .15s;
+}
+.score-val.flash-up{
+  color:#7BE37B;
+  transform:scale(1.15);
+}
+.score-val.flash-down{
+  color:#FF4D5E;
+  transform:scale(0.92);
+}
+
+.rank-badge{
+  display:inline-block;
+  margin-top:14px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.75);
+  padding:8px 20px;
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:999px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  transition:all .25s;
+}
+.rank-badge.up{
+  background:rgba(255,255,255,0.15);
+  border-color:rgba(255,255,255,0.5);
+  transform:scale(1.08);
+  color:#fff;
+}
+
+/* ===== ИГРОВАЯ ЗОНА ===== */
+.play-field{
+  flex:1;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:0;
+  overflow:hidden;
+  padding:8px 0;
+}
+
+.btn-wrap{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.click-btn{
+  width:clamp(150px, 28vw, 200px);
+  height:clamp(150px, 28vw, 200px);
+  border-radius:50%;
+  border:3px solid rgba(255,255,255,0.25);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25) 0%, transparent 60%),
+    radial-gradient(circle at 50% 50%, #1a4d8f 0%, #0F3C73 60%, #0a1f3d 100%);
+  box-shadow:
+    0 20px 60px rgba(15,60,115,0.5),
+    inset 0 -8px 24px rgba(0,0,0,0.35);
+  font-size:clamp(60px, 11vw, 90px);
+  line-height:1;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform .06s ease-out;
+  padding:0;
+  color:#fff;
+  position:relative;
+  touch-action:manipulation;
+  will-change:transform;
+}
+.click-btn:active{transform:scale(0.93);}
+.click-btn.pop{animation:pop .16s ease-out;}
+@keyframes pop{
+  0%{transform:scale(0.93);}
+  45%{transform:scale(1.06);}
+  100%{transform:scale(1);}
+}
+.click-btn::after{
+  content:'';
+  position:absolute;
+  inset:-14px;
+  border-radius:50%;
+  border:1px dashed rgba(255,255,255,0.12);
+  animation:spin 14s linear infinite;
+  pointer-events:none;
+}
+@keyframes spin{ to{transform:rotate(360deg);} }
+
+/* ===== ВСПЛЫВАЮЩИЕ ЧИСЛА ===== */
+.float-num{
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translate(-50%, -50%);
+  font-size:30px;
+  font-weight:900;
+  color:#fff;
+  pointer-events:none;
+  text-shadow:0 2px 12px rgba(0,0,0,0.6);
+  animation:floatUp 1s ease-out forwards;
+  font-variant-numeric:tabular-nums;
+  z-index:8;
+}
+.float-num.big{font-size:42px;color:#FFD84D;text-shadow:0 2px 20px rgba(255,216,77,0.5);}
+.float-num.mega{font-size:52px;color:#FF4D5E;text-shadow:0 2px 24px rgba(255,77,94,0.6);}
+.float-num.minus{color:#FF4D5E;}
+@keyframes floatUp{
+  0%{opacity:0; transform:translate(-50%, -30%) scale(0.6);}
+  15%{opacity:1; transform:translate(-50%, -70%) scale(1.1);}
+  100%{opacity:0; transform:translate(-50%, -180%) scale(1);}
+}
+
+/* ===== ПАДАЮЩИЕ ПРЕДМЕТЫ ===== */
+.falling-item{
+  position:absolute;
+  top:-80px;
+  width:70px;
+  height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:52px;
+  line-height:1;
+  cursor:pointer;
+  z-index:6;
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+  transition:transform .1s;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  animation:itemFall linear forwards;
+  will-change:top;
+}
+.falling-item:active{transform:scale(0.85);}
+.falling-item.caught{
+  animation:caughtBoom .3s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes caughtBoom{
+  0%{transform:scale(1); opacity:1;}
+  50%{transform:scale(1.5); opacity:0.9;}
+  100%{transform:scale(2); opacity:0;}
+}
+
+/* пульсация привлекает внимание */
+.falling-item::before{
+  content:'';
+  position:absolute;
+  inset:-6px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,216,77,0.4) 0%, transparent 70%);
+  animation:glow 1s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+@keyframes glow{
+  from{opacity:0.3; transform:scale(0.9);}
+  to{opacity:0.8; transform:scale(1.1);}
+}
+
+/* ===== НИЗ: ВРЕМЯ ===== */
+.bottom-timer{
+  flex-shrink:0;
+  padding:8px 16px 24px;
+  text-align:center;
+  z-index:3;
+}
+.timer-label{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.20em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.45);
+  margin-bottom:4px;
+}
+.timer-val{
+  font-size:clamp(40px, 12vw, 64px);
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-0.04em;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  transition:color .2s;
+}
+.timer-val.low{color:#FF4D5E; animation:pulse .5s ease-in-out infinite alternate;}
+@keyframes pulse{
+  from{opacity:1;}
+  to{opacity:0.55;}
+}
+
+/* ===== ОВЕРЛЕИ ===== */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(5,14,31,0.88);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:18px;
+  padding:32px 24px;
+  text-align:center;
+  z-index:50;
+  transition:opacity .3s;
+  overflow-y:auto;
+}
+.overlay.hide{opacity:0; pointer-events:none;}
+
+.ov-title{
+  font-size:clamp(24px, 6vw, 34px);
+  font-weight:800;
+  color:#fff;
+  letter-spacing:-0.02em;
+  line-height:1.15;
+}
+.ov-sub{
+  font-size:15px;
+  color:rgba(255,255,255,0.7);
+  max-width:400px;
+  line-height:1.6;
+}
+.ov-list{
+  font-size:14px;
+  color:rgba(255,255,255,0.7);
+  line-height:1.8;
+  text-align:left;
+  max-width:360px;
+  margin:0;
+  padding-left:22px;
+}
+.ov-list li{margin-bottom:6px;}
+.ov-list b{color:#fff;}
+
+.btn-big{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:16px 40px;
+  border-radius:999px;
+  background:#fff;
+  color:var(--blue);
+  font-family:inherit;
+  font-size:16px;
+  font-weight:700;
+  text-decoration:none;
+  border:0;
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  box-shadow:0 12px 30px rgba(0,0,0,0.3);
+  min-width:220px;
+}
+.btn-big:hover{transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,0.35);}
+.btn-big:active{transform:scale(0.98);}
+.btn-ghost{
+  background:rgba(255,255,255,0.08);
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.2);
+  box-shadow:none;
+}
+.btn-ghost:hover{background:rgba(255,255,255,0.14); box-shadow:none;}
+
+.finish-emoji{
+  font-size:clamp(72px, 18vw, 100px);
+  line-height:1;
+  filter:drop-shadow(0 12px 40px rgba(255,255,255,0.15));
+}
+.finish-rank{
+  font-size:clamp(24px, 7vw, 34px);
+  font-weight:800;
+  color:#fff;
+  letter-spacing:-0.02em;
+}
+.finish-desc{
+  font-size:15px;
+  color:rgba(255,255,255,0.65);
+  max-width:360px;
+  line-height:1.6;
+}
+.finish-score{
+  font-size:clamp(44px, 13vw, 68px);
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-0.04em;
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+}
+.finish-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.5);
+}
+.finish-actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+/* ===== ТОСТ ===== */
+.toast{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:#fff;
+  color:var(--blue);
+  padding:12px 24px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:600;
+  box-shadow:0 12px 32px rgba(0,0,0,0.3);
+  z-index:100;
+  opacity:0;
+  transition:all .3s;
+  pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0); opacity:1;}
+
+@media(max-width:640px){
+  .falling-item{width:60px;height:60px;font-size:44px;}
+  .finish-actions{flex-direction:column;width:100%;max-width:280px;}
+  .btn-big{width:100%;}
+}
+</style>
+</head><body class="clicker-page">
+
+<div class="clicker-top">
+  <div class="wrap">
+    <div class="head">
+      <a class="brand" href="/games">
+        <img src="/assets/Logo/logo.svg" alt="Лого" class="brand-logo">
+        <span class="brand-label"><b>НИУ МГСУ</b> · Игры</span>
+      </a>
+      <nav>
+        <a href="/games">Игры</a>
+        <a href="/privacy">О проекте</a>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- ВЕРХ: СЧЁТ -->
+<div class="top-score">
+  <div class="score-label">Очки</div>
+  <div class="score-val" id="scoreVal">0</div>
+  <div class="rank-badge" id="rankBadge">Студент</div>
+</div>
+
+<!-- ЦЕНТР: КНОПКА И ПАДАЮЩИЕ ПРЕДМЕТЫ -->
+<div class="play-field" id="playField">
+  <div class="btn-wrap">
+    <button class="click-btn" id="clickBtn" type="button">🎓</button>
+    <div id="floatLayer"></div>
+  </div>
+</div>
+
+<!-- НИЗ: ВРЕМЯ -->
+<div class="bottom-timer">
+  <div class="timer-label">Осталось</div>
+  <div class="timer-val" id="timerVal">30</div>
+</div>
+
+<!-- СТАРТ -->
+<div class="overlay" id="startOv">
+  <div class="ov-title">Кликер МГСУ</div>
+  <div class="ov-sub">За 30 секунд накликай как можно больше и лови падающие предметы.</div>
+  <ul class="ov-list">
+    <li>тыкай на <b>большую кнопку</b> — это +1 очко;</li>
+    <li>каждые <b>10 кликов</b> — бонус +10;</li>
+    <li>лови <b>падающие предметы</b>: 📖 +50, ☕ +30, 💰 +100, 📜 +250;</li>
+    <li>не поймал предмет — <b>минус очки</b> и минус время.</li>
+  </ul>
+  <button class="btn-big" id="startBtn" type="button">Начать →</button>
+</div>
+
+<!-- ФИНИШ -->
+<div class="overlay hide" id="finishOv">
+  <div class="finish-emoji" id="finishEmoji">🎓</div>
+  <div class="finish-rank" id="finishRank">Студент</div>
+  <div class="finish-desc" id="finishDesc"></div>
+  <div class="finish-score" id="finishScore">0</div>
+  <div class="finish-label">очков за 30 секунд</div>
+  <div class="finish-actions">
+    <button class="btn-big" id="shareBtn" type="button">Показать другу</button>
+    <button class="btn-big btn-ghost" id="againBtn" type="button">Ещё раз</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">Скопировано!</div>
+
+<script>
+/* ============ РАНГИ ============ */
+const RANKS = [
+  {max:30,   name:'Студент',         emoji:'🎓', desc:'Ты только начал путь. Попробуй ещё!'},
+  {max:70,   name:'ССОшник',         emoji:'👷', desc:'Уже в отряде. Ещё чуть-чуть — и станешь прорабом.'},
+  {max:130,  name:'Прораб',          emoji:'📋', desc:'На объекте тебя знают. Растёшь на глазах.'},
+  {max:200,  name:'Строитель',       emoji:'🏗️', desc:'Руки в деле. Дом сам себя не построит.'},
+  {max:300,  name:'Генподрядчик',    emoji:'🏢', desc:'Уже целой стройкой управляешь. Уважение.'},
+  {max:450,  name:'Застройщик',      emoji:'🏙️', desc:'Целый район под тобой. Следующая цель — легенда.'},
+  {max:Infinity, name:'Легенда МГСУ', emoji:'👑', desc:'Всё, ты в истории университета. Сохрани скриншот!'}
+];
+
+/* ============ ПАДАЮЩИЕ ПРЕДМЕТЫ ============ */
+/* points — сколько даёт за поимку
+   penalty — сколько списывается, если не поймал (и сколько секунд снимается)
+   weight — шанс выпадения (чем больше, тем чаще)
+   speed — базовая скорость падения (мс), меньше = быстрее
+   color — цвет подсветки при поймке */
+const FALLING = [
+  {emoji:'📖', name:'Зачётка',   points:50,  penalty:10, timeLost:0, weight:5, speed:3200},
+  {emoji:'☕', name:'Кофе',       points:30,  penalty:5,  timeLost:0, weight:5, speed:2800},
+  {emoji:'💰', name:'Стипендия',  points:100, penalty:20, timeLost:1, weight:2, speed:2400},
+  {emoji:'📜', name:'Диплом',     points:250, penalty:50, timeLost:2, weight:1, speed:2000}
+];
+
+function rankFor(score){
+  for (const r of RANKS) if (score <= r.max) return r;
+  return RANKS[RANKS.length - 1];
+}
+
+function pickFalling(){
+  const total = FALLING.reduce((s, b) => s + b.weight, 0);
+  let r = Math.random() * total;
+  for (const b of FALLING){
+    r -= b.weight;
+    if (r <= 0) return b;
+  }
+  return FALLING[0];
+}
+
+/* ============ ЭЛЕМЕНТЫ ============ */
+const badge       = document.getElementById('rankBadge');
+const btn         = document.getElementById('clickBtn');
+const scoreVal    = document.getElementById('scoreVal');
+const timerVal    = document.getElementById('timerVal');
+const startOv     = document.getElementById('startOv');
+const finishOv    = document.getElementById('finishOv');
+const startBtn    = document.getElementById('startBtn');
+const againBtn    = document.getElementById('againBtn');
+const shareBtn    = document.getElementById('shareBtn');
+const finishEmoji = document.getElementById('finishEmoji');
+const finishRank  = document.getElementById('finishRank');
+const finishDesc  = document.getElementById('finishDesc');
+const finishScore = document.getElementById('finishScore');
+const toast       = document.getElementById('toast');
+const floatLayer  = document.getElementById('floatLayer');
+const playField   = document.getElementById('playField');
+
+/* ============ СОСТОЯНИЕ ============ */
+const DURATION = 30;
+let score = 0;
+let clicks = 0;
+let timeLeft = DURATION;
+let running = false;
+let timerId = null;
+let spawnId = null;
+let scoreTimer = null;
+let activeItems = 0;
+
+/* ============ ОБНОВЛЕНИЕ UI ============ */
+function updateRank(){
+  const r = rankFor(score);
+  if (badge.textContent !== r.name){
+    badge.textContent = r.name;
+    badge.classList.add('up');
+    setTimeout(() => badge.classList.remove('up'), 280);
+  }
+  btn.textContent = r.emoji;
+}
+
+function flashScore(direction){
+  scoreVal.textContent = score;
+  scoreVal.classList.remove('flash-up', 'flash-down');
+  void scoreVal.offsetWidth;
+  scoreVal.classList.add(direction === 'up' ? 'flash-up' : 'flash-down');
+  clearTimeout(scoreTimer);
+  scoreTimer = setTimeout(() => {
+    scoreVal.classList.remove('flash-up', 'flash-down');
+  }, 200);
+}
+
+function tick(){
+  timeLeft -= 1;
+  timerVal.textContent = timeLeft;
+  if (timeLeft <= 5) timerVal.classList.add('low');
+  if (timeLeft <= 0) stopGame();
+}
+
+/* ============ СТАРТ / СТОП ============ */
+function startGame(){
+  // очищаем всё
+  document.querySelectorAll('.falling-item').forEach(el => el.remove());
+  score = 0;
+  clicks = 0;
+  timeLeft = DURATION;
+  running = true;
+  activeItems = 0;
+  scoreVal.textContent = '0';
+  timerVal.textContent = timeLeft;
+  timerVal.classList.remove('low');
+  badge.textContent = 'Студент';
+  btn.textContent = '🎓';
+  startOv.classList.add('hide');
+  finishOv.classList.add('hide');
+  timerId = setInterval(tick, 1000);
+  // спавним предметы
+  scheduleSpawn(1500);
+}
+
+function stopGame(){
+  running = false;
+  clearInterval(timerId);
+  clearTimeout(spawnId);
+  // убираем все падающие
+  document.querySelectorAll('.falling-item').forEach(el => el.remove());
+  const r = rankFor(score);
+  finishEmoji.textContent = r.emoji;
+  finishRank.textContent = r.name;
+  finishDesc.textContent = r.desc;
+  finishScore.textContent = score;
+  finishOv.classList.remove('hide');
+  saveScore(r.name, score);
+}
+
+/* ============ ПАДАЮЩИЕ ПРЕДМЕТЫ ============ */
+function scheduleSpawn(delay){
+  if (!running) return;
+  spawnId = setTimeout(() => {
+    spawnItem();
+    // каждый следующий спавн — через 900–1600 мс
+    const next = 900 + Math.random() * 700;
+    scheduleSpawn(next);
+  }, delay);
+}
+
+function spawnItem(){
+  if (!running) return;
+
+  const data = pickFalling();
+  const el = document.createElement('div');
+  el.className = 'falling-item';
+  el.textContent = data.emoji;
+
+  // позиция по X — в пределах play-field
+  const fieldW = playField.clientWidth;
+  const itemW = 70;
+  const maxX = Math.max(0, fieldW - itemW);
+  const x = Math.random() * maxX;
+  el.style.left = x + 'px';
+
+  // высота падения = высота play-field
+  const fieldH = playField.clientHeight;
+  const duration = data.speed;
+
+  el.dataset.name = data.name;
+  el.dataset.points = data.points;
+  el.dataset.penalty = data.penalty;
+  el.dataset.timeLost = data.timeLost;
+
+  el.style.animationDuration = duration + 'ms';
+
+  // по завершении падения — не поймали
+  el.addEventListener('animationend', () => {
+    if (el.classList.contains('caught')) return;
+    missItem(el);
+  });
+
+  // клик = поимка
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    catchItem(el);
+  });
+
+  playField.appendChild(el);
+  activeItems++;
+}
+
+function catchItem(el){
+  if (el.classList.contains('caught')) return;
+  el.classList.add('caught');
+
+  const points = +el.dataset.points;
+  score += points;
+  flashScore('up');
+  updateRank();
+
+  // всплывающее число у места поимки
+  const rect = el.getBoundingClientRect();
+  const fieldRect = playField.getBoundingClientRect();
+  showFloatNumAt(
+    '+' + points,
+    rect.left - fieldRect.left + rect.width / 2,
+    rect.top - fieldRect.top + rect.height / 2,
+    'big'
+  );
+
+  setTimeout(() => el.remove(), 320);
+  activeItems--;
+}
+
+function missItem(el){
+  const penalty = +el.dataset.penalty;
+  const timeLost = +el.dataset.timeLost;
+
+  score = Math.max(0, score - penalty);
+  if (timeLost > 0){
+    timeLeft = Math.max(0, timeLeft - timeLost);
+    timerVal.textContent = timeLeft;
+  }
+  flashScore('down');
+  updateRank();
+
+  const rect = el.getBoundingClientRect();
+  const fieldRect = playField.getBoundingClientRect();
+  showFloatNumAt(
+    '−' + penalty,
+    rect.left - fieldRect.left + rect.width / 2,
+    fieldRect.height - 20,
+    'minus'
+  );
+
+  // вспышка на границе экрана
+  playField.style.boxShadow = 'inset 0 -20px 40px rgba(255,77,94,0.5)';
+  setTimeout(() => playField.style.boxShadow = '', 250);
+
+  el.remove();
+  activeItems--;
+
+  if (timeLeft <= 0 && running) stopGame();
+}
+
+/* ============ ВСПЛЫВАЮЩИЕ ЧИСЛА ============ */
+function showFloatNumAt(text, x, y, cls){
+  const el = document.createElement('div');
+  el.className = 'float-num' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.transform = 'translate(-50%, -50%)';
+  floatLayer.appendChild(el);
+  setTimeout(() => el.remove(), 1100);
+}
+
+function showFloatNum(text, cls){
+  const el = document.createElement('div');
+  el.className = 'float-num' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+  const offset = (Math.random() - 0.5) * 80;
+  el.style.marginLeft = offset + 'px';
+  floatLayer.appendChild(el);
+  setTimeout(() => el.remove(), 1100);
+}
+
+function showToast(text){
+  toast.textContent = text;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+/* ============ КЛИК ПО КНОПКЕ ============ */
+function handleClick(e){
+  e.preventDefault();
+  if (!running) return;
+
+  clicks += 1;
+  score += 1;
+
+  btn.classList.remove('pop');
+  void btn.offsetWidth;
+  btn.classList.add('pop');
+
+  if (clicks % 10 === 0){
+    score += 10;
+    showFloatNum('+10', 'big');
+    flashScore('up');
+  } else {
+    showFloatNum('+1');
+  }
+
+  updateRank();
+  if (clicks % 10 !== 0) scoreVal.textContent = score;
+}
+
+btn.addEventListener('pointerdown', handleClick);
+startBtn.addEventListener('click', startGame);
+againBtn.addEventListener('click', startGame);
+
+shareBtn.addEventListener('click', async () => {
+  const r = rankFor(score);
+  const text = `Я ${r.name} ${r.emoji} — ${score} очков за 30 секунд в «Кликере МГСУ». А ты?`;
+  try{
+    if (navigator.share){
+      await navigator.share({text});
+    } else {
+      await navigator.clipboard.writeText(text);
+      showToast('Скопировано! Отправь другу');
+    }
+  }catch(err){
+    try{
+      await navigator.clipboard.writeText(text);
+      showToast('Скопировано! Отправь другу');
+    }catch(e2){
+      showToast(text);
+    }
+  }
+});
+
+function saveScore(rank, sc){
+  try{
+    fetch('/clicker/score', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({rank, score: sc})
+    }).catch(() => {});
+  }catch(e){}
+}
+</script>
+
+</body></html>
 

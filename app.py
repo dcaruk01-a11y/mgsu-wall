@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from core.storage import db_init
+from core.analytics import db_init_stats, load_history
 from core.tasks import daily_loop
 from core.websocket import router as ws_router
 from core.api import router as api_router
@@ -27,5 +28,7 @@ app.include_router(ws_router)
 @app.on_event("startup")
 async def on_startup():
     await db_init()
+    await db_init_stats()
+    await load_history()
     asyncio.create_task(daily_loop())
     asyncio.create_task(feedback_bot_loop())

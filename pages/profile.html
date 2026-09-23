@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Профиль · Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/theme.css">
+<style>
+.profile-wrap{max-width:640px;margin:0 auto;padding:32px 16px 64px;}
+.profile-header{display:flex;align-items:center;gap:20px;margin-bottom:32px;}
+.avatar{
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  border:2px solid rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:38px;flex-shrink:0;
+}
+.profile-name{font-size:28px;font-weight:800;line-height:1.1;}
+.profile-uid{
+  font-family:monospace;
+  font-size:14px;opacity:0.7;margin-top:6px;
+  padding:4px 10px;border-radius:999px;
+  background:rgba(255,255,255,0.06);
+  display:inline-block;cursor:pointer;
+  transition:background .15s;
+}
+.profile-uid:hover{background:rgba(255,255,255,0.14);}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:28px;}
+.stat{
+  padding:18px;border-radius:14px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.10);
+}
+.stat-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;margin-bottom:8px;}
+.stat-value{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;}
+
+.section{margin-bottom:20px;}
+.section h3{font-size:14px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;margin-bottom:12px;}
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.btn{
+  padding:12px 20px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.05);
+  color:inherit;font-family:inherit;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .15s;
+}
+.btn:hover{background:rgba(255,255,255,0.12);}
+.btn-primary{background:#fff;color:#0F3C73;border-color:#fff;}
+.btn-danger{color:#FF4D5E;border-color:rgba(255,77,94,0.4);}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.55;margin-bottom:8px;}
+.field input{
+  width:100%;padding:12px 16px;border-radius:10px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.15);
+  color:inherit;font-family:inherit;font-size:15px;
+  outline:none;box-sizing:border-box;
+}
+.field input:focus{border-color:rgba(255,255,255,0.5);}
+
+.card{padding:20px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);margin-bottom:20px;}
+.hide{display:none;}
+.err{color:#FF4D5E;font-size:13px;margin-top:8px;min-height:18px;}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:14px;opacity:0.7;text-decoration:none;color:inherit;margin-bottom:24px;}
+.back-link:hover{opacity:1;}
+.loading{padding:60px 20px;text-align:center;opacity:0.5;}
+</style>
+</head><body>
+
+<div class="profile-wrap">
+
+  <a href="/glavnaya" class="back-link">← На главную</a>
+
+  <div id="loading" class="loading">Загрузка…</div>
+
+  <div id="content" class="hide">
+
+    <div class="profile-header">
+      <div class="avatar">🎓</div>
+      <div>
+        <div class="profile-name" id="pName">—</div>
+        <div class="profile-uid" id="pUid" title="Нажми, чтобы скопировать">—</div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">🔥 Серия</div>
+        <div class="stat-value" id="pStreak">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">💰 Монеты</div>
+        <div class="stat-value" id="pCoins">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">🏆 Очки</div>
+        <div class="stat-value" id="pScore">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">🎮 Партий</div>
+        <div class="stat-value" id="pGames">0</div>
+      </div>
+    </div>
+
+    <div class="card" id="changeNameCard" style="display:none;">
+      <div class="section">
+        <h3>Сменить имя</h3>
+        <div class="field">
+          <input type="text" id="newName" placeholder="Новое имя" maxlength="20">
+        </div>
+        <div class="row">
+          <button class="btn btn-primary" id="btnSaveName">Сохранить</button>
+          <button class="btn" id="btnCancelName">Отмена</button>
+        </div>
+        <div class="err" id="nameErr"></div>
+      </div>
+    </div>
+
+    <div class="card" id="changePinCard" style="display:none;">
+      <div class="section">
+        <h3>Сменить PIN</h3>
+        <div class="field">
+          <label>Старый PIN</label>
+          <input type="tel" id="oldPin" placeholder="••••" maxlength="4" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label>Новый PIN</label>
+          <input type="tel" id="newPin" placeholder="••••" maxlength="4" inputmode="numeric">
+        </div>
+        <div class="row">
+          <button class="btn btn-primary" id="btnSavePin">Сохранить</button>
+          <button class="btn" id="btnCancelPin">Отмена</button>
+        </div>
+        <div class="err" id="pinErr"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="row">
+        <button class="btn" id="btnChangeName">Сменить имя</button>
+        <button class="btn" id="btnChangePin">Сменить PIN</button>
+        <button class="btn btn-danger" id="btnLogout">Выйти</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const LS_TOKEN = 'mgsu_token';
+const LS_UID = 'mgsu_uid';
+const token = localStorage.getItem(LS_TOKEN);
+
+if (!token){
+  location.href = '/auth';
+}
+
+async function api(path, opts = {}){
+  const headers = Object.assign({'Content-Type':'application/json'}, opts.headers || {});
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(path, Object.assign({}, opts, {headers}));
+  if (res.status === 401){
+    localStorage.removeItem(LS_TOKEN);
+    localStorage.removeItem(LS_UID);
+    location.href = '/auth';
+    throw new Error('unauthorized');
+  }
+  return { status: res.status, data: await res.json() };
+}
+
+function setUser(u){
+  document.getElementById('pName').textContent = u.display_name;
+  document.getElementById('pUid').textContent = u.uid;
+  document.getElementById('pStreak').textContent = u.streak || 0;
+  document.getElementById('pCoins').textContent = u.coins || 0;
+  document.getElementById('pScore').textContent = u.total_score || 0;
+  document.getElementById('pGames').textContent = u.games_played || 0;
+}
+
+async function loadMe(){
+  try{
+    const { status, data } = await api('/api/auth/me');
+    if (status !== 200){ location.href = '/auth'; return; }
+    setUser(data.user);
+    document.getElementById('loading').classList.add('hide');
+    document.getElementById('content').classList.remove('hide');
+  }catch(e){}
+}
+loadMe();
+
+// копировать UID
+document.getElementById('pUid').addEventListener('click', async () => {
+  try{
+    await navigator.clipboard.writeText(document.getElementById('pUid').textContent);
+    const el = document.getElementById('pUid');
+    const old = el.textContent;
+    el.textContent = 'Скопировано!';
+    setTimeout(() => el.textContent = old, 1200);
+  }catch(e){}
+});
+
+// смена имени
+document.getElementById('btnChangeName').onclick = () => {
+  document.getElementById('newName').value = document.getElementById('pName').textContent;
+  document.getElementById('changeNameCard').style.display = 'block';
+  document.getElementById('changePinCard').style.display = 'none';
+  document.getElementById('nameErr').textContent = '';
+};
+document.getElementById('btnCancelName').onclick = () => {
+  document.getElementById('changeNameCard').style.display = 'none';
+};
+document.getElementById('btnSaveName').onclick = async () => {
+  const newName = document.getElementById('newName').value.trim();
+  const errEl = document.getElementById('nameErr');
+  errEl.textContent = '';
+  try{
+    const { status, data } = await api('/api/auth/update-name', {
+      method:'POST', body: JSON.stringify({display_name: newName})
+    });
+    if (status !== 200){ errEl.textContent = data.detail || 'Ошибка'; return; }
+    document.getElementById('pName').textContent = data.display_name;
+    document.getElementById('changeNameCard').style.display = 'none';
+  }catch(e){ errEl.textContent = 'Ошибка'; }
+};
+
+// смена PIN
+document.getElementById('btnChangePin').onclick = () => {
+  document.getElementById('oldPin').value = '';
+  document.getElementById('newPin').value = '';
+  document.getElementById('changePinCard').style.display = 'block';
+  document.getElementById('changeNameCard').style.display = 'none';
+  document.getElementById('pinErr').textContent = '';
+};
+document.getElementById('btnCancelPin').onclick = () => {
+  document.getElementById('changePinCard').style.display = 'none';
+};
+document.getElementById('btnSavePin').onclick = async () => {
+  const oldPin = document.getElementById('oldPin').value.trim();
+  const newPin = document.getElementById('newPin').value.trim();
+  const errEl = document.getElementById('pinErr');
+  errEl.textContent = '';
+  if (!/^\d{4}$/.test(newPin)){ errEl.textContent = 'Новый PIN — 4 цифры'; return; }
+  try{
+    const { status, data } = await api('/api/auth/update-pin', {
+      method:'POST', body: JSON.stringify({old_pin: oldPin, new_pin: newPin})
+    });
+    if (status !== 200){ errEl.textContent = data.detail || 'Ошибка'; return; }
+    document.getElementById('changePinCard').style.display = 'none';
+    alert('PIN изменён');
+  }catch(e){ errEl.textContent = 'Ошибка'; }
+};
+
+// logout
+document.getElementById('btnLogout').onclick = async () => {
+  try{ await api('/api/auth/logout', {method:'POST'}); }catch(e){}
+  localStorage.removeItem(LS_TOKEN);
+  localStorage.removeItem(LS_UID);
+  location.href = '/auth';
+};
+
+// фильтры для PIN
+['oldPin','newPin'].forEach(id => {
+  document.getElementById(id).addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);
+  });
+});
+</script>
+
+</body></html>

@@ -14,6 +14,8 @@ from core.themes import router as themes_router
 from core.auth import router as auth_router
 from core.users import db_init_users
 from core.ip_tracking import db_init_ip
+from core.top import db_init_top
+from core.ratings import router as ratings_router
 from feedback_bot import feedback_bot_loop
 
 app = FastAPI()
@@ -23,6 +25,7 @@ app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 app.include_router(pages_router)
 app.include_router(themes_router)
 app.include_router(auth_router)
+app.include_router(ratings_router)
 app.include_router(api_router)
 app.include_router(clicker_router)
 app.include_router(admin_router)
@@ -35,4 +38,5 @@ async def on_startup():
     await db_init_stats()
     await db_init_users()
     await db_init_ip()
+        await db_init_top()
     await load_history()

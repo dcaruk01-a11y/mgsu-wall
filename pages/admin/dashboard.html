@@ -5,6 +5,82 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/static/admin.css">
+<style>
+.health-banner{
+  display:flex;align-items:center;gap:16px;
+  padding:20px 24px;border-radius:14px;
+  margin-bottom:28px;
+  border:1px solid;
+  background:rgba(255,255,255,0.04);
+}
+.health-banner.good{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08);}
+.health-banner.warn{border-color:rgba(255,189,46,0.4);background:rgba(255,189,46,0.08);}
+.health-banner.bad{border-color:rgba(255,77,94,0.4);background:rgba(255,77,94,0.08);}
+.health-dot{
+  width:16px;height:16px;border-radius:50%;flex-shrink:0;
+  box-shadow:0 0 12px currentColor;
+}
+.health-banner.good .health-dot{background:#4ADE80;color:#4ADE80;}
+.health-banner.warn .health-dot{background:#FFBD2E;color:#FFBD2E;}
+.health-banner.bad .health-dot{background:#FF4D5E;color:#FF4D5E;}
+.health-info{flex:1;}
+.health-label{font-size:16px;font-weight:800;margin-bottom:4px;}
+.health-text{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.5;}
+
+.metrics-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:14px;
+  margin-bottom:32px;
+}
+.metric-card{
+  position:relative;
+  padding:20px 22px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.045);
+  border:1px solid rgba(255,255,255,0.10);
+  transition:background .15s;
+}
+.metric-card.good{border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.05);}
+.metric-card.warn{border-color:rgba(255,189,46,0.35);background:rgba(255,189,46,0.05);}
+.metric-card.bad{border-color:rgba(255,77,94,0.35);background:rgba(255,77,94,0.05);}
+
+.metric-head{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:10px;
+}
+.metric-dot{
+  width:9px;height:9px;border-radius:50%;flex-shrink:0;
+}
+.metric-card.good .metric-dot{background:#4ADE80;box-shadow:0 0 8px #4ADE80;}
+.metric-card.warn .metric-dot{background:#FFBD2E;box-shadow:0 0 8px #FFBD2E;}
+.metric-card.bad .metric-dot{background:#FF4D5E;box-shadow:0 0 8px #FF4D5E;}
+.metric-card.neutral .metric-dot{background:rgba(255,255,255,0.3);}
+.metric-title{
+  font-size:11px;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;color:rgba(255,255,255,0.6);
+}
+.metric-value{
+  font-size:30px;font-weight:900;
+  color:#fff;font-variant-numeric:tabular-nums;
+  letter-spacing:-0.02em;
+  margin-bottom:14px;
+  line-height:1.1;
+}
+.metric-value.small{font-size:18px;}
+.metric-verdict{
+  font-size:13px;color:rgba(255,255,255,0.85);
+  line-height:1.55;
+  margin-bottom:6px;
+}
+.metric-hint{
+  font-size:12px;color:rgba(255,255,255,0.5);
+  line-height:1.55;font-style:italic;
+  padding-top:6px;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.metric-hint:empty{display:none;}
+</style>
 </head><body class="admin-page">
 
 <div id="dashView" class="admin-wrap">
@@ -16,7 +92,20 @@
     <button class="logout-btn" id="logoutBtn">Выйти</button>
   </div>
 
-  <div class="grid-stats" id="statsGrid"></div>
+  <div class="health-banner" id="healthBanner">
+    <div class="health-dot"></div>
+    <div class="health-info">
+      <div class="health-label" id="healthLabel">—</div>
+      <div class="health-text" id="healthText">—</div>
+    </div>
+  </div>
+
+  <div class="metrics-grid" id="metricsGrid">Загрузка…</div>
+
+  <div class="section-admin">
+    <h2>Топ кликера сегодня</h2>
+    <div class="card-block" id="clickerTopBox">Загрузка…</div>
+  </div>
 
   <div class="section-admin">
     <h2>Игры</h2>
@@ -26,19 +115,14 @@
   <div class="section-admin">
     <h2>Тема оформления</h2>
     <div class="card-block">
-     <div class="theme-row" id="themeRow">
-  <button class="theme-btn" data-theme="classic">Классика</button>
-  <button class="theme-btn" data-theme="retro">Retro-Tech</button>
-  <button class="theme-btn" data-theme="notebook">Notebook (Y2K)</button>
-  <button class="theme-btn" data-theme="cyberpunk">Cyberpunk</button>
-  <button class="theme-btn" data-theme="cozy">Cozy (pixel)</button>
-</div>
+      <div class="theme-row" id="themeRow">
+        <button class="theme-btn" data-theme="classic">Классика</button>
+        <button class="theme-btn" data-theme="retro">Retro-Tech</button>
+        <button class="theme-btn" data-theme="notebook">Notebook (Y2K)</button>
+        <button class="theme-btn" data-theme="cyberpunk">Cyberpunk</button>
+        <button class="theme-btn" data-theme="cozy">Cozy (pixel)</button>
+      </div>
     </div>
-  </div>
-
-  <div class="section-admin">
-    <h2>Топ кликера сегодня</h2>
-    <div class="card-block" id="clickerTopBox">Загрузка…</div>
   </div>
 
   <div class="section-admin">
@@ -54,7 +138,6 @@ let refreshTimer = null;
 
 if (!token) location.href = '/admin/login';
 
-const dashView = document.getElementById('dashView');
 const logoutBtn = document.getElementById('logoutBtn');
 
 async function api(path, opts = {}){
@@ -88,7 +171,9 @@ function fmtUptime(sec){
 async function refreshAll(){
   try{
     const s = await api('/admin/api/stats');
-    renderStats(s);
+    document.getElementById('uptimeLabel').textContent = 'Сервер работает: ' + fmtUptime(s.uptime_sec);
+    renderHealth(s.health);
+    renderMetrics(s.metrics || []);
     renderClickerTop(s.clicker_top || []);
     const g = await api('/admin/api/games');
     renderGames(g.games);
@@ -97,23 +182,28 @@ async function refreshAll(){
   }catch(e){}
 }
 
-function renderStats(s){
-  document.getElementById('uptimeLabel').textContent = 'Сервер работает: ' + fmtUptime(s.uptime_sec);
-  const grid = document.getElementById('statsGrid');
-  const memPct = s.memory_mb ? Math.round(s.memory_mb / 512 * 100) : null;
-  const cards = [
-    {label:'Онлайн', value: s.online, sub:'WebSocket-подключений'},
-    {label:'Заходов сегодня', value: s.visits_today, sub:'страница /glavnaya'},
-    {label:'Уникальных', value: s.uniques_today, sub:'по UID в браузере'},
-    {label:'Память', value: s.memory_mb !== null ? s.memory_mb + ' МБ' : '—', sub: memPct !== null ? memPct + '% от 512 МБ' : ''},
-    {label:'CPU', value: s.cpu_pct !== null ? s.cpu_pct + '%' : '—', sub:'загрузка'},
-    {label:'Игр сыграно', value: Object.values(s.games_played).reduce((a,b)=>a+b,0), sub:'за сегодня'},
-  ];
+function renderHealth(h){
+  const banner = document.getElementById('healthBanner');
+  banner.className = 'health-banner ' + (h.status || 'neutral');
+  document.getElementById('healthLabel').textContent = h.label || '';
+  document.getElementById('healthText').textContent = h.text || '';
+}
+
+function renderMetrics(metrics){
+  const grid = document.getElementById('metricsGrid');
   grid.innerHTML = '';
-  cards.forEach(c => {
+  metrics.forEach(m => {
     const el = document.createElement('div');
-    el.className = 'stat-card';
-    el.innerHTML = '<div class="stat-label">' + c.label + '</div><div class="stat-value">' + c.value + '</div><div class="stat-sub">' + c.sub + '</div>';
+    el.className = 'metric-card ' + (m.status || 'neutral');
+    const valueClass = String(m.value).length > 12 ? 'metric-value small' : 'metric-value';
+    el.innerHTML =
+      '<div class="metric-head">' +
+        '<div class="metric-dot"></div>' +
+        '<div class="metric-title">' + escapeHtml(m.title) + '</div>' +
+      '</div>' +
+      '<div class="' + valueClass + '">' + escapeHtml(String(m.value)) + '</div>' +
+      '<div class="metric-verdict">' + escapeHtml(m.verdict || '') + '</div>' +
+      '<div class="metric-hint">' + escapeHtml(m.hint || '') + '</div>';
     grid.appendChild(el);
   });
 }
@@ -156,20 +246,6 @@ function renderTheme(theme){
   });
 }
 
-async function applyTheme(theme){
-  try{
-    await api('/admin/api/theme', {method:'POST', body: JSON.stringify({theme})});
-    renderTheme(theme);
-  }catch(e){}
-}
-
-document.querySelectorAll('.theme-btn').forEach(b => {
-  b.addEventListener('click', () => {
-    if (b.classList.contains('disabled')) return;
-    applyTheme(b.dataset.theme);
-  });
-});
-
 document.querySelectorAll('.theme-btn').forEach(b => {
   b.addEventListener('click', async () => {
     if (b.classList.contains('disabled')) return;
@@ -184,11 +260,11 @@ function renderLinks(){
     {label:'Главная', url: host + '/glavnaya'},
     {label:'Стена', url: host + '/games/wall'},
     {label:'Кликер', url: host + '/games/clicker'},
+    {label:'Бродвей', url: host + '/games/broadway'},
+    {label:'Кампус', url: host + '/games/campus'},
+    {label:'Грабли', url: host + '/games/grable'},
     {label:'Экран (киоск)', url: host + '/games/ekran'},
     {label:'О проекте', url: host + '/privacy'},
-    {label:'Статус (API)', url: host + '/status'},
-    {label:'Снимок вручную', url: host + '/snapshot'},
-    {label:'Проверка пароля', url: host + '/admin/api/check'},
     {label:'GitHub', url: 'https://github.com/dcaruk01-a11y/mgsu-wall'},
     {label:'Render', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug'},
     {label:'Telegram-канал', url: 'https://t.me/mgsu_wall_archive'},

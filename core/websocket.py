@@ -1,6 +1,6 @@
 import json, time
 from fastapi import WebSocket, WebSocketDisconnect, APIRouter
-from config import is_open
+import core.state as state
 from core.storage import save_stroke, delete_stroke, load_today_strokes
 
 

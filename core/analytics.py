@@ -1,29 +1,15 @@
 """
-Аналитика и статистика проекта.
-Всё в памяти, без записи на диск.
-Хранит историю за последние 7 дней — этого достаточно для retention и трендов.
+Аналитика с сохранением в SQLite.
+Хранит 30 дней, переживает перезапуск сервера (но не деплой).
 """
-import time
+import os, json, time, aiosqlite
 from datetime import datetime, timedelta
-from config import MSK, today_str
+from config import MSK, today_str, DB_PATH
 
 
-# ============ ИСТОРИЯ ============
+HISTORY_DAYS = 30
 
-HISTORY_DAYS = 7
-
-# {date_str: {
-#     "visits": int,
-#     "uniques": set(),
-#     "new": int,
-#     "returning": int,
-#     "games": {"wall": 0, "clicker": 0, ...},
-#     "clicker_scores": [int, int, ...],
-#     "sessions": [float, ...],
-# }}
 history: dict = {}
-
-# Все uid, которые когда-либо заходили (для «новый vs вернувшийся»)
 all_seen_uids: set = set()
 
 
@@ -37,6 +23,7 @@ def _ensure_day(date_str=None):
         history[d] = {
             "visits": 0,
             "uniques": set(),
+            "uniques_count": 0,
             "new": 0,
             "returning": 0,
             "games": {"wall": 0, "clicker": 0, "broadway": 0, "campus": 0, "grable": 0},
@@ -46,12 +33,93 @@ def _ensure_day(date_str=None):
     return history[d]
 
 
+def uniq_count(day) -> int:
+    if day.get("uniques"):
+        return len(day["uniques"])
+    return day.get("uniques_count", 0)
+
+
 def cleanup_old():
-    """Удаляет дни старше HISTORY_DAYS."""
     cutoff = (datetime.now(MSK) - timedelta(days=HISTORY_DAYS)).strftime("%Y-%m-%d")
     for d in list(history.keys()):
         if d < cutoff:
             del history[d]
+
+
+# ============ SQLITE ============
+
+async def db_init_stats():
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS daily_stats (
+                day TEXT PRIMARY KEY,
+                visits INTEGER,
+                uniques INTEGER,
+                new INTEGER,
+                returning INTEGER,
+                games TEXT,
+                clicker_scores TEXT,
+                sessions TEXT,
+                saved_at REAL
+            )
+        """)
+        await db.commit()
+
+
+async def archive_day(date_str=None):
+    d = date_str or _today()
+    if d not in history:
+        return
+    day = history[d]
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT OR REPLACE INTO daily_stats
+            (day, visits, uniques, new, returning, games, clicker_scores, sessions, saved_at)
+            VALUES (?,?,?,?,?,?,?,?,?)
+        """, (
+            d,
+            day["visits"],
+            uniq_count(day),
+            day["new"],
+            day["returning"],
+            json.dumps(day["games"]),
+            json.dumps(day["clicker_scores"][-500:]),
+            json.dumps(day["sessions"][-500:]),
+            time.time(),
+        ))
+        await db.commit()
+    print(f"stats archived for {d}")
+
+
+async def load_history():
+    cutoff = (datetime.now(MSK) - timedelta(days=HISTORY_DAYS)).strftime("%Y-%m-%d")
+    try:
+        async with aiosqlite.connect(DB_PATH) as db:
+            cur = await db.execute(
+                "SELECT day, visits, uniques, new, returning, games, clicker_scores, sessions "
+                "FROM daily_stats WHERE day >= ? ORDER BY day",
+                (cutoff,)
+            )
+            rows = await cur.fetchall()
+    except Exception as e:
+        print("load_history error:", e)
+        return
+    for r in rows:
+        d, visits, uniques, new, returning, games, scores, sessions = r
+        try:
+            history[d] = {
+                "visits": visits or 0,
+                "uniques": set(),
+                "uniques_count": uniques or 0,
+                "new": new or 0,
+                "returning": returning or 0,
+                "games": json.loads(games) if games else {"wall":0,"clicker":0,"broadway":0,"campus":0,"grable":0},
+                "clicker_scores": json.loads(scores) if scores else [],
+                "sessions": json.loads(sessions) if sessions else [],
+            }
+        except Exception as e:
+            print("load_history parse error:", e)
+    print(f"stats loaded: {len(history)} days")
 
 
 # ============ ЗАПИСЬ СОБЫТИЙ ============
@@ -59,12 +127,11 @@ def cleanup_old():
 def track_visit(uid: str = ""):
     day = _ensure_day()
     day["visits"] += 1
-
     if uid and len(uid) < 64:
         if uid in day["uniques"]:
-            return  # уже заходил сегодня
+            return
         day["uniques"].add(uid)
-
+        day["uniques_count"] = len(day["uniques"])
         if uid in all_seen_uids:
             day["returning"] += 1
         else:
@@ -90,18 +157,11 @@ def track_session(seconds: float):
         day["sessions"].append(seconds)
 
 
-# ============ ПОМОЩНИКИ АНАЛИЗА ============
+# ============ МЕТРИКИ ============
 
 def _metric(key, title, value, status, verdict, hint=""):
-    """status: good / warn / bad / neutral"""
-    return {
-        "key": key,
-        "title": title,
-        "value": value,
-        "status": status,
-        "verdict": verdict,
-        "hint": hint,
-    }
+    return {"key": key, "title": title, "value": value, "status": status,
+            "verdict": verdict, "hint": hint}
 
 
 def _avg(lst):
@@ -111,8 +171,6 @@ def _avg(lst):
 def _yesterday_str():
     return (datetime.now(MSK) - timedelta(days=1)).strftime("%Y-%m-%d")
 
-
-# ============ МЕТРИКИ С ВЕРДИКТАМИ ============
 
 def m_visits_today():
     v = _ensure_day()["visits"]
@@ -135,12 +193,11 @@ def m_visits_today():
 
 def m_uniques_today():
     d = _ensure_day()
-    u = len(d["uniques"])
+    u = uniq_count(d)
     total = d["visits"]
     if u == 0:
         return _metric("uniques", "Уникальных пользователей", 0, "bad",
-                       "Никто не зашёл.",
-                       "Запусти распространение.")
+                       "Никто не зашёл.", "Запусти распространение.")
     if total and u / total > 0.8:
         return _metric("uniques", "Уникальных пользователей", u, "good",
                        f"Почти все заходы ({u} из {total}) — новые люди.",
@@ -150,18 +207,15 @@ def m_uniques_today():
                        f"{u} из {total} заходов — разные люди.",
                        "Часть заходов — повторные. Это нормально.")
     return _metric("uniques", "Уникальных пользователей", u, "neutral",
-                   f"{u} из {total} заходов. Много повторных.",
+                   f"{u} из {total}. Много повторных.",
                    "Проверь, не «залипают» ли одни и те же.")
 
 
 def m_new_vs_returning():
     d = _ensure_day()
-    new_n = d["new"]
-    ret_n = d["returning"]
+    new_n, ret_n = d["new"], d["returning"]
     if new_n + ret_n == 0:
-        return _metric("new_ret", "Новые vs вернувшиеся", "0 / 0", "neutral",
-                       "Пока нет данных.",
-                       "")
+        return _metric("new_ret", "Новые vs вернувшиеся", "0 / 0", "neutral", "Пока нет данных.", "")
     pct = round(ret_n / (new_n + ret_n) * 100)
     value = f"{new_n} новых · {ret_n} вернулись"
     if pct >= 40:
@@ -181,21 +235,19 @@ def m_retention_d1():
     y = _yesterday_str()
     if y not in history:
         return _metric("ret_d1", "Возврат на следующий день (D1)", "—", "neutral",
-                       "Метрика появится завтра, когда будет история за вчера.",
-                       "")
-    y_uniques = history[y]["uniques"]
+                       "Метрика появится, когда будет история за вчера.", "")
+    y_day = history[y]
+    y_uniques = y_day.get("uniques") or set()
     if not y_uniques:
         return _metric("ret_d1", "Возврат на следующий день (D1)", "—", "neutral",
-                       "Вчера не было уникальных пользователей.",
-                       "")
-    t_uniques = _ensure_day()["uniques"]
+                       "Вчера не сохранилось список uid'ов (данные из БД).", "")
+    t_uniques = _ensure_day().get("uniques") or set()
     returned = y_uniques & t_uniques
     pct = round(len(returned) / len(y_uniques) * 100)
     value = f"{pct}% ({len(returned)} из {len(y_uniques)})"
     if pct >= 30:
         return _metric("ret_d1", "Возврат на следующий день (D1)", value, "good",
-                       "Треть вчерашних вернулась — очень хорошо.",
-                       "Проект удерживает. Продолжай в том же духе.")
+                       "Треть вчерашних вернулась — очень хорошо.", "")
     if pct >= 15:
         return _metric("ret_d1", "Возврат на следующий день (D1)", value, "warn",
                        "Возвращаются, но мало.",
@@ -209,14 +261,12 @@ def m_avg_session():
     s = _ensure_day()["sessions"]
     if not s:
         return _metric("avg_sess", "Средняя сессия", "—", "neutral",
-                       "Сессии пока не измеряются на всех страницах.",
-                       "")
+                       "Сессии пока не измеряются на всех страницах.", "")
     avg = round(_avg(s))
     value = f"{avg} сек"
     if avg >= 120:
         return _metric("avg_sess", "Средняя сессия", value, "good",
-                       "Долго играют — контент заходит.",
-                       "")
+                       "Долго играют — контент заходит.", "")
     if avg >= 30:
         return _metric("avg_sess", "Средняя сессия", value, "warn",
                        "Средняя сессия короткая.",
@@ -231,15 +281,12 @@ def m_online():
     n = len(hub.clients)
     if n >= 5:
         return _metric("online", "Онлайн сейчас", n, "good",
-                       "Активность идёт — люди на сайте.",
-                       "")
+                       "Активность идёт — люди на сайте.", "")
     if n >= 1:
         return _metric("online", "Онлайн сейчас", n, "warn",
-                       "Кто-то один есть. Не густо.",
-                       "")
+                       "Кто-то один есть. Не густо.", "")
     return _metric("online", "Онлайн сейчас", 0, "neutral",
-                   "Пока никого.",
-                   "Это нормально в непиковое время.")
+                   "Пока никого.", "Это нормально в непиковое время.")
 
 
 def m_total_games():
@@ -247,8 +294,7 @@ def m_total_games():
     total = sum(d["games"].values())
     if total >= 40:
         return _metric("games", "Игр сыграно", total, "good",
-                       "Много партий за день — игры заходят.",
-                       "")
+                       "Много партий за день — игры заходят.", "")
     if total >= 10:
         return _metric("games", "Игр сыграно", total, "warn",
                        "Средне. Есть куда расти.",
@@ -257,8 +303,7 @@ def m_total_games():
         return _metric("games", "Игр сыграно", total, "bad",
                        "Мало партий.",
                        "Игры не находят аудиторию или плохо продвигаются.")
-    return _metric("games", "Игр сыграно", 0, "bad",
-                   "Сегодня никто не играл.",
+    return _metric("games", "Игр сыно", 0, "bad", "Сегодня никто не играл.",
                    "Проверь, работают ли игры. Напомни о себе в TG.")
 
 
@@ -276,16 +321,14 @@ def m_games_breakdown():
                        f"Играют только в «{top[0][0]}». Остальные не заходят.",
                        "Продвигай другие игры или переделай их.")
     return _metric("games_break", "По играм", value, "neutral",
-                   "Несколько игр в обороте.",
-                   "")
+                   "Несколько игр в обороте.", "")
 
 
 def m_clicker_avg():
     scores = _ensure_day()["clicker_scores"]
     if not scores:
         return _metric("clicker_avg", "Средний счёт в кликере", "—", "neutral",
-                       "Сегодня в кликер не играли.",
-                       "")
+                       "Сегодня в кликер не играли.", "")
     avg = round(_avg(scores))
     value = f"{avg} ({len(scores)} партий)"
     if avg >= 200:
@@ -294,12 +337,10 @@ def m_clicker_avg():
                        "Можно добавить уровни сложности.")
     if avg >= 80:
         return _metric("clicker_avg", "Средний счёт в кликере", value, "good",
-                       "Средний результат — баланс хороший.",
-                       "")
+                       "Средний результат — баланс хороший.", "")
     if avg >= 30:
         return _metric("clicker_avg", "Средний счёт в кликере", value, "warn",
-                       "Низковато — игра сложная или игроки новички.",
-                       "")
+                       "Низковато — игра сложная или игроки новички.", "")
     return _metric("clicker_avg", "Средний счёт в кликере", value, "bad",
                    "Слишком низкие результаты.",
                    "Возможно, правила непонятны или кнопка не отзывается.")
@@ -321,9 +362,7 @@ def m_memory():
         return _metric("mem", "Память сервера", value, "warn",
                        "Памяти становится много.",
                        "Следи за ростом — при 85% переезд на платный.")
-    return _metric("mem", "Память сервера", value, "good",
-                   "Запаса много.",
-                   "")
+    return _metric("mem", "Память сервера", value, "good", "Запаса много.", "")
 
 
 def m_cpu():
@@ -339,43 +378,35 @@ def m_cpu():
                        "Много запросов — возможно, спам или пик нагрузки.")
     if c >= 50:
         return _metric("cpu", "Загрузка CPU", value, "warn",
-                       "Средняя нагрузка.",
-                       "Следи за трендом.")
-    return _metric("cpu", "Загрузка CPU", value, "good",
-                   "Загрузка в норме.",
-                   "")
+                       "Средняя нагрузка.", "Следи за трендом.")
+    return _metric("cpu", "Загрузка CPU", value, "good", "Загрузка в норме.", "")
 
 
-# ============ ОБЩИЙ СТАТУС ПРОЕКТА ============
+def m_storage_info():
+    n = len(history)
+    value = f"{n} из {HISTORY_DAYS} дней"
+    if n >= 7:
+        return _metric("storage", "История статистики", value, "good",
+                       f"Храним данные за {n} дней. Можно качать в Excel.", "")
+    return _metric("storage", "История статистики", value, "neutral",
+                   f"Пока накопилось {n} дней. Максимум — {HISTORY_DAYS}.",
+                   "Данные копятся с момента запуска сервера.")
+
 
 def project_health():
-    """Возвращает общий статус проекта по совокупности метрик."""
-    metrics = [
-        m_visits_today(),
-        m_new_vs_returning(),
-        m_retention_d1(),
-        m_total_games(),
-        m_memory(),
-    ]
-    # Считаем баллы: good=2, warn=1, bad=-1, neutral=0
+    metrics = [m_visits_today(), m_new_vs_returning(), m_retention_d1(), m_total_games(), m_memory()]
     score = 0
     for m in metrics:
         s = m["status"]
-        if s == "good":
-            score += 2
-        elif s == "warn":
-            score += 1
-        elif s == "bad":
-            score -= 1
-
+        if s == "good": score += 2
+        elif s == "warn": score += 1
+        elif s == "bad": score -= 1
     if score >= 6:
-        return {"status": "good", "label": "Проект здоров", "text": "Всё идёт хорошо. Продолжай в том же духе."}
+        return {"status":"good","label":"Проект здоров","text":"Всё идёт хорошо. Продолжай в том же духе."}
     if score >= 2:
-        return {"status": "warn", "label": "Есть что улучшить", "text": "Проект живой, но есть слабые места. Посмотри вердикты ниже."}
-    return {"status": "bad", "label": "Нужно внимание", "text": "Проект просел. Смотри рекомендации в карточках ниже."}
+        return {"status":"warn","label":"Есть что улучшить","text":"Проект живой, но есть слабые места. Посмотри вердикты ниже."}
+    return {"status":"bad","label":"Нужно внимание","text":"Проект просел. Смотри рекомендации в карточках ниже."}
 
-
-# ============ СПИСОК ВСЕХ МЕТРИК ============
 
 def all_metrics():
     return [
@@ -388,6 +419,7 @@ def all_metrics():
         m_total_games(),
         m_games_breakdown(),
         m_clicker_avg(),
+        m_storage_info(),
         m_memory(),
         m_cpu(),
     ]

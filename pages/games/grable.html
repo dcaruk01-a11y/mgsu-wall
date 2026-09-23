@@ -86,6 +86,7 @@ body{min-height:100vh;display:flex;flex-direction:column;background:#0a1f3d;colo
   <p id="finishDesc">Ты разгадал все безопасные клетки.</p>
   <div class="finish-score" id="finishScore">0</div>
   <div class="finish-label">клеток открыто</div>
+  <div id="grableProgress" style="display:none;width:100%;max-width:420px;padding:14px 18px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);font-size:14px;text-align:left;margin-top:8px;line-height:1.6;"></div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
     <button class="btn" id="againBtn">Ещё раз</button>
   </div>
@@ -175,7 +176,7 @@ function clickCell(i, btn){
   }
 }
 
-function finish(win){
+async function finish(win){
   document.getElementById('finishEmoji').textContent = win ? '🏆' : '💥';
   document.getElementById('finishTitle').textContent = win ? 'Победа!' : 'Грабли настигли';
   document.getElementById('finishDesc').textContent = win
@@ -183,6 +184,50 @@ function finish(win){
     : 'Ты потерял все жизни. Попробуй снова!';
   document.getElementById('finishScore').textContent = opened;
   document.getElementById('finishOv').classList.remove('hide');
+
+  const token = localStorage.getItem('mgsu_token') || '';
+  const block = document.getElementById('grableProgress');
+  if (block){
+    block.style.display = 'block';
+    block.textContent = 'Отправляю результат…';
+  }
+  try{
+    const headers = {'Content-Type':'application/json'};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch('/api/game/finish', {
+      method:'POST',
+      headers,
+      body: JSON.stringify({game: 'grable', raw_score: opened, extra: {win: !!win}})
+    });
+    const data = await res.json();
+    renderGrableProgress(data);
+  }catch(e){
+    if (block) block.style.display = 'none';
+  }
+}
+
+function renderGrableProgress(data){
+  const block = document.getElementById('grableProgress');
+  if (!block) return;
+  if (!data.logged_in){
+    block.innerHTML = '💡 Хочешь монеты и топ? <a href="/auth" style="color:#4ADE80;text-decoration:none;font-weight:700;">Создай аккаунт</a>';
+    return;
+  }
+  let html = '';
+  html += '<div>🎯 Очков: <b>+' + data.points + '</b></div>';
+  if (data.progress){
+    html += '<div>💰 Монет: <b>' + data.progress.coins + '</b></div>';
+    html += '<div>🔥 Серия: <b>' + data.progress.streak + '</b> дней';
+    if (data.progress.streak_changed) html += ' <span style="color:#4ADE80;">+1</span>';
+    html += '</div>';
+  }
+  if (data.tasks_completed && data.tasks_completed.length){
+    data.tasks_completed.forEach(t => {
+      html += '<div style="color:#4ADE80;">✓ ' + t.text + ' (+' + t.reward + ')</div>';
+    });
+  }
+  html += '<div style="margin-top:8px;"><a href="/profile" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;font-weight:600;">Открыть профиль →</a></div>';
+  block.innerHTML = html;
 }
 
 document.getElementById('startBtn').onclick = start;

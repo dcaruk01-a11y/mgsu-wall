@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from datetime import datetime
 from config import MSK, is_open
 import core.state as state
+import core.analytics as analytics
 from core.storage import make_snapshot, post_to_telegram
 
 router = APIRouter()
@@ -21,7 +22,17 @@ async def status_endpoint():
 @router.post("/api/track")
 async def api_track(payload: dict):
     uid = str(payload.get("uid", ""))[:64]
-    state.track_visit(uid)
+    analytics.track_visit(uid)
+    return {"ok": True}
+
+
+@router.post("/api/session")
+async def api_session(payload: dict):
+    try:
+        dur = float(payload.get("duration", 0))
+    except Exception:
+        dur = 0
+    analytics.track_session(dur)
     return {"ok": True}
 
 

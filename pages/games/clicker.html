@@ -87,6 +87,7 @@ body.clicker-page{
   color:#fff;font-family:inherit;font-size:15px;text-align:center;outline:none;
 }
 .nick-input::placeholder{color:rgba(255,255,255,0.4);}
+.nick-input:disabled{opacity:0.5;}
 
 .btn-big{
   display:inline-flex;align-items:center;gap:12px;padding:16px 36px;
@@ -121,6 +122,40 @@ body.clicker-page{
 .top-score{font-weight:800;font-variant-numeric:tabular-nums;color:#fff;}
 .top-empty{font-size:13px;color:rgba(255,255,255,0.4);padding:20px;text-align:center;}
 .me-notice{margin-top:10px;font-size:12px;color:rgba(255,255,255,0.5);text-align:center;}
+
+/* Прогресс после партии */
+#progressBlock{
+  display:none;
+  width:100%;
+  max-width:420px;
+  padding:16px 20px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  margin-top:8px;
+  font-size:14px;
+  text-align:left;
+}
+.progress-line{padding:4px 0;line-height:1.5;}
+.progress-line b{color:#fff;font-weight:700;}
+.progress-guest{
+  font-size:13px;
+  color:rgba(255,255,255,0.75);
+  line-height:1.5;
+}
+.progress-guest a{
+  color:#4ADE80;
+  font-weight:700;
+  text-decoration:none;
+}
+.progress-guest a:hover{text-decoration:underline;}
+.progress-link{
+  color:rgba(255,255,255,0.7);
+  text-decoration:none;
+  font-size:13px;
+  font-weight:600;
+}
+.progress-link:hover{color:#fff;}
 
 .finish-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
 
@@ -174,8 +209,11 @@ body.clicker-page{
   <div class="overlay" id="startOverlay">
     <div class="start-title">Кликер МГСУ</div>
     <div class="start-sub">За 30 секунд накликай как можно больше.<br>Стартуешь студентом — закончишь легендой.</div>
-    <input class="nick-input" id="nickInput" type="text" placeholder="Твой ник (необязательно)" maxlength="20" autocomplete="off">
+    <input class="nick-input" id="nickInput" type="text" placeholder="Твой ник (если без аккаунта)" maxlength="20" autocomplete="off">
     <button class="btn-big" id="startBtn" type="button">Начать →</button>
+    <div id="loginHint" style="font-size:12px;color:rgba(255,255,255,0.5);max-width:340px;line-height:1.5;">
+      💡 <a href="/auth" style="color:#4ADE80;text-decoration:none;font-weight:700;">Войди в аккаунт</a>, чтобы копить монеты, серию дней и место в топе
+    </div>
   </div>
 
   <div class="overlay hide" id="finishOverlay">
@@ -190,6 +228,8 @@ body.clicker-page{
       <div class="me-notice" id="meNotice" style="display:none;"></div>
     </div>
 
+    <div id="progressBlock"></div>
+
     <div class="finish-actions">
       <button class="btn-big" id="shareBtn" type="button">Показать другу</button>
       <button class="btn-big btn-ghost" id="againBtn" type="button">Ещё раз</button>
@@ -200,6 +240,11 @@ body.clicker-page{
 <div class="toast" id="toast">Скопировано</div>
 
 <script>
+/* ============ АККАУНТ ============ */
+const LS_TOKEN = 'mgsu_token';
+const authToken = localStorage.getItem(LS_TOKEN) || '';
+const isLoggedIn = !!authToken;
+
 /* ============ ПРОВЕРКА РАСПИСАНИЯ ============ */
 let scheduleOpen = true;
 
@@ -239,6 +284,7 @@ function rankFor(score){
   return RANKS[RANKS.length - 1];
 }
 
+/* ============ ЭЛЕМЕНТЫ ============ */
 const badge = document.getElementById('rankBadge');
 const btn = document.getElementById('clickBtn');
 const timerEl = document.getElementById('timer');
@@ -253,16 +299,33 @@ const finishRank = document.getElementById('finishRank');
 const finishScore = document.getElementById('finishScore');
 const topList = document.getElementById('topList');
 const meNotice = document.getElementById('meNotice');
+const progressBlock = document.getElementById('progressBlock');
 const toast = document.getElementById('toast');
+const loginHint = document.getElementById('loginHint');
 
+/* ============ СОСТОЯНИЕ ============ */
 const DURATION = 30;
 let score = 0, timeLeft = DURATION, running = false, timerId = null, currentNick = '';
+let myUid = '';
 
+/* ============ ПРЕДЗАПОЛНЕНИЕ ============ */
 try{
-  const saved = localStorage.getItem('mgsu_clicker_nick');
-  if (saved) nickInput.value = saved;
+  const savedNick = localStorage.getItem('mgsu_clicker_nick');
+  if (savedNick) nickInput.value = savedNick;
 }catch(e){}
 
+/* если вошёл — прячем поле ника и подсказку о логине */
+if (isLoggedIn){
+  nickInput.style.display = 'none';
+  loginHint.style.display = 'none';
+  // получаем свой uid
+  fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + authToken}})
+    .then(r => r.json())
+    .then(d => { if (d && d.user) myUid = d.user.uid; })
+    .catch(()=>{});
+}
+
+/* ============ ЛОГИКА ============ */
 function updateRank(){
   const r = rankFor(score);
   if (badge.textContent !== r.name){
@@ -285,6 +348,9 @@ function startGame(){
     checkScheduleStatus();
     return;
   }
+  if (!isLoggedIn){
+    console.log('играешь как гость');
+  }
   currentNick = (nickInput.value || '').trim().slice(0, 20);
   try{ localStorage.setItem('mgsu_clicker_nick', currentNick); }catch(e){}
   score = 0;
@@ -296,6 +362,7 @@ function startGame(){
   btn.textContent = '🎓';
   startOv.classList.add('hide');
   finishOv.classList.add('hide');
+  progressBlock.style.display = 'none';
   timerId = setInterval(tick, 1000);
 }
 
@@ -308,16 +375,21 @@ async function stopGame(){
   finishScore.textContent = score;
   finishOv.classList.remove('hide');
   meNotice.style.display = 'none';
+  progressBlock.style.display = 'none';
   topList.innerHTML = '<div class="top-empty">Загрузка…</div>';
 
   try{
+    const headers = {'Content-Type':'application/json'};
+    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+
     const res = await fetch('/clicker/score', {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers,
       body: JSON.stringify({nick: currentNick, score: score, rank: r.name})
     });
     const data = await res.json();
     renderTop(data.top || [], currentNick, score, data.position);
+    renderProgress(data);
   }catch(e){
     topList.innerHTML = '<div class="top-empty">Не удалось загрузить топ</div>';
   }
@@ -330,23 +402,64 @@ function renderTop(top, nick, myScore, pos){
   }
   topList.innerHTML = '';
   let iAmInTop = false;
+
   top.forEach((e, i) => {
-    const isMe = (e.nick === nick && e.score === myScore && !iAmInTop);
+    // «мой» — если совпал uid (для залогиненных) или nick+score (для гостя)
+    let isMe = false;
+    if (isLoggedIn && myUid){
+      isMe = (e.uid && e.uid === myUid);
+    } else {
+      isMe = (e.nick === nick && e.score === myScore && !iAmInTop);
+    }
     if (isMe) iAmInTop = true;
+
     const row = document.createElement('div');
     row.className = 'top-row' + (isMe ? ' me' : '');
-    row.innerHTML = '<span class="top-pos">' + (i + 1) + '</span>' +
-                    '<span class="top-nick"></span>' +
-                    '<span class="top-score">' + e.score + '</span>';
+    row.innerHTML =
+      '<span class="top-pos">' + (i + 1) + '</span>' +
+      '<span class="top-nick"></span>' +
+      '<span class="top-score">' + e.score + '</span>';
     row.querySelector('.top-nick').textContent = e.nick;
     topList.appendChild(row);
   });
+
   if (!iAmInTop && pos){
     meNotice.style.display = 'block';
     meNotice.textContent = 'Ты — ' + pos + '-е место с ' + myScore + ' кликами';
   } else {
     meNotice.style.display = 'none';
   }
+}
+
+function renderProgress(data){
+  if (!data.logged_in){
+    progressBlock.innerHTML =
+      '<div class="progress-guest">' +
+        '💡 Хочешь монеты, серию дней и место в топе? ' +
+        '<a href="/auth">Создай аккаунт</a>' +
+      '</div>';
+    progressBlock.style.display = 'block';
+    return;
+  }
+
+  let html = '';
+
+  if (data.progress && data.progress.coins_added){
+    html += '<div class="progress-line">💰 +' + data.progress.coins_added + ' монет</div>';
+  }
+  if (data.progress){
+    html += '<div class="progress-line">🏆 Всего очков: <b>' + data.progress.total_score + '</b></div>';
+    html += '<div class="progress-line">🎮 Партий: <b>' + data.progress.games_played + '</b></div>';
+  }
+  if (data.streak !== null && data.streak !== undefined){
+    html += '<div class="progress-line">🔥 Серия: <b>' + data.streak + ' дней</b>';
+    if (data.streak_changed) html += ' <span style="color:#4ADE80;">+1</span>';
+    html += '</div>';
+  }
+  html += '<div style="margin-top:10px;"><a href="/profile" class="progress-link">Открыть профиль →</a></div>';
+
+  progressBlock.innerHTML = html;
+  progressBlock.style.display = 'block';
 }
 
 function showToast(text){
@@ -367,6 +480,7 @@ function handleClick(e){
 btn.addEventListener('pointerdown', handleClick);
 startBtn.addEventListener('click', startGame);
 againBtn.addEventListener('click', startGame);
+
 nickInput.addEventListener('keydown', e => { if (e.key === 'Enter') startGame(); });
 
 shareBtn.addEventListener('click', async () => {

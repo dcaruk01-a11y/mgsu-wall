@@ -15,6 +15,9 @@ from core.auth import router as auth_router
 from core.users import db_init_users
 from core.ip_tracking import db_init_ip
 from core.top import db_init_top
+from core.tasks import db_init_tasks
+from core.game_score import router as game_score_router
+from core.tasks_api import router as tasks_api_router
 from core.ratings import router as ratings_router
 from feedback_bot import feedback_bot_loop
 
@@ -26,6 +29,8 @@ app.include_router(pages_router)
 app.include_router(themes_router)
 app.include_router(auth_router)
 app.include_router(ratings_router)
+app.include_router(game_score_router)
+app.include_router(tasks_api_router)
 app.include_router(api_router)
 app.include_router(clicker_router)
 app.include_router(admin_router)
@@ -38,5 +43,6 @@ async def on_startup():
     await db_init_stats()
     await db_init_users()
     await db_init_ip()
-        await db_init_top()
+    await db_init_top()
+    await db_init_tasks()
     await load_history()

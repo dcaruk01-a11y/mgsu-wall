@@ -11,6 +11,8 @@ from core.clicker import router as clicker_router
 from core.admin import router as admin_router
 from core.pages import router as pages_router
 from core.themes import router as themes_router
+from core.auth import router as auth_router
+from core.users import db_init_users
 from feedback_bot import feedback_bot_loop
 
 app = FastAPI()
@@ -19,6 +21,7 @@ app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
 app.include_router(pages_router)
 app.include_router(themes_router)
+app.include_router(auth_router)
 app.include_router(api_router)
 app.include_router(clicker_router)
 app.include_router(admin_router)
@@ -29,6 +32,5 @@ app.include_router(ws_router)
 async def on_startup():
     await db_init()
     await db_init_stats()
+    await db_init_users()
     await load_history()
-    asyncio.create_task(daily_loop())
-    asyncio.create_task(feedback_bot_loop())

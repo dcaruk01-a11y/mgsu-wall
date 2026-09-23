@@ -52,11 +52,36 @@ def track_game(name: str):
 
 # ============ УПРАВЛЕНИЕ ИГРАМИ (в памяти) ============
 games_config = {
-    "wall":    {"enabled": True,  "title": "Стена"},
-    "clicker": {"enabled": True,  "title": "Кликер"},
-    "snake":   {"enabled": False, "title": "Змейка"},
-    "poll":    {"enabled": False, "title": "Опрос дня"},
-    "click":   {"enabled": False, "title": "Гонка кликов"},
+    "wall": {
+        "enabled": True,
+        "title": "Стена",
+        "url": "/",
+        "status": "available",
+    },
+    "clicker": {
+        "enabled": True,
+        "title": "Кликер",
+        "url": "/clicker",
+        "status": "available",
+    },
+    "snake": {
+        "enabled": True,
+        "title": "Змейка",
+        "url": "",
+        "status": "soon",
+    },
+    "poll": {
+        "enabled": True,
+        "title": "Опрос дня",
+        "url": "",
+        "status": "soon",
+    },
+    "click": {
+        "enabled": True,
+        "title": "Гонка кликов",
+        "url": "",
+        "status": "soon",
+    },
 }
 
 theme_config = {"current": "classic"}
@@ -342,7 +367,16 @@ async def api_track(payload: dict):
 @app.get("/api/games")
 async def api_games():
     return {
-        "games": [{"key": k, "title": v["title"], "enabled": v["enabled"]} for k, v in games_config.items()],
+        "games": [
+            {
+                "key": k,
+                "title": v["title"],
+                "enabled": v["enabled"],
+                "status": v.get("status", "available"),
+                "url": v.get("url", ""),
+            }
+            for k, v in games_config.items()
+        ],
         "theme": theme_config["current"],
     }
 
@@ -427,10 +461,28 @@ async def admin_games_set(payload: dict, token: str = Header(default="", alias="
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
     key = str(payload.get("key", ""))
-    enabled = bool(payload.get("enabled", False))
     if key in games_config:
-        games_config[key]["enabled"] = enabled
-    return {"ok": True, "games": [{"key": k, "title": v["title"], "enabled": v["enabled"]} for k, v in games_config.items()]}
+        if "enabled" in payload:
+            games_config[key]["enabled"] = bool(payload["enabled"])
+        if "title" in payload:
+            games_config[key]["title"] = str(payload["title"])[:40]
+        if "status" in payload and payload["status"] in ("available", "soon"):
+            games_config[key]["status"] = payload["status"]
+        if "url" in payload:
+            games_config[key]["url"] = str(payload["url"])[:200]
+    return {
+        "ok": True,
+        "games": [
+            {
+                "key": k,
+                "title": v["title"],
+                "enabled": v["enabled"],
+                "status": v.get("status", "available"),
+                "url": v.get("url", ""),
+            }
+            for k, v in games_config.items()
+        ],
+    }
 
 @app.post("/admin/api/theme")
 async def admin_theme_set(payload: dict, token: str = Header(default="", alias="authorization")):

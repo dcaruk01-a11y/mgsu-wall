@@ -127,6 +127,6 @@ async def admin_theme_set(payload: dict, token: str = Header(default="", alias="
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
     theme = str(payload.get("theme", "classic"))
-    if theme in ("classic", "retro", "cyberpunk"):
+    if theme in ("classic", "retro", "notebook", "cyberpunk"):
         state.theme_config["current"] = theme
     return {"ok": True, "theme": state.theme_config["current"]}

@@ -80,6 +80,51 @@
   border-top:1px solid rgba(255,255,255,0.06);
 }
 .metric-hint:empty{display:none;}
+  /* Блок экспорта */
+.export-block{
+  padding:22px;
+  background:rgba(255,255,255,0.045);
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.export-block select{
+  padding:12px 16px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:10px;
+  color:#fff;
+  font-family:inherit;
+  font-size:14px;
+  outline:none;
+  cursor:pointer;
+  min-width:180px;
+}
+.export-block select option{background:#0F1524;color:#fff;}
+.export-btn{
+  padding:12px 22px;
+  border-radius:10px;
+  border:0;
+  background:#fff;
+  color:#0F3C73;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+  transition:transform .1s;
+}
+.export-btn:hover{transform:translateY(-1px);}
+.export-btn:disabled{opacity:0.5;cursor:wait;}
+.export-hint{
+  font-size:12px;
+  color:rgba(255,255,255,0.5);
+  line-height:1.5;
+  flex:1;
+  min-width:200px;
+}
   /* Блок расписания */
 .schedule-block{
   padding:24px;
@@ -175,6 +220,19 @@
   </div>
 
   <div class="metrics-grid" id="metricsGrid">Загрузка…</div>
+  <div class="section-admin">
+  <h2>Экспорт статистики</h2>
+  <div class="export-block">
+    <select id="exportPeriod">
+      <option value="1">За сегодня</option>
+      <option value="7" selected>За 7 дней</option>
+      <option value="30">За 30 дней</option>
+      <option value="90">За 90 дней</option>
+    </select>
+    <button class="export-btn" id="exportBtn">Скачать Excel</button>
+    <div class="export-hint" id="storageHint">—</div>
+  </div>
+</div>
 <div class="section-admin">
   <h2>Расписание и доступ</h2>
   <div class="schedule-block">
@@ -296,6 +354,20 @@ async function refreshAll(){
     renderTheme(g.theme);
     renderLinks();
   }catch(e){}
+}
+
+  function renderMetrics(metrics){
+  const grid = document.getElementById('metricsGrid');
+  grid.innerHTML = '';
+  metrics.forEach(m => {
+    // ... код существующий ...
+  });
+  // Дополнительно: обновляем подсказку о хранилище
+  const st = metrics.find(x => x.key === 'storage');
+  if (st){
+    const h = document.getElementById('storageHint');
+    if (h) h.textContent = 'Хранится: ' + st.value + '. ' + (st.hint || '');
+  }
 }
 
 function renderHealth(h){
@@ -486,6 +558,36 @@ document.getElementById('saveScheduleBtn').addEventListener('click', async () =>
     alert('Расписание сохранено');
   }catch(e){}
 });
+/* ============ ЭКСПОРТ В EXCEL ============ */
+async function downloadExcel(){
+  const btn = document.getElementById('exportBtn');
+  const period = document.getElementById('exportPeriod').value;
+  btn.disabled = true;
+  btn.textContent = 'Готовлю файл…';
+  try{
+    const res = await fetch('/admin/api/export?period=' + period, {
+      headers: {'Authorization': 'Bearer ' + token}
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mgsu-stats-' + period + 'd.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    btn.textContent = 'Готово ✓';
+    setTimeout(() => { btn.textContent = 'Скачать Excel'; }, 1500);
+  }catch(e){
+    alert('Ошибка скачивания: ' + e.message);
+    btn.textContent = 'Скачать Excel';
+  }finally{
+    btn.disabled = false;
+  }
+}
+document.getElementById('exportBtn').addEventListener('click', downloadExcel);
 
 loadSchedule();
 

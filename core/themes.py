@@ -5,8 +5,9 @@ import core.state as state
 router = APIRouter()
 
 THEME_FILES = {
-    "classic": "static/public.css",
-    "retro":   "static/retro.css",
+    "classic":  "static/public.css",
+    "retro":    "static/retro.css",
+    "notebook": "static/notebook.css",
 }
 
 

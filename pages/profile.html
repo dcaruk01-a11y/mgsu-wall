@@ -66,6 +66,44 @@
 .back-link{display:inline-flex;align-items:center;gap:6px;font-size:14px;opacity:0.7;text-decoration:none;color:inherit;margin-bottom:24px;}
 .back-link:hover{opacity:1;}
 .loading{padding:60px 20px;text-align:center;opacity:0.5;}
+  .tasks-list{display:flex;flex-direction:column;gap:10px;}
+.task-item{
+  padding:16px 18px;border-radius:12px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  transition:background .15s;
+}
+.task-item.done{
+  background:rgba(74,222,128,0.1);
+  border-color:rgba(74,222,128,0.35);
+}
+.task-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
+.task-text{font-size:14px;font-weight:600;line-height:1.4;flex:1;}
+.task-reward{
+  font-size:12px;font-weight:700;
+  padding:4px 10px;border-radius:999px;
+  background:rgba(255,255,255,0.08);
+  color:#4ADE80;white-space:nowrap;
+}
+.task-item.done .task-reward{background:#4ADE80;color:#0a1f0f;}
+.task-progress-bar{
+  height:6px;border-radius:3px;
+  background:rgba(255,255,255,0.08);
+  overflow:hidden;margin-bottom:6px;
+}
+.task-progress-fill{
+  height:100%;background:#6FA8FF;
+  transition:width .3s;
+}
+.task-item.done .task-progress-fill{background:#4ADE80;}
+.task-progress-text{
+  font-size:12px;color:rgba(255,255,255,0.55);
+  font-variant-numeric:tabular-nums;
+}
+.tasks-empty{
+  padding:20px;text-align:center;
+  opacity:0.55;font-size:13px;
+}
 </style>
 </head><body>
 
@@ -136,6 +174,12 @@
         <div class="err" id="pinErr"></div>
       </div>
     </div>
+<div class="card">
+  <h3 style="font-size:14px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;margin-bottom:14px;">🎯 Задания на сегодня</h3>
+  <div class="tasks-list" id="tasksList">
+    <div class="tasks-empty">Загрузка…</div>
+  </div>
+</div>
 
     <div class="section">
       <div class="row">
@@ -188,6 +232,55 @@ async function loadMe(){
     document.getElementById('content').classList.remove('hide');
   }catch(e){}
 }
+  async function loadTasks(){
+  try{
+    const r = await fetch('/api/tasks', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await r.json();
+    renderTasks(data);
+  }catch(e){
+    const box = document.getElementById('tasksList');
+    if (box) box.innerHTML = '<div class="tasks-empty">Не удалось загрузить</div>';
+  }
+}
+
+function renderTasks(data){
+  const box = document.getElementById('tasksList');
+  if (!box) return;
+
+  if (!data.logged_in){
+    box.innerHTML = '<div class="tasks-empty">Войди в аккаунт, чтобы получать задания</div>';
+    return;
+  }
+  if (!data.tasks || !data.tasks.length){
+    box.innerHTML = '<div class="tasks-empty">Задания появятся утром</div>';
+    return;
+  }
+
+  box.innerHTML = '';
+  data.tasks.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'task-item' + (t.done ? ' done' : '');
+    const pct = t.target ? Math.min(100, Math.round(t.progress / t.target * 100)) : 0;
+    item.innerHTML =
+      '<div class="task-head">' +
+        '<div class="task-text">' + escapeHtml(t.text) + '</div>' +
+        '<div class="task-reward">+' + t.reward + '</div>' +
+      '</div>' +
+      '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="task-progress-text">' +
+        (t.done ? '✓ Выполнено' : t.progress + ' / ' + t.target) +
+      '</div>';
+    box.appendChild(item);
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+loadTasks();
 loadMe();
 
 // копировать UID

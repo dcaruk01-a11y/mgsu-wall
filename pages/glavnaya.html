@@ -233,5 +233,12 @@ document.addEventListener('DOMContentLoaded', function(){
   loadGames();
 });
 </script>
-
+<script>
+// Публичный трекинг захода (IP + час) для всех, кто заходит
+(function(){
+  try{
+    fetch('/api/visit', {method:'POST'}).catch(()=>{});
+  }catch(e){}
+})();
+</script>
 </body></html>

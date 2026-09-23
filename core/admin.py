@@ -1,6 +1,6 @@
 import time, secrets, asyncio
 from fastapi import APIRouter, Header, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 import psutil
 
 from config import ADMIN_PASSWORD

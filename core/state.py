@@ -1,43 +1,16 @@
 import time
 from config import today_str
 
-stats = {
-    "visits_today": 0,
-    "uniques_today": set(),
-    "games_played": {"wall": 0, "clicker": 0, "snake": 0, "poll": 0, "click": 0},
-    "started_at": time.time(),
-    "day": today_str(),
-}
-
-def stats_reset_if_needed():
-    today = today_str()
-    if stats["day"] != today:
-        stats["day"] = today
-        stats["visits_today"] = 0
-        stats["uniques_today"] = set()
-        stats["games_played"] = {"wall": 0, "clicker": 0, "snake": 0, "poll": 0, "click": 0}
-
-def track_visit(uid: str = ""):
-    stats_reset_if_needed()
-    stats["visits_today"] += 1
-    if uid and len(uid) < 64:
-        stats["uniques_today"].add(uid)
-
-def track_game(name: str):
-    stats_reset_if_needed()
-    if name in stats["games_played"]:
-        stats["games_played"][name] += 1
-
 
 games_config = {
-    "wall":     {"enabled": True, "title": "Стена",          "url": "/games/wall",     "status": "available"},
-    "clicker":  {"enabled": True, "title": "Кликер",         "url": "/games/clicker",  "status": "available"},
-    "broadway": {"enabled": True, "title": "Бродвей",        "url": "/games/broadway", "status": "available"},
-    "campus":   {"enabled": True, "title": "Построй кампус", "url": "/games/campus",   "status": "available"},
-    "grable":   {"enabled": True, "title": "Грабли",         "url": "/games/grable",   "status": "available"},
-    "snake":    {"enabled": False, "title": "Змейка",        "url": "",                "status": "soon"},
-    "poll":     {"enabled": False, "title": "Опрос дня",     "url": "",                "status": "soon"},
-    "click":    {"enabled": False, "title": "Гонка кликов",  "url": "",                "status": "soon"},
+    "wall":     {"enabled": True,  "title": "Стена",          "url": "/games/wall",     "status": "available"},
+    "clicker":  {"enabled": True,  "title": "Кликер",         "url": "/games/clicker",  "status": "available"},
+    "broadway": {"enabled": True,  "title": "Бродвей",        "url": "/games/broadway", "status": "available"},
+    "campus":   {"enabled": True,  "title": "Построй кампус", "url": "/games/campus",   "status": "available"},
+    "grable":   {"enabled": True,  "title": "Грабли",         "url": "/games/grable",   "status": "available"},
+    "snake":    {"enabled": False, "title": "Змейка",         "url": "",                "status": "soon"},
+    "poll":     {"enabled": False, "title": "Опрос дня",      "url": "",                "status": "soon"},
+    "click":    {"enabled": False, "title": "Гонка кликов",   "url": "",                "status": "soon"},
 }
 
 theme_config = {"current": "classic"}
@@ -48,6 +21,8 @@ TOKEN_TTL = 60 * 60 * 24 * 7
 clicker_top: list = []
 clicker_day: str = ""
 CLICKER_MAX_TOP = 5
+started_at = time.time()
+
 
 def clicker_reset_if_needed():
     global clicker_day, clicker_top
@@ -55,6 +30,7 @@ def clicker_reset_if_needed():
     if clicker_day != today:
         clicker_day = today
         clicker_top = []
+
 
 def sanitize_nick(nick: str) -> str:
     nick = (nick or "").strip()

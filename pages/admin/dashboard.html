@@ -117,6 +117,37 @@
   background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
 }
 .device-chip b{color:#fff;margin-left:6px;}
+/* Сводка по заданиям */
+.tasks-row{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 16px;border-radius:10px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  margin-bottom:6px;
+  font-size:13px;
+}
+.tasks-text{flex:1;color:#fff;font-weight:500;}
+.tasks-count{
+  font-size:13px;font-weight:700;
+  color:rgba(255,255,255,0.75);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.tasks-bar{
+  width:80px;height:6px;border-radius:3px;
+  background:rgba(255,255,255,0.08);
+  overflow:hidden;flex-shrink:0;
+}
+.tasks-bar-fill{
+  height:100%;background:#4ADE80;
+  transition:width .3s;
+}
+.tasks-summary-head{
+  display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:14px;
+  font-size:12px;color:rgba(255,255,255,0.55);
+  letter-spacing:0.08em;text-transform:uppercase;
+}
 </style>
 </head><body class="admin-page">
 
@@ -140,6 +171,16 @@
   </div>
 
   <div class="metrics-grid" id="metricsGrid">Загрузка…</div>
+<div class="section-admin">
+  <h2>Ежедневные задания</h2>
+  <div class="card-block">
+    <div class="tasks-summary-head">
+      <span id="tasksDayLabel">—</span>
+      <span id="tasksTotalsLabel">—</span>
+    </div>
+    <div id="tasksSummaryBox">Загрузка…</div>
+  </div>
+</div>
 
   <div class="section-admin">
     <h2>Экспорт статистики</h2>
@@ -662,15 +703,50 @@ function renderIpTable(ips){
     body.appendChild(tr);
   });
 }
+/* ============ СВОДКА ПО ЗАДАНИЯМ ============ */
+async function loadTasksSummary(){
+  try{
+    const r = await api('/admin/api/tasks-summary');
+    renderTasksSummary(r);
+  }catch(e){ console.warn('tasks-summary error:', e.message); }
+}
+
+function renderTasksSummary(data){
+  const box = document.getElementById('tasksSummaryBox');
+  if (!box) return;
+
+  document.getElementById('tasksDayLabel').textContent = 'День: ' + (data.day || '—');
+  document.getElementById('tasksTotalsLabel').textContent =
+    (data.total_users || 0) + ' игроков · ' +
+    (data.total_completed || 0) + ' выполнений';
+
+  if (!data.tasks || !data.tasks.length){
+    box.innerHTML = '<div style="padding:20px;text-align:center;opacity:0.5;font-size:13px;">Сегодня задания ещё никто не получил</div>';
+    return;
+  }
+
+  box.innerHTML = '';
+  data.tasks.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'tasks-row';
+    row.innerHTML =
+      '<div class="tasks-text">' + escapeHtml(t.text) + '</div>' +
+      '<div class="tasks-bar"><div class="tasks-bar-fill" style="width:' + t.pct + '%"></div></div>' +
+      '<div class="tasks-count">' + t.done + ' / ' + t.taken + '</div>';
+    box.appendChild(row);
+  });
+}
 
 /* ============ СТАРТ ============ */
 loadSchedule();
 refreshAll();
 loadHours();
 loadIps();
+loadTasksSummary();
 refreshTimer = setInterval(refreshAll, 5000);
 setInterval(loadHours, 30000);
 setInterval(loadIps, 60000);
+setInterval(loadTasksSummary, 60000);
 </script>
 
 </body></html>

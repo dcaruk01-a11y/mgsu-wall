@@ -69,3 +69,12 @@ async def grable():
 @router.get("/privacy")
 async def privacy():
     return FileResponse("pages/privacy.html")
+
+@router.get("/auth")
+async def auth_page():
+    return FileResponse("pages/auth.html")
+
+
+@router.get("/profile")
+async def profile_page():
+    return FileResponse("pages/profile.html")

@@ -13,6 +13,7 @@ from core.pages import router as pages_router
 from core.themes import router as themes_router
 from core.auth import router as auth_router
 from core.users import db_init_users
+from core.ip_tracking import db_init_ip
 from feedback_bot import feedback_bot_loop
 
 app = FastAPI()
@@ -33,4 +34,5 @@ async def on_startup():
     await db_init()
     await db_init_stats()
     await db_init_users()
+    await db_init_ip()
     await load_history()

@@ -51,12 +51,12 @@ def cleanup_old():
 async def db_init_stats():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
-            CREATE TABLE IF NOT EXISTS daily_stats (
+                        CREATE TABLE IF NOT EXISTS daily_stats (
                 day TEXT PRIMARY KEY,
                 visits INTEGER,
                 uniques INTEGER,
                 new INTEGER,
-                returning INTEGER,
+                returning_count INTEGER,
                 games TEXT,
                 clicker_scores TEXT,
                 sessions TEXT,
@@ -72,9 +72,9 @@ async def archive_day(date_str=None):
         return
     day = history[d]
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
+                await db.execute("""
             INSERT OR REPLACE INTO daily_stats
-            (day, visits, uniques, new, returning, games, clicker_scores, sessions, saved_at)
+            (day, visits, uniques, new, returning_count, games, clicker_scores, sessions, saved_at)
             VALUES (?,?,?,?,?,?,?,?,?)
         """, (
             d,
@@ -95,8 +95,8 @@ async def load_history():
     cutoff = (datetime.now(MSK) - timedelta(days=HISTORY_DAYS)).strftime("%Y-%m-%d")
     try:
         async with aiosqlite.connect(DB_PATH) as db:
-            cur = await db.execute(
-                "SELECT day, visits, uniques, new, returning, games, clicker_scores, sessions "
+                       cur = await db.execute(
+                "SELECT day, visits, uniques, new, returning_count, games, clicker_scores, sessions "
                 "FROM daily_stats WHERE day >= ? ORDER BY day",
                 (cutoff,)
             )
@@ -105,7 +105,7 @@ async def load_history():
         print("load_history error:", e)
         return
     for r in rows:
-        d, visits, uniques, new, returning, games, scores, sessions = r
+                d, visits, uniques, new, returning_count, games, scores, sessions = r
         try:
             history[d] = {
                 "visits": visits or 0,

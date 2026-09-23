@@ -9,6 +9,7 @@ from core.api import router as api_router
 from core.clicker import router as clicker_router
 from core.admin import router as admin_router
 from core.pages import router as pages_router
+from core.themes import router as themes_router
 from feedback_bot import feedback_bot_loop
 
 app = FastAPI()
@@ -16,6 +17,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
 app.include_router(pages_router)
+app.include_router(themes_router)
 app.include_router(api_router)
 app.include_router(clicker_router)
 app.include_router(admin_router)

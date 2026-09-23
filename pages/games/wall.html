@@ -157,8 +157,8 @@ function move(e){
   const p = pos(e);
   const s = {x0:last.x, y0:last.y, x1:p.x, y1:p.y, color, width};
   drawLine(s.x0,s.y0,s.x1,s.y1,color,width);
-  const msg = JSON.stringify({type:'stroke', ...s});
-  if (ws && ws.readyState === 1) ws.send(msg); else queue.push(msg);
+   const msg = JSON.stringify({type:'stroke', ...s});
+  if (ws && ws.readyState === 1){ ws.send(msg); strokesSent++; } else { queue.push(msg); strokesSent++; }
   last = p;
 }
 function end(){ drawing = false; last = null; }
@@ -173,6 +173,26 @@ c.addEventListener('mouseleave', end);
 document.getElementById('undoBtn').onclick = () => {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify({type:'undo'}));
 };
+  // === отправка результата в аккаунт каждые 60 секунд ===
+let strokesSent = 0;
+setInterval(async () => {
+  if (strokesSent === 0) return;
+  const token = localStorage.getItem('mgsu_token') || '';
+  if (!token) return;
+  try{
+    await fetch('/api/game/finish', {
+      method:'POST',
+      headers:{'Content-Type':'application/json', 'Authorization': 'Bearer ' + token},
+      body: JSON.stringify({game: 'wall', raw_score: strokesSent})
+    });
+    strokesSent = 0;
+  }catch(e){}
+}, 60000);
+
+// считаем штрихи
+setInterval(() => {
+  // каждый активный штрих увеличивает счётчик
+}, 1000);
 
 async function checkStatus(){
   try{

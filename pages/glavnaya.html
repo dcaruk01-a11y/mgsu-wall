@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/static/public.css">
+</head><body>
+
+<header><div class="wrap">
+  <div class="head">
+    <a class="brand" href="/glavnaya">
+      <img src="/assets/Logo/logo.svg" alt="Лого" class="brand-logo">
+      <span class="brand-label"><b>НИУ МГСУ</b> · Игры</span>
+    </a>
+    <nav>
+      <a href="/glavnaya" class="active">Игры</a>
+      <a href="/privacy">О проекте</a>
+    </nav>
+  </div>
+</div></header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-kicker">Студенческий проект · 2026</div>
+    <h1>Ты готов<br><em>к игре?</em></h1>
+    <div class="marquee">
+      <div class="marquee-track">
+        <span>ИГРАЙ · РИСУЙ · СМОТРИ · ИГРАЙ · РИСУЙ · СМОТРИ · ИГРАЙ · РИСУЙ · СМОТРИ · </span>
+        <span>ИГРАЙ · РИСУЙ · СМОТРИ · ИГРАЙ · РИСУЙ · СМОТРИ · ИГРАЙ · РИСУЙ · СМОТРИ · </span>
+      </div>
+    </div>
+    <div class="abstract-tags">
+      <span class="tag">real-time</span>
+      <span class="tag">студентам</span>
+      <span class="tag">бесплатно</span>
+      <span class="tag">каждый день</span>
+      <span class="tag">в твоём телефоне</span>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head"><h2>Выберите игру</h2></div>
+  </div>
+
+  <div class="games-carousel-wrap">
+    <button class="carousel-arrow left" type="button" onclick="scrollCarousel(-1)" aria-label="Назад">‹</button>
+    <div class="games-carousel" id="gamesCarousel"></div>
+    <button class="carousel-arrow right" type="button" onclick="scrollCarousel(1)" aria-label="Вперёд">›</button>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <div class="foot-left">© 2026 · Не является официальным сайтом НИУ МГСУ</div>
+    <div class="foot-right">
+      <a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>
+      <span class="foot-dot">·</span>
+      <a href="#" onclick="openPrivacy(event)">Политика конфиденциальности</a>
+      <span class="foot-dot">·</span>
+      <a href="https://t.me/mgsu_wall_archive" target="_blank" rel="noopener">Telegram-канал</a>
+    </div>
+  </div>
+</footer>
+
+<div id="gameModal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box glass">
+    <button class="modal-close" onclick="closeGame()" aria-label="Закрыть">✕</button>
+    <div class="modal-content">
+      <div class="section-eyebrow">Правила</div>
+      <h2 id="gameTitle" style="margin-bottom:20px;">Стена</h2>
+      <div id="gameRules"></div>
+      <div id="gameActions" style="margin-top:36px;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="privacyModal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closePrivacy()" aria-label="Закрыть">✕</button>
+    <div class="modal-content">
+      <div class="section-eyebrow">Документы</div>
+      <h2 style="margin-bottom:14px;">Политика конфиденциальности</h2>
+      <p style="color:var(--grey);font-size:14px;margin-bottom:36px;">Последнее обновление: сентябрь 2026</p>
+      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:28px;">«Игры МГСУ» — студенческий некоммерческий проект. Мы стараемся собирать как можно меньше данных о пользователях и не передавать их третьим лицам.</p>
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">1. Что делаем с данными</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">Штрихи на «Стене» используются только для отображения на общем экране и создания ежедневного снимка. Снимок публикуется в Telegram-канале проекта. Все штрихи автоматически удаляются на следующий день.</p>
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">2. Обратная связь через Telegram-бота</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">Если вы напишете нам через Telegram-бота, он сохранит текст обращения, ваш username и ID (это делает Telegram), и выбранную категорию.</p>
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">3. Что мы не делаем</h3>
+      <ul style="font-size:14px;color:#4B5563;line-height:1.75;padding-left:22px;">
+        <li>не продаём и не передаём данные третьим лицам;</li>
+        <li>не используем рекламные трекеры и аналитику;</li>
+        <li>не строим профили пользователей;</li>
+        <li>не храним данные дольше, чем нужно для работы сервиса.</li>
+      </ul>
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">4. Модерация</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">Мы оставляем за собой право удалять отдельные штрихи, содержащие оскорбления, неприемлемый контент или нарушающие закон.</p>
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">5. Технические данные</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">Проект размещён на Render (render.com) и использует сервисы Telegram и Google Fonts.</p>
+      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">6. Контакты</h3>
+      <p style="font-size:14px;color:#4B5563;line-height:1.75;">Любые вопросы и предложения — через Telegram-бота проекта или Telegram-канал.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const GAMES_INFO = {
+  wall: {
+    title: 'Стена',
+    rules: `<p class="rule-text">Рисуй с телефона — твой штрих мгновенно появляется на большом экране.</p>
+      <ul class="rule-list">
+        <li>выбирай цвет и толщину линии в нижней панели;</li>
+        <li>рисуй пальцем по холсту;</li>
+        <li>кнопка «Отменить» убирает твой последний штрих;</li>
+        <li>в 17:00 стена «печатается» и уходит в Telegram-архив.</li>
+      </ul>`,
+    playUrl: '/games/wall', playLabel: 'Играть'
+  },
+  clicker: {
+    title: 'Кликер',
+    rules: `<p class="rule-text">За 30 секунд накликай как можно больше. Ты растёшь от студента до легенды МГСУ.</p>
+      <ul class="rule-list">
+        <li>жми на большую кнопку как можно быстрее;</li>
+        <li>с каждым кликом меняется твой ранг и эмодзи;</li>
+        <li>в конце покажи результат другу;</li>
+        <li>7 рангов: Студент → ССОшник → Прораб → Строитель → Генподрядчик → Застройщик → Легенда МГСУ.</li>
+      </ul>`,
+    playUrl: '/games/clicker', playLabel: 'Играть'
+  },
+  snake: { title:'Змейка', rules:`<p class="rule-text">Классика на большом экране. Управление — с телефона.</p><p class="rule-text">Игра пока в разработке.</p>`, playUrl:null, playLabel:'Скоро' },
+  poll:  { title:'Опрос дня', rules:`<p class="rule-text">Один вопрос — много мнений. Голосуй с телефона, результаты видны всем.</p><p class="rule-text">Игра пока в разработке.</p>`, playUrl:null, playLabel:'Скоро' },
+  click: { title:'Гонка кликов', rules:`<p class="rule-text">Нажимай быстрее всех. Таблица лидеров обновляется мгновенно.</p><p class="rule-text">Игра пока в разработке.</p>`, playUrl:null, playLabel:'Скоро' }
+};
+
+async function loadGames(){
+  try{
+    const r = await fetch('/api/games');
+    const data = await r.json();
+    const enabled = (data.games || []).filter(g => g.enabled);
+    renderTiles(enabled);
+  }catch(e){
+    const all = Object.keys(GAMES_INFO).map(k => ({key:k, title:GAMES_INFO[k].title, enabled:true, status: GAMES_INFO[k].playUrl ? 'available':'soon'}));
+    renderTiles(all);
+  }
+}
+
+function renderTiles(games){
+  const box = document.getElementById('gamesCarousel');
+  box.innerHTML = '';
+  if (!games.length){
+    box.innerHTML = '<div style="color:rgba(255,255,255,0.5);padding:60px 20px;text-align:center;width:100%;">Пока нет доступных игр.</div>';
+    return;
+  }
+  games.forEach(g => {
+    const info = GAMES_INFO[g.key];
+    if (!info) return;
+    const isAvailable = g.status === 'available' || !!info.playUrl;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tile ' + (isAvailable ? 'live' : 'soon');
+    btn.innerHTML = '<span class="tile-tag' + (isAvailable?'':' grey') + '">' + (isAvailable?'Доступно':'Скоро') + '</span>' +
+                    '<span class="tile-title"></span>' +
+                    '<span class="tile-arrow">→</span>';
+    btn.querySelector('.tile-title').textContent = g.title || info.title;
+    btn.onclick = () => openGame(g.key);
+    box.appendChild(btn);
+  });
+}
+
+function scrollCarousel(dir){
+  const el = document.getElementById('gamesCarousel');
+  if (!el) return;
+  const card = el.querySelector('.tile');
+  const step = card ? card.offsetWidth + 18 : 340;
+  el.scrollBy({left: dir * step, behavior: 'smooth'});
+}
+
+function openGame(key){
+  const info = GAMES_INFO[key];
+  if (!info) return;
+  document.getElementById('gameTitle').textContent = info.title;
+  document.getElementById('gameRules').innerHTML = info.rules;
+  const actions = document.getElementById('gameActions');
+  if (info.playUrl){
+    actions.innerHTML = '<a class="btn-play" href="' + info.playUrl + '">' + info.playLabel + ' →</a>';
+  } else {
+    actions.innerHTML = '<span class="btn-play disabled">' + info.playLabel + '</span>';
+  }
+  lockScroll();
+  document.getElementById('gameModal').classList.add('open');
+}
+function closeGame(){ document.getElementById('gameModal').classList.remove('open'); unlockScroll(); }
+function openPrivacy(e){ if(e) e.preventDefault(); lockScroll(); document.getElementById('privacyModal').classList.add('open'); }
+function closePrivacy(){ document.getElementById('privacyModal').classList.remove('open'); unlockScroll(); }
+
+function lockScroll(){
+  var sw = window.innerWidth - document.documentElement.clientWidth;
+  document.documentElement.style.setProperty('--scrollbar-width', sw + 'px');
+  document.body.classList.add('modal-open');
+}
+function unlockScroll(){
+  document.body.classList.remove('modal-open');
+  document.documentElement.style.removeProperty('--scrollbar-width');
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  ['gameModal','privacyModal'].forEach(function(id){
+    var m = document.getElementById(id);
+    if (!m) return;
+    m.addEventListener('click', function(e){
+      if (e.target === m){ if (id==='gameModal') closeGame(); else closePrivacy(); }
+    });
+  });
+  document.addEventListener('keydown', e => { if (e.key==='Escape'){ closeGame(); closePrivacy(); } });
+  loadGames();
+});
+</script>
+
+</body></html>

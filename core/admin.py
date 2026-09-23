@@ -8,6 +8,7 @@ import psutil
 from config import ADMIN_PASSWORD, MSK
 import core.state as state
 import core.analytics as analytics
+import core.ip_tracking as ip_tracking
 from core.websocket import hub
 
 router = APIRouter()
@@ -242,3 +243,38 @@ async def admin_export(period: str = "7", token: str = Header(default="", alias=
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+# ============ IP И ЧАСЫ ============
+
+@router.get("/admin/api/ips")
+async def admin_ips(token: str = Header(default="", alias="authorization")):
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {
+        "ips": await ip_tracking.get_ip_summary(),
+        "geo": await ip_tracking.get_geo_summary(),
+    }
+
+
+@router.post("/admin/api/ips/tag")
+async def admin_ip_tag(payload: dict, token: str = Header(default="", alias="authorization")):
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    subnet = str(payload.get("subnet", ""))
+    tag = str(payload.get("tag", "unknown"))
+    label = str(payload.get("label", ""))
+    if not subnet:
+        raise HTTPException(status_code=400, detail="subnet required")
+    return await ip_tracking.set_ip_tag(subnet, tag, label)
+
+
+@router.get("/admin/api/hours")
+async def admin_hours(days: int = 1, token: str = Header(default="", alias="authorization")):
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    days = max(1, min(days, 30))
+    return {
+        "hours": await ip_tracking.get_hourly_stats(days),
+        "devices": await ip_tracking.get_device_stats(days),
+    }

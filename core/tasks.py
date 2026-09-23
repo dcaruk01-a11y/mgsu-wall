@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 from config import MSK
-import core.state as state
+import core.analytics as analytics
 from core.storage import load_today_strokes, make_snapshot, post_to_telegram, clear_today
 from core.websocket import hub
 
@@ -29,5 +29,7 @@ async def daily_loop():
             state.clicker_top = []
             state.clicker_day = ""
             print("Топ кликера сброшен")
+            analytics.cleanup_old()
+            print("Старая статистика очищена")
         except Exception as e:
             print("Ошибка:", e)

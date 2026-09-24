@@ -176,7 +176,7 @@ function fmtTime(ts){
 
 async function load(){
   try{
-    userData = await adminApi('/admin/api/users/' + encodeURIComponent(uid));
+    userData = await adminApi('/admin/api/user/' + encodeURIComponent(uid));
     render();
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
@@ -235,12 +235,12 @@ async function toggleChar(char, owned){
       if (userData.active_char === char){
         return;
       }
-      await adminApi('/admin/api/users/set-active-char', {
+      await adminApi('/admin/api/user/set-active-char', {
         method:'POST',
         body: JSON.stringify({uid, char})
       });
     } else {
-      await adminApi('/admin/api/users/give-char', {
+      await adminApi('/admin/api/user/give-char', {
         method:'POST',
         body: JSON.stringify({uid, char})
       });
@@ -258,7 +258,7 @@ document.querySelectorAll('[data-set]').forEach(btn => {
     const inputId = field === 'coins' ? 'fCoins' : (field === 'total_score' ? 'fScore' : 'fStreak');
     const value = parseInt(document.getElementById(inputId).value) || 0;
     try{
-      await adminApi('/admin/api/users/set', {
+      await adminApi('/admin/api/user/set', {
         method:'POST',
         body: JSON.stringify({uid, [field]: value})
       });
@@ -275,7 +275,7 @@ document.querySelectorAll('[data-set]').forEach(btn => {
 document.getElementById('btnResetPin').onclick = async () => {
   if (!confirm('Сбросить PIN на 1234? Все сессии игрока сбросятся.')) return;
   try{
-    await adminApi('/admin/api/users/reset-pin', {
+    await adminApi('/admin/api/user/reset-pin', {
       method:'POST',
       body: JSON.stringify({uid, new_pin: '1234'})
     });
@@ -291,7 +291,7 @@ document.getElementById('btnGiveAll').onclick = async () => {
   for (const c of CHARS){
     if (!userData.owned_chars.includes(c.key)){
       try{
-        await adminApi('/admin/api/users/give-char', {
+        await adminApi('/admin/api/user/give-char', {
           method:'POST',
           body: JSON.stringify({uid, char: c.key})
         });
@@ -305,7 +305,7 @@ document.getElementById('btnGiveAll').onclick = async () => {
 document.getElementById('btnClearCoins').onclick = async () => {
   if (!confirm('Обнулить монеты?')) return;
   try{
-    await adminApi('/admin/api/users/set', {
+    await adminApi('/admin/api/user/set', {
       method:'POST',
       body: JSON.stringify({uid, coins: 0})
     });
@@ -317,7 +317,7 @@ document.getElementById('btnClearCoins').onclick = async () => {
 document.getElementById('btnClearStreak').onclick = async () => {
   if (!confirm('Сбросить серию дней?')) return;
   try{
-    await adminApi('/admin/api/users/set', {
+    await adminApi('/admin/api/user/set', {
       method:'POST',
       body: JSON.stringify({uid, streak: 0})
     });
@@ -330,7 +330,7 @@ document.getElementById('btnBan').onclick = async () => {
   if (userData.banned){
     if (!confirm('Разбанить игрока?')) return;
     try{
-      await adminApi('/admin/api/users/unban', {
+      await adminApi('/admin/api/user/unban', {
         method:'POST',
         body: JSON.stringify({uid})
       });
@@ -340,7 +340,7 @@ document.getElementById('btnBan').onclick = async () => {
     const reason = prompt('Причина бана:', 'Нарушение правил');
     if (!reason) return;
     try{
-      await adminApi('/admin/api/users/ban', {
+      await adminApi('/admin/api/user/ban', {
         method:'POST',
         body: JSON.stringify({uid, reason})
       });
@@ -366,7 +366,7 @@ document.getElementById('btnDelete').onclick = () => {
       return;
     }
     try{
-      await adminApi('/admin/api/users/delete', {
+      await adminApi('/admin/api/user/delete', {
         method:'POST',
         body: JSON.stringify({uid, confirm})
       });

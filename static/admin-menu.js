@@ -10,6 +10,7 @@ function renderAdminMenu(active){
     {key:'team',      label:'💼 Команда', url:'/admin/team'},
     {key:'schedule',  label:'⏰ Расписание', url:'/admin/schedule'},
     {key:'system',    label:'🖥 Система', url:'/admin/system'},
+     {key:'logs',      label:'📜 Логи', url:'/admin/logs'},
     {key:'links',     label:'🔗 Ссылки', url:'/admin/links'},
     {key:'todo',      label:'📝 Задачи', url:'/admin/todo'},
   ];

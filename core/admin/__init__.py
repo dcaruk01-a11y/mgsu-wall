@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 
 from core.admin import auth, stats, settings, analytics, content, users, system
+import core.content_plan  # регистрирует таблицу
 
 router = APIRouter()
 router.include_router(auth.router)

@@ -17,24 +17,16 @@
 }
 .profile-name{font-size:28px;font-weight:800;line-height:1.1;}
 .profile-uid{
-  font-family:monospace;
-  font-size:14px;opacity:0.7;margin-top:6px;
+  font-family:monospace;font-size:14px;opacity:0.7;margin-top:6px;
   padding:4px 10px;border-radius:999px;
   background:rgba(255,255,255,0.06);
-  display:inline-block;cursor:pointer;
-  transition:background .15s;
+  display:inline-block;cursor:pointer;transition:background .15s;
 }
 .profile-uid:hover{background:rgba(255,255,255,0.14);}
-
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:28px;}
-.stat{
-  padding:18px;border-radius:14px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.10);
-}
+.stat{padding:18px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);}
 .stat-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;margin-bottom:8px;}
 .stat-value{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;}
-
 .section{margin-bottom:20px;}
 .section h3{font-size:14px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;margin-bottom:12px;}
 .row{display:flex;gap:10px;flex-wrap:wrap;}
@@ -43,12 +35,11 @@
   border:1px solid rgba(255,255,255,0.15);
   background:rgba(255,255,255,0.05);
   color:inherit;font-family:inherit;font-size:14px;font-weight:700;
-  cursor:pointer;transition:all .15s;
+  cursor:pointer;transition:all .15s;text-decoration:none;
 }
 .btn:hover{background:rgba(255,255,255,0.12);}
 .btn-primary{background:#fff;color:#0F3C73;border-color:#fff;}
 .btn-danger{color:#FF4D5E;border-color:rgba(255,77,94,0.4);}
-
 .field{margin-bottom:14px;}
 .field label{display:block;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.55;margin-bottom:8px;}
 .field input{
@@ -59,24 +50,21 @@
   outline:none;box-sizing:border-box;
 }
 .field input:focus{border-color:rgba(255,255,255,0.5);}
-
 .card{padding:20px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);margin-bottom:20px;}
 .hide{display:none;}
 .err{color:#FF4D5E;font-size:13px;margin-top:8px;min-height:18px;}
 .back-link{display:inline-flex;align-items:center;gap:6px;font-size:14px;opacity:0.7;text-decoration:none;color:inherit;margin-bottom:24px;}
 .back-link:hover{opacity:1;}
 .loading{padding:60px 20px;text-align:center;opacity:0.5;}
-  .tasks-list{display:flex;flex-direction:column;gap:10px;}
+
+/* Задания */
+.tasks-list{display:flex;flex-direction:column;gap:10px;}
 .task-item{
   padding:16px 18px;border-radius:12px;
   background:rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.1);
-  transition:background .15s;
 }
-.task-item.done{
-  background:rgba(74,222,128,0.1);
-  border-color:rgba(74,222,128,0.35);
-}
+.task-item.done{background:rgba(74,222,128,0.1);border-color:rgba(74,222,128,0.35);}
 .task-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
 .task-text{font-size:14px;font-weight:600;line-height:1.4;flex:1;}
 .task-reward{
@@ -91,19 +79,10 @@
   background:rgba(255,255,255,0.08);
   overflow:hidden;margin-bottom:6px;
 }
-.task-progress-fill{
-  height:100%;background:#6FA8FF;
-  transition:width .3s;
-}
+.task-progress-fill{height:100%;background:#6FA8FF;transition:width .3s;}
 .task-item.done .task-progress-fill{background:#4ADE80;}
-.task-progress-text{
-  font-size:12px;color:rgba(255,255,255,0.55);
-  font-variant-numeric:tabular-nums;
-}
-.tasks-empty{
-  padding:20px;text-align:center;
-  opacity:0.55;font-size:13px;
-}
+.task-progress-text{font-size:12px;color:rgba(255,255,255,0.55);font-variant-numeric:tabular-nums;}
+.tasks-empty{padding:20px;text-align:center;opacity:0.55;font-size:13px;}
 </style>
 </head><body>
 
@@ -116,7 +95,7 @@
   <div id="content" class="hide">
 
     <div class="profile-header">
-      <div class="avatar">🎓</div>
+      <div class="avatar" id="pAvatar">🎓</div>
       <div>
         <div class="profile-name" id="pName">—</div>
         <div class="profile-uid" id="pUid" title="Нажми, чтобы скопировать">—</div>
@@ -139,6 +118,13 @@
       <div class="stat">
         <div class="stat-label">🎮 Партий</div>
         <div class="stat-value" id="pGames">0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:14px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;margin-bottom:14px;">🎯 Задания на сегодня</h3>
+      <div class="tasks-list" id="tasksList">
+        <div class="tasks-empty">Загрузка…</div>
       </div>
     </div>
 
@@ -174,15 +160,11 @@
         <div class="err" id="pinErr"></div>
       </div>
     </div>
-<div class="card">
-  <h3 style="font-size:14px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;margin-bottom:14px;">🎯 Задания на сегодня</h3>
-  <div class="tasks-list" id="tasksList">
-    <div class="tasks-empty">Загрузка…</div>
-  </div>
-</div>
 
     <div class="section">
       <div class="row">
+        <a class="btn" href="/shop">🛍 Магазин персонажей</a>
+        <a class="btn" href="/ratings">🏆 Рейтинги</a>
         <button class="btn" id="btnChangeName">Сменить имя</button>
         <button class="btn" id="btnChangePin">Сменить PIN</button>
         <button class="btn btn-danger" id="btnLogout">Выйти</button>
@@ -200,6 +182,11 @@ const token = localStorage.getItem(LS_TOKEN);
 if (!token){
   location.href = '/auth';
 }
+
+const CHAR_EMOJI = {
+  student: '🎓', sso: '👷', prorab: '📋',
+  builder: '🏗️', prof: '🧑‍🏫', dean: '🧑‍💼', legend: '👑',
+};
 
 async function api(path, opts = {}){
   const headers = Object.assign({'Content-Type':'application/json'}, opts.headers || {});
@@ -221,6 +208,10 @@ function setUser(u){
   document.getElementById('pCoins').textContent = u.coins || 0;
   document.getElementById('pScore').textContent = u.total_score || 0;
   document.getElementById('pGames').textContent = u.games_played || 0;
+  const av = document.getElementById('pAvatar');
+  if (av && u.active_char){
+    av.textContent = CHAR_EMOJI[u.active_char] || '🎓';
+  }
 }
 
 async function loadMe(){
@@ -232,12 +223,11 @@ async function loadMe(){
     document.getElementById('content').classList.remove('hide');
   }catch(e){}
 }
-  async function loadTasks(){
+loadMe();
+
+async function loadTasks(){
   try{
-    const r = await fetch('/api/tasks', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const data = await r.json();
+    const { data } = await api('/api/tasks');
     renderTasks(data);
   }catch(e){
     const box = document.getElementById('tasksList');
@@ -248,7 +238,6 @@ async function loadMe(){
 function renderTasks(data){
   const box = document.getElementById('tasksList');
   if (!box) return;
-
   if (!data.logged_in){
     box.innerHTML = '<div class="tasks-empty">Войди в аккаунт, чтобы получать задания</div>';
     return;
@@ -257,7 +246,6 @@ function renderTasks(data){
     box.innerHTML = '<div class="tasks-empty">Задания появятся утром</div>';
     return;
   }
-
   box.innerHTML = '';
   data.tasks.forEach(t => {
     const item = document.createElement('div');
@@ -269,9 +257,7 @@ function renderTasks(data){
         '<div class="task-reward">+' + t.reward + '</div>' +
       '</div>' +
       '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + pct + '%"></div></div>' +
-      '<div class="task-progress-text">' +
-        (t.done ? '✓ Выполнено' : t.progress + ' / ' + t.target) +
-      '</div>';
+      '<div class="task-progress-text">' + (t.done ? '✓ Выполнено' : t.progress + ' / ' + t.target) + '</div>';
     box.appendChild(item);
   });
 }
@@ -279,11 +265,8 @@ function renderTasks(data){
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
 loadTasks();
-loadMe();
 
-// копировать UID
 document.getElementById('pUid').addEventListener('click', async () => {
   try{
     await navigator.clipboard.writeText(document.getElementById('pUid').textContent);
@@ -294,7 +277,6 @@ document.getElementById('pUid').addEventListener('click', async () => {
   }catch(e){}
 });
 
-// смена имени
 document.getElementById('btnChangeName').onclick = () => {
   document.getElementById('newName').value = document.getElementById('pName').textContent;
   document.getElementById('changeNameCard').style.display = 'block';
@@ -318,7 +300,6 @@ document.getElementById('btnSaveName').onclick = async () => {
   }catch(e){ errEl.textContent = 'Ошибка'; }
 };
 
-// смена PIN
 document.getElementById('btnChangePin').onclick = () => {
   document.getElementById('oldPin').value = '';
   document.getElementById('newPin').value = '';
@@ -345,7 +326,6 @@ document.getElementById('btnSavePin').onclick = async () => {
   }catch(e){ errEl.textContent = 'Ошибка'; }
 };
 
-// logout
 document.getElementById('btnLogout').onclick = async () => {
   try{ await api('/api/auth/logout', {method:'POST'}); }catch(e){}
   localStorage.removeItem(LS_TOKEN);
@@ -353,7 +333,6 @@ document.getElementById('btnLogout').onclick = async () => {
   location.href = '/auth';
 };
 
-// фильтры для PIN
 ['oldPin','newPin'].forEach(id => {
   document.getElementById(id).addEventListener('input', e => {
     e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);

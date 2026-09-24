@@ -139,7 +139,7 @@ function renderUsers(users){
   body.innerHTML = '';
   users.forEach(u => {
     const tr = document.createElement('tr');
-    tr.innerHTML =
+       tr.innerHTML =
       '<td>' +
         '<div class="u-name">' + escapeHtml(u.display_name) + '</div>' +
         '<div class="u-uid">' + escapeHtml(u.uid) + '</div>' +
@@ -149,7 +149,8 @@ function renderUsers(users){
       '<td class="u-num">' + u.total_score + '</td>' +
       '<td class="u-num">' + u.streak + '</td>' +
       '<td class="u-num">' + u.games_played + '</td>' +
-      '<td class="u-date">' + fmtTime(u.last_seen) + '</td>';
+      '<td class="u-date">' + fmtTime(u.last_seen) + '</td>' +
+      '<td><a href="/admin/user/' + encodeURIComponent(u.uid) + '" style="color:#6FA8FF;text-decoration:none;font-weight:700;font-size:12px;">Управлять →</a></td>';
     body.appendChild(tr);
   });
 }

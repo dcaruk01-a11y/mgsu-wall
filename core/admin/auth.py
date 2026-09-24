@@ -52,6 +52,15 @@ async def admin_links_page():
 async def admin_users_page():
     return FileResponse("pages/admin/users.html")
 
+@router.get("/admin/user/{uid}")
+async def admin_user_page(uid: str):
+    return FileResponse("pages/admin/user.html")
+
+
+@router.get("/admin/logs")
+async def admin_logs_page():
+    return FileResponse("pages/admin/logs.html")
+
 
 @router.get("/admin/content")
 async def admin_content_page():

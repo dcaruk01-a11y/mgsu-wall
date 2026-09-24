@@ -1,6 +1,11 @@
-import time, hashlib, secrets, aiosqlite
+import time, hashlib, secrets, json, aiosqlite
 from datetime import datetime, timedelta
 from config import DB_PATH, MSK, today_str
+
+
+COINS_PER_GAME = 20
+COINS_PER_VISIT = 5
+COINS_PER_RECORD = 200
 
 
 def _hash_pin(pin: str, uid: str) -> str:
@@ -8,7 +13,6 @@ def _hash_pin(pin: str, uid: str) -> str:
 
 
 def generate_uid() -> str:
-    # Без похожих символов: без O, 0, I, 1, L
     alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
     code = "".join(secrets.choice(alphabet) for _ in range(5))
     return "MGSU-" + code
@@ -16,7 +20,7 @@ def generate_uid() -> str:
 
 async def db_init_users():
     async with aiosqlite.connect(DB_PATH) as db:
-                await db.execute("""
+        await db.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 uid TEXT PRIMARY KEY,
                 pin_hash TEXT NOT NULL,
@@ -34,7 +38,6 @@ async def db_init_users():
                 char_colors TEXT DEFAULT '{}'
             )
         """)
-        """)
         await db.execute("""
             CREATE TABLE IF NOT EXISTS sessions (
                 token TEXT PRIMARY KEY,
@@ -43,6 +46,16 @@ async def db_init_users():
                 last_used REAL
             )
         """)
+        # миграции для старых баз
+        for col, ddl in [
+            ("owned_chars", "ALTER TABLE users ADD COLUMN owned_chars TEXT DEFAULT '[\"student\"]'"),
+            ("active_char", "ALTER TABLE users ADD COLUMN active_char TEXT DEFAULT 'student'"),
+            ("char_colors", "ALTER TABLE users ADD COLUMN char_colors TEXT DEFAULT '{}'"),
+        ]:
+            try:
+                await db.execute(ddl)
+            except Exception:
+                pass
         await db.commit()
 
 
@@ -138,7 +151,9 @@ async def get_user_by_token(token: str):
         await db.execute("UPDATE sessions SET last_used=? WHERE token=?", (time.time(), token))
         cur = await db.execute("""
             SELECT uid, display_name, created_at, last_seen,
-                   streak, best_streak, coins, total_score, games_played
+                   streak, best_streak, coins, total_score, games_played,
+                   COALESCE(owned_chars, '["student"]'),
+                   COALESCE(active_char, 'student')
             FROM users WHERE uid=?
         """, (uid,))
         urow = await cur.fetchone()
@@ -147,16 +162,23 @@ async def get_user_by_token(token: str):
     if not urow:
         return None
 
+    try:
+        owned = json.loads(urow[9] or '["student"]')
+    except Exception:
+        owned = ["student"]
+
     return {
         "uid": urow[0],
         "display_name": urow[1],
         "created_at": urow[2],
         "last_seen": urow[3],
-        "streak": urow[4],
-        "best_streak": urow[5],
-        "coins": urow[6],
-        "total_score": urow[7],
-        "games_played": urow[8],
+        "streak": urow[4] or 0,
+        "best_streak": urow[5] or 0,
+        "coins": urow[6] or 0,
+        "total_score": urow[7] or 0,
+        "games_played": urow[8] or 0,
+        "owned_chars": owned,
+        "active_char": urow[10] or "student",
     }
 
 
@@ -233,18 +255,7 @@ async def apply_streak(uid: str) -> dict:
     return {"ok": True, "streak": streak, "changed": True, "is_record": streak == best}
 
 
-# ============ ЭКОНОМИКА И ПРОГРЕСС ============
-
-COINS_PER_GAME = 20
-COINS_PER_VISIT = 5
-COINS_PER_RECORD = 200
-
-
 async def apply_score_and_coins(uid: str, score: int, game: str, is_record: bool = False) -> dict:
-    """
-    Начисляет очки и монеты за партию.
-    Возвращает обновлённый профиль + сколько монет добавлено.
-    """
     score = max(0, min(int(score), 100000))
     coins = COINS_PER_GAME
     if is_record:

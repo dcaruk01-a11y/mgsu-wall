@@ -61,7 +61,7 @@ async def admin_logs_get(limit: int = 100, token: str = Header(default="", alias
 
 # ============ КАРТОЧКА ИГРОКА ============
 
-@router.get("/admin/api/users/{uid}")
+@router.get("/admin/api/user/{uid}")
 async def admin_user_detail(uid: str, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
@@ -118,7 +118,7 @@ async def admin_user_detail(uid: str, token: str = Header(default="", alias="aut
 
 # ============ ИЗМЕНЕНИЕ ПОЛЕЙ ============
 
-@router.post("/admin/api/users/set")
+@router.post("/admin/api/user/set")
 async def admin_user_set(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")

@@ -8,6 +8,7 @@ COINS_PER_VISIT = 5
 COINS_PER_RECORD = 200
 SESSION_TTL = 30 * 24 * 3600  # 30 дней
 
+
 def _hash_pin(pin: str, uid: str) -> str:
     return hashlib.sha256((pin + "|" + uid + "|mgsu-salt-2026").encode()).hexdigest()
 
@@ -46,15 +47,15 @@ async def db_init_users():
                 last_used REAL
             )
         """)
-        # миграции для старых баз
-               # Миграции: проверяем существование колонок через PRAGMA
+
+        # Миграции для существующих баз
         try:
             cur = await db.execute("PRAGMA table_info(users)")
             existing = {row[1] for row in await cur.fetchall()}
         except Exception:
             existing = set()
 
-              migrations = [
+        migrations = [
             ("owned_chars", "ALTER TABLE users ADD COLUMN owned_chars TEXT DEFAULT '[\"student\"]'"),
             ("active_char", "ALTER TABLE users ADD COLUMN active_char TEXT DEFAULT 'student'"),
             ("char_colors", "ALTER TABLE users ADD COLUMN char_colors TEXT DEFAULT '{}'"),
@@ -69,6 +70,7 @@ async def db_init_users():
                     await db.execute(ddl)
                 except Exception:
                     pass
+
         await db.commit()
 
 
@@ -136,7 +138,8 @@ async def login(uid: str, pin: str, ip: str = "") -> dict:
 
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute(
-            "SELECT uid, pin_hash, display_name FROM users WHERE uid=?", (uid,)
+            "SELECT uid, pin_hash, display_name, COALESCE(banned, 0), COALESCE(ban_reason, '') FROM users WHERE uid=?",
+            (uid,)
         )
         row = await cur.fetchone()
 
@@ -144,7 +147,12 @@ async def login(uid: str, pin: str, ip: str = "") -> dict:
         await guard.record_attempt(uid, ip, False)
         return {"ok": False, "error": "ID не найден"}
 
-    real_uid, pin_h, name = row
+    # Проверка бана
+    if row[3]:
+        reason = row[4] or "Нарушение правил"
+        return {"ok": False, "error": f"Аккаунт заблокирован: {reason}"}
+
+    real_uid, pin_h, name = row[0], row[1], row[2]
     if _hash_pin(pin, real_uid) != pin_h:
         await guard.record_attempt(uid, ip, False)
         return {"ok": False, "error": "Неверный PIN"}
@@ -163,6 +171,7 @@ async def login(uid: str, pin: str, ip: str = "") -> dict:
         await db.commit()
 
     return {"ok": True, "uid": real_uid, "token": token, "display_name": name}
+
 
 async def get_user_by_token(token: str):
     if not token:
@@ -252,7 +261,7 @@ async def update_pin(uid: str, old_pin: str, new_pin: str) -> dict:
             "UPDATE users SET pin_hash=? WHERE uid=?",
             (_hash_pin(new_pin, uid), uid)
         )
-        # Сброс всех сессий — пользователь должен войти заново
+        # Сброс всех сессий
         await db.execute("DELETE FROM sessions WHERE uid=?", (uid,))
         await db.commit()
     return {"ok": True, "sessions_reset": True}

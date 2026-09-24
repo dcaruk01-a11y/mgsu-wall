@@ -54,10 +54,14 @@ async def db_init_users():
         except Exception:
             existing = set()
 
-        migrations = [
+              migrations = [
             ("owned_chars", "ALTER TABLE users ADD COLUMN owned_chars TEXT DEFAULT '[\"student\"]'"),
             ("active_char", "ALTER TABLE users ADD COLUMN active_char TEXT DEFAULT 'student'"),
             ("char_colors", "ALTER TABLE users ADD COLUMN char_colors TEXT DEFAULT '{}'"),
+            ("chat_id", "ALTER TABLE users ADD COLUMN chat_id TEXT DEFAULT ''"),
+            ("notify_enabled", "ALTER TABLE users ADD COLUMN notify_enabled INTEGER DEFAULT 0"),
+            ("banned", "ALTER TABLE users ADD COLUMN banned INTEGER DEFAULT 0"),
+            ("ban_reason", "ALTER TABLE users ADD COLUMN ban_reason TEXT DEFAULT ''"),
         ]
         for col, ddl in migrations:
             if col not in existing:

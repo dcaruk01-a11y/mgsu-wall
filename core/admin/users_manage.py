@@ -156,7 +156,7 @@ async def admin_user_set(payload: dict, token: str = Header(default="", alias="a
 ALL_CHARS = ["student", "sso", "prorab", "builder", "prof", "dean", "legend"]
 
 
-@router.post("/admin/api/users/give-char")
+@router.post("/admin/api/user/give-char")
 async def admin_user_give_char(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
@@ -190,7 +190,7 @@ async def admin_user_give_char(payload: dict, token: str = Header(default="", al
     return {"ok": True, "owned": owned}
 
 
-@router.post("/admin/api/users/revoke-char")
+@router.post("/admin/api/user/revoke-char")
 async def admin_user_revoke_char(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
@@ -228,7 +228,7 @@ async def admin_user_revoke_char(payload: dict, token: str = Header(default="", 
     return {"ok": True, "owned": owned, "active": active}
 
 
-@router.post("/admin/api/users/set-active-char")
+@router.post("/admin/api/user/set-active-char")
 async def admin_user_set_active_char(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
@@ -266,7 +266,7 @@ async def admin_user_set_active_char(payload: dict, token: str = Header(default=
 
 # ============ PIN / БАН / УДАЛЕНИЕ ============
 
-@router.post("/admin/api/users/reset-pin")
+@router.post("/admin/api/user/reset-pin")
 async def admin_user_reset_pin(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
@@ -294,7 +294,7 @@ async def admin_user_reset_pin(payload: dict, token: str = Header(default="", al
     return {"ok": True, "new_pin": new_pin}
 
 
-@router.post("/admin/api/users/ban")
+@router.post("/admin/api/user/ban")
 async def admin_user_ban(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
@@ -318,7 +318,7 @@ async def admin_user_ban(payload: dict, token: str = Header(default="", alias="a
     return {"ok": True}
 
 
-@router.post("/admin/api/users/unban")
+@router.post("/admin/api/user/unban")
 async def admin_user_unban(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
@@ -336,7 +336,7 @@ async def admin_user_unban(payload: dict, token: str = Header(default="", alias=
     return {"ok": True}
 
 
-@router.post("/admin/api/users/delete")
+@router.post("/admin/api/user/delete")
 async def admin_user_delete(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")

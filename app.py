@@ -8,6 +8,8 @@ from core.users import db_init_users
 from core.ip_tracking import db_init_ip
 from core.top import db_init_top
 from core.daily_tasks import db_init_tasks
+from core.settings import db_init_settings
+from core.content_plan import db_init_content
 from core.websocket import router as ws_router
 from core.api import router as api_router
 from core.clicker import router as clicker_router
@@ -20,6 +22,7 @@ from core.game_score import router as game_score_router
 from core.tasks_api import router as tasks_api_router
 from core.shop import router as shop_router
 from core.tasks import daily_loop
+import core.state as state
 from feedback_bot import feedback_bot_loop
 
 app = FastAPI()
@@ -47,6 +50,9 @@ async def on_startup():
     await db_init_ip()
     await db_init_top()
     await db_init_tasks()
+    await db_init_settings()
+    await db_init_content()
+    await state.load_all_settings()
     await load_history()
     asyncio.create_task(daily_loop())
     asyncio.create_task(feedback_bot_loop())

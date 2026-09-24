@@ -6,7 +6,7 @@ from config import DB_PATH, MSK, today_str
 COINS_PER_GAME = 20
 COINS_PER_VISIT = 5
 COINS_PER_RECORD = 200
-
+SESSION_TTL = 30 * 24 * 3600  # 30 дней
 
 def _hash_pin(pin: str, uid: str) -> str:
     return hashlib.sha256((pin + "|" + uid + "|mgsu-salt-2026").encode()).hexdigest()
@@ -164,11 +164,20 @@ async def get_user_by_token(token: str):
     if not token:
         return None
     async with aiosqlite.connect(DB_PATH) as db:
-        cur = await db.execute("SELECT uid FROM sessions WHERE token=?", (token,))
+        cur = await db.execute(
+            "SELECT uid, created_at FROM sessions WHERE token=?", (token,)
+        )
         row = await cur.fetchone()
         if not row:
             return None
-        uid = row[0]
+        uid, created_at = row
+
+        # Проверка срока жизни токена
+        if created_at and (time.time() - created_at) > SESSION_TTL:
+            await db.execute("DELETE FROM sessions WHERE token=?", (token,))
+            await db.commit()
+            return None
+
         await db.execute("UPDATE sessions SET last_used=? WHERE token=?", (time.time(), token))
         cur = await db.execute("""
             SELECT uid, display_name, created_at, last_seen,
@@ -239,8 +248,10 @@ async def update_pin(uid: str, old_pin: str, new_pin: str) -> dict:
             "UPDATE users SET pin_hash=? WHERE uid=?",
             (_hash_pin(new_pin, uid), uid)
         )
+        # Сброс всех сессий — пользователь должен войти заново
+        await db.execute("DELETE FROM sessions WHERE uid=?", (uid,))
         await db.commit()
-    return {"ok": True}
+    return {"ok": True, "sessions_reset": True}
 
 
 async def apply_streak(uid: str) -> dict:

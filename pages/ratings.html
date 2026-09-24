@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Рейтинги · Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/theme.css">
+<style>
+.ratings-wrap{max-width:720px;margin:0 auto;padding:24px 16px 64px;}
+
+.ratings-hero{padding:40px 0 24px;text-align:center;}
+.ratings-title{font-size:clamp(32px,6vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:10px;}
+.ratings-sub{font-size:15px;opacity:0.7;}
+
+.tabs{display:flex;background:rgba(255,255,255,0.05);border-radius:999px;padding:4px;margin-bottom:20px;}
+.tab{flex:1;padding:12px;border:0;background:transparent;color:inherit;font-family:inherit;font-size:14px;font-weight:700;border-radius:999px;cursor:pointer;opacity:0.6;transition:all .15s;}
+.tab.active{background:#fff;color:#0F3C73;opacity:1;}
+.tab:hover:not(.active){opacity:0.9;}
+
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+.rating-list{display:flex;flex-direction:column;gap:8px;}
+.rating-row{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 18px;border-radius:14px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.10);
+  transition:background .15s;
+}
+.rating-row.me{
+  background:rgba(255,255,255,0.14);
+  border-color:rgba(255,255,255,0.4);
+}
+.rating-row.top-1{background:linear-gradient(90deg, rgba(255,215,0,0.15), rgba(255,255,255,0.05));border-color:rgba(255,215,0,0.4);}
+.rating-row.top-2{background:linear-gradient(90deg, rgba(192,192,192,0.13), rgba(255,255,255,0.05));border-color:rgba(192,192,192,0.35);}
+.rating-row.top-3{background:linear-gradient(90deg, rgba(205,127,50,0.13), rgba(255,255,255,0.05));border-color:rgba(205,127,50,0.35);}
+
+.rating-pos{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:800;
+  background:rgba(255,255,255,0.08);
+  flex-shrink:0;
+}
+.top-1 .rating-pos{background:#FFD700;color:#1a1a1a;}
+.top-2 .rating-pos{background:#C0C0C0;color:#1a1a1a;}
+.top-3 .rating-pos{background:#CD7F32;color:#fff;}
+
+.rating-info{flex:1;min-width:0;}
+.rating-nick{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rating-games{font-size:11px;opacity:0.55;margin-top:2px;letter-spacing:0.05em;}
+.rating-score{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;flex-shrink:0;}
+
+.me-hint{
+  margin-top:20px;padding:16px 20px;border-radius:14px;
+  background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);
+  font-size:13px;line-height:1.6;opacity:0.85;
+}
+.me-hint b{color:#fff;}
+.me-hint a{color:#4ADE80;text-decoration:none;font-weight:700;}
+.me-hint a:hover{text-decoration:underline;}
+
+.empty{text-align:center;padding:60px 20px;opacity:0.5;font-size:14px;}
+.loading{text-align:center;padding:60px 20px;opacity:0.5;font-size:14px;}
+
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:14px;opacity:0.7;text-decoration:none;color:inherit;margin-bottom:12px;}
+.back-link:hover{opacity:1;}
+</style>
+</head><body>
+
+<div class="ratings-wrap">
+  <a href="/glavnaya" class="back-link">← На главную</a>
+
+  <div class="ratings-hero">
+    <div class="ratings-title">🏆 Рейтинги</div>
+    <div class="ratings-sub" id="subText">Топ игроков МГСУ</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="day">Сегодня</button>
+    <button class="tab" data-tab="week">Неделя</button>
+    <button class="tab" data-tab="alltime">Все времена</button>
+  </div>
+
+  <div class="tab-panel active" id="panelDay">
+    <div class="rating-list" id="listDay"><div class="loading">Загрузка…</div></div>
+  </div>
+  <div class="tab-panel" id="panelWeek">
+    <div class="rating-list" id="listWeek"><div class="loading">Загрузка…</div></div>
+  </div>
+  <div class="tab-panel" id="panelAll">
+    <div class="rating-list" id="listAll"><div class="loading">Загрузка…</div></div>
+  </div>
+
+  <div id="meHintBox"></div>
+</div>
+
+<script>
+const LS_TOKEN = 'mgsu_token';
+const authToken = localStorage.getItem(LS_TOKEN) || '';
+let myUid = '';
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    const id = t.dataset.tab;
+    document.getElementById('panel' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
+  });
+});
+
+function renderList(elId, items, emptyText){
+  const box = document.getElementById(elId);
+  if (!items || !items.length){
+    box.innerHTML = '<div class="empty">' + emptyText + '</div>';
+    return;
+  }
+  box.innerHTML = '';
+  items.forEach((it, i) => {
+    const row = document.createElement('div');
+    let cls = 'rating-row';
+    if (i === 0) cls += ' top-1';
+    else if (i === 1) cls += ' top-2';
+    else if (i === 2) cls += ' top-3';
+    if (myUid && it.uid === myUid) cls += ' me';
+
+    row.className = cls;
+    row.innerHTML =
+      '<div class="rating-pos">' + (i + 1) + '</div>' +
+      '<div class="rating-info">' +
+        '<div class="rating-nick"></div>' +
+        '<div class="rating-games">' + (it.games || 0) + ' партий</div>' +
+      '</div>' +
+      '<div class="rating-score">' + it.score + '</div>';
+    row.querySelector('.rating-nick').textContent = it.nick || 'Аноним';
+    box.appendChild(row);
+  });
+}
+
+function renderMe(me){
+  const box = document.getElementById('meHintBox');
+  if (!authToken){
+    box.innerHTML = '<div class="me-hint">💡 <a href="/auth">Создай аккаунт</a>, чтобы попасть в рейтинг и видеть свою позицию.</div>';
+    return;
+  }
+  if (!me){
+    box.innerHTML = '';
+    return;
+  }
+  const day = me.day ? ('<b>' + me.day.pos + '</b> место сегодня (' + me.day.score + ' очков)') : 'сегодня ты ещё не играл';
+  const week = me.week ? ('<b>' + me.week.pos + '</b> место за неделю (' + me.week.score + ')') : 'за неделю пусто';
+  const all = me.all ? ('<b>' + me.all.pos + '</b> в общем топе (' + me.all.score + ')') : 'в общем топе пусто';
+  box.innerHTML =
+    '<div class="me-hint">' +
+      '👤 <b>' + (me.nick || 'Ты') + '</b><br>' +
+      '📊 Твои позиции:<br>' +
+      '• ' + day + '<br>' +
+      '• ' + week + '<br>' +
+      '• ' + all +
+    '</div>';
+}
+
+async function loadRatings(){
+  try{
+    const headers = {};
+    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+
+    const r = await fetch('/api/ratings', {headers});
+    const data = await r.json();
+
+    if (data.me && data.me.uid) myUid = data.me.uid;
+
+    renderList('listDay', data.day, 'Сегодня пока никто не играл. Будь первым!');
+    renderList('listWeek', data.week, 'На этой неделе пока пусто.');
+    renderList('listAll', data.alltime, 'Рейтинг ещё пуст. Начни первым!');
+
+    document.getElementById('subText').textContent = 'Неделя: ' + (data.week_label || '');
+    renderMe(data.me);
+  }catch(e){
+    document.getElementById('listDay').innerHTML = '<div class="empty">Не удалось загрузить</div>';
+  }
+}
+
+loadRatings();
+</script>
+
+</body></html>

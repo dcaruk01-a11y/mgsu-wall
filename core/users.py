@@ -115,12 +115,20 @@ async def create_user(display_name: str, pin: str) -> dict:
     return {"ok": True, "uid": uid, "token": token, "display_name": display_name}
 
 
-async def login(uid: str, pin: str) -> dict:
+async def login(uid: str, pin: str, ip: str = "") -> dict:
+    import core.login_guard as guard
+
     uid = (uid or "").strip().upper()
     if not uid.startswith("MGSU-"):
         uid = "MGSU-" + uid
     if not (pin.isdigit() and len(pin) == 4):
         return {"ok": False, "error": "PIN — 4 цифры"}
+
+    # Проверка блокировки
+    blocked, wait_sec = await guard.check_blocked(uid, ip)
+    if blocked:
+        mins = (wait_sec + 59) // 60
+        return {"ok": False, "error": f"Слишком много попыток. Подожди {mins} мин."}
 
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute(
@@ -129,11 +137,16 @@ async def login(uid: str, pin: str) -> dict:
         row = await cur.fetchone()
 
     if not row:
+        await guard.record_attempt(uid, ip, False)
         return {"ok": False, "error": "ID не найден"}
 
     real_uid, pin_h, name = row
     if _hash_pin(pin, real_uid) != pin_h:
+        await guard.record_attempt(uid, ip, False)
         return {"ok": False, "error": "Неверный PIN"}
+
+    # Успех — записываем и сбрасываем счётчик
+    await guard.record_attempt(uid, ip, True)
 
     token = secrets.token_urlsafe(32)
     now = time.time()
@@ -146,7 +159,6 @@ async def login(uid: str, pin: str) -> dict:
         await db.commit()
 
     return {"ok": True, "uid": real_uid, "token": token, "display_name": name}
-
 
 async def get_user_by_token(token: str):
     if not token:

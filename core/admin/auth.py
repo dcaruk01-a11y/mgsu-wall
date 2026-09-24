@@ -18,6 +18,55 @@ async def admin_page():
 async def admin_login_page():
     return FileResponse("pages/admin/login.html")
 
+@router.get("/admin/games")
+async def admin_games_page():
+    return FileResponse("pages/admin/games.html")
+
+
+@router.get("/admin/schedule")
+async def admin_schedule_page():
+    return FileResponse("pages/admin/schedule.html")
+
+
+@router.get("/admin/analytics")
+async def admin_analytics_page():
+    return FileResponse("pages/admin/analytics.html")
+
+
+@router.get("/admin/design")
+async def admin_design_page():
+    return FileResponse("pages/admin/design.html")
+
+
+@router.get("/admin/team")
+async def admin_team_page():
+    return FileResponse("pages/admin/team.html")
+
+
+@router.get("/admin/links")
+async def admin_links_page():
+    return FileResponse("pages/admin/links.html")
+
+
+@router.get("/admin/users")
+async def admin_users_page():
+    return FileResponse("pages/admin/users.html")
+
+
+@router.get("/admin/content")
+async def admin_content_page():
+    return FileResponse("pages/admin/content.html")
+
+
+@router.get("/admin/system")
+async def admin_system_page():
+    return FileResponse("pages/admin/system.html")
+
+
+@router.get("/admin/todo")
+async def admin_todo_page():
+    return FileResponse("pages/admin/todo.html")
+
 
 @router.post("/admin/api/login")
 async def admin_login(payload: dict):

@@ -91,3 +91,23 @@ async def admin_content_prompt(day: str = "", slot: str = "", token: str = Heade
         raise HTTPException(status_code=401, detail="Unauthorized")
     prompt = cplan.build_prompt(slot, day)
     return {"prompt": prompt}
+
+
+@router.post("/admin/api/content/test-publish")
+async def admin_content_test_publish(payload: dict, token: str = Header(default="", alias="authorization")):
+    """Тестовая публикация поста в канал — для проверки настроек."""
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    text = str(payload.get("text", "")).strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Текст пустой")
+
+    from core.content_publisher import tg_send
+    from config import TG_CHAT_ID
+
+    if not TG_CHAT_ID:
+        raise HTTPException(status_code=400, detail="TG_CHAT_ID не настроен")
+
+    ok = await tg_send(TG_CHAT_ID, text)
+    return {"ok": ok, "sent_to": TG_CHAT_ID}

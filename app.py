@@ -24,6 +24,7 @@ from core.shop import router as shop_router
 from core.tasks import daily_loop
 import core.state as state
 from feedback_bot import feedback_bot_loop
+from core.content_publisher import content_publisher_loop
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -56,3 +57,4 @@ async def on_startup():
     await load_history()
     asyncio.create_task(daily_loop())
     asyncio.create_task(feedback_bot_loop())
+    asyncio.create_task(content_publisher_loop())

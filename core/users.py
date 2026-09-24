@@ -16,7 +16,7 @@ def generate_uid() -> str:
 
 async def db_init_users():
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
+                await db.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 uid TEXT PRIMARY KEY,
                 pin_hash TEXT NOT NULL,
@@ -28,8 +28,12 @@ async def db_init_users():
                 coins INTEGER DEFAULT 0,
                 total_score INTEGER DEFAULT 0,
                 games_played INTEGER DEFAULT 0,
-                last_day_played TEXT DEFAULT ''
+                last_day_played TEXT DEFAULT '',
+                owned_chars TEXT DEFAULT '["student"]',
+                active_char TEXT DEFAULT 'student',
+                char_colors TEXT DEFAULT '{}'
             )
+        """)
         """)
         await db.execute("""
             CREATE TABLE IF NOT EXISTS sessions (

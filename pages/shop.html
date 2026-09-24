@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Магазин · Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/theme.css">
+<style>
+.shop-wrap{max-width:720px;margin:0 auto;padding:24px 16px 64px;}
+.shop-head{text-align:center;padding:32px 0 24px;}
+.shop-title{font-size:clamp(32px,6vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:12px;}
+.shop-coins{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:12px 22px;border-radius:999px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.16);
+  font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;
+}
+.shop-coins small{font-size:12px;font-weight:600;opacity:0.6;letter-spacing:0.1em;text-transform:uppercase;}
+.items{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+.item{
+  display:flex;align-items:center;gap:16px;
+  padding:18px 20px;border-radius:16px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.10);
+  transition:all .2s;
+}
+.item:hover{background:rgba(255,255,255,0.08);}
+.item.owned{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.06);}
+.item.active{border-color:#fff;background:rgba(255,255,255,0.12);box-shadow:0 0 0 1px rgba(255,255,255,0.3);}
+.item.locked{opacity:0.55;}
+.item-emoji{
+  font-size:44px;line-height:1;flex-shrink:0;
+  width:60px;height:60px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.06);border-radius:14px;
+}
+.item-info{flex:1;min-width:0;}
+.item-name{font-size:17px;font-weight:800;margin-bottom:4px;}
+.item-desc{font-size:13px;opacity:0.7;line-height:1.4;}
+.item-price{font-size:12px;font-weight:700;margin-top:6px;color:#FFD700;font-variant-numeric:tabular-nums;}
+.item-actions{flex-shrink:0;}
+.item-btn{
+  padding:10px 18px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.08);
+  color:#fff;font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.item-btn:hover:not(:disabled){background:rgba(255,255,255,0.16);}
+.item-btn.primary{background:#fff;color:#0F3C73;border-color:#fff;}
+.item-btn.primary:hover{transform:translateY(-1px);}
+.item-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.item-btn.equipped{background:rgba(74,222,128,0.15);color:#4ADE80;border-color:rgba(74,222,128,0.5);}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:14px;opacity:0.7;text-decoration:none;color:inherit;margin-bottom:12px;}
+.back-link:hover{opacity:1;}
+.guest-hint{
+  padding:24px;border-radius:16px;
+  background:rgba(255,255,255,0.05);
+  border:1px dashed rgba(255,255,255,0.2);
+  text-align:center;font-size:14px;line-height:1.6;margin-top:16px;
+}
+.guest-hint a{color:#4ADE80;font-weight:700;text-decoration:none;}
+.guest-hint a:hover{text-decoration:underline;}
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;
+  font-size:14px;font-weight:700;box-shadow:0 12px 32px rgba(0,0,0,0.3);
+  z-index:100;opacity:0;transition:all .3s;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.err{background:#FF4D5E;color:#fff;}
+</style>
+</head><body>
+
+<div class="shop-wrap">
+  <a href="/profile" class="back-link">← В профиль</a>
+  <div class="shop-head">
+    <div class="shop-title">🛍 Магазин</div>
+    <div class="shop-coins">💰 <span id="coinsValue">0</span><small>монет</small></div>
+  </div>
+  <div class="items" id="itemsBox">
+    <div style="text-align:center;padding:40px;opacity:0.5;">Загрузка…</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LS_TOKEN = 'mgsu_token';
+const token = localStorage.getItem(LS_TOKEN) || '';
+const toast = document.getElementById('toast');
+
+function showToast(text, isError){
+  toast.textContent = text;
+  toast.className = 'toast show' + (isError ? ' err' : '');
+  setTimeout(() => toast.className = 'toast', 2200);
+}
+
+async function api(path, opts = {}){
+  const headers = Object.assign({'Content-Type':'application/json'}, opts.headers || {});
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(path, Object.assign({}, opts, {headers}));
+  return { status: res.status, data: await res.json() };
+}
+
+async function loadShop(){
+  try{
+    const { status, data } = await api('/api/shop/catalog');
+    if (!data.logged_in){
+      document.getElementById('itemsBox').innerHTML =
+        '<div class="guest-hint">💡 Чтобы покупать персонажей, <a href="/auth">войди в аккаунт</a>.<br>Монеты копятся за игры и выполненные задания.</div>';
+      document.getElementById('coinsValue').textContent = '0';
+      return;
+    }
+    document.getElementById('coinsValue').textContent = data.coins || 0;
+    renderItems(data.items || []);
+  }catch(e){
+    document.getElementById('itemsBox').innerHTML = '<div style="text-align:center;padding:40px;opacity:0.5;">Ошибка загрузки</div>';
+  }
+}
+
+function renderItems(items){
+  const box = document.getElementById('itemsBox');
+  box.innerHTML = '';
+  items.forEach(it => {
+    const el = document.createElement('div');
+    let cls = 'item';
+    if (it.active) cls += ' active';
+    else if (it.owned) cls += ' owned';
+    else if (!it.can_afford) cls += ' locked';
+    el.className = cls;
+    el.innerHTML =
+      '<div class="item-emoji">' + it.emoji + '</div>' +
+      '<div class="item-info">' +
+        '<div class="item-name">' + escapeHtml(it.name) + '</div>' +
+        '<div class="item-desc">' + escapeHtml(it.desc) + '</div>' +
+        (it.key === 'student' ? '' : '<div class="item-price">💰 ' + it.price + '</div>') +
+      '</div>' +
+      '<div class="item-actions"></div>';
+    const actions = el.querySelector('.item-actions');
+    const btn = document.createElement('button');
+    btn.className = 'item-btn';
+    if (it.active){
+      btn.textContent = '✓ Активен';
+      btn.className = 'item-btn equipped';
+      btn.disabled = true;
+    } else if (it.owned){
+      btn.textContent = 'Выбрать';
+      btn.className = 'item-btn primary';
+      btn.onclick = () => equip(it.key);
+    } else {
+      btn.textContent = it.can_afford ? 'Купить' : 'Не хватает';
+      btn.disabled = !it.can_afford;
+      btn.onclick = () => buy(it.key);
+    }
+    actions.appendChild(btn);
+    box.appendChild(el);
+  });
+}
+
+async function buy(key){
+  try{
+    const { status, data } = await api('/api/shop/buy', {method:'POST', body: JSON.stringify({key})});
+    if (status !== 200){ showToast(data.detail || 'Ошибка', true); return; }
+    showToast('Куплено! Персонаж активирован');
+    loadShop();
+  }catch(e){ showToast('Ошибка соединения', true); }
+}
+
+async function equip(key){
+  try{
+    const { status, data } = await api('/api/shop/equip', {method:'POST', body: JSON.stringify({key})});
+    if (status !== 200){ showToast(data.detail || 'Ошибка', true); return; }
+    showToast('Персонаж выбран');
+    loadShop();
+  }catch(e){ showToast('Ошибка соединения', true); }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+loadShop();
+</script>
+
+</body></html>

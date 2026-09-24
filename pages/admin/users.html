@@ -1,25 +1,167 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>В разработке · Админка МГСУ</title>
+<title>Пользователи · Админка МГСУ</title>
 <link rel="stylesheet" href="/static/admin.css">
+<style>
+.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
+.page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.stat-card{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
+.stat-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
+.stat-value{font-size:24px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
+
+.search-bar{
+  display:flex;gap:10px;margin-bottom:18px;
+}
+.search-bar input{
+  flex:1;padding:12px 16px;border-radius:10px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);
+  color:#fff;font-family:inherit;font-size:14px;outline:none;
+}
+.search-bar input:focus{border-color:rgba(255,255,255,0.5);}
+
+.users-table{width:100%;border-collapse:collapse;font-size:13px;}
+.users-table th{
+  text-align:left;padding:12px;font-size:11px;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+.users-table td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
+.users-table tr:last-child td{border-bottom:none;}
+.users-table tr:hover td{background:rgba(255,255,255,0.03);}
+.u-name{font-weight:700;color:#fff;}
+.u-uid{font-family:monospace;font-size:11px;color:rgba(255,255,255,0.5);}
+.u-num{font-variant-numeric:tabular-nums;font-weight:700;}
+.u-char{font-size:18px;}
+.u-date{font-size:12px;color:rgba(255,255,255,0.6);}
+</style>
 </head><body class="admin-page">
 
 <div class="admin-shell">
   <aside class="admin-sidebar" id="adminMenuContainer"></aside>
   <main class="admin-main">
-    <div style="text-align:center;padding:120px 20px;">
-      <div style="font-size:64px;margin-bottom:20px;">🚧</div>
-      <h1 style="font-size:28px;font-weight:800;color:#fff;margin-bottom:12px;">Страница в разработке</h1>
-      <p style="color:rgba(255,255,255,0.6);font-size:15px;">Скоро здесь появится раздел «Название».</p>
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Пользователи</h1>
+        <div class="page-sub">Кто зарегистрирован и когда заходил</div>
+      </div>
     </div>
+
+    <div class="stats-row" id="statsRow">Загрузка…</div>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Поиск по имени или UID…">
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Игрок</th>
+            <th>Персонаж</th>
+            <th>💰 Монеты</th>
+            <th>🏆 Очки</th>
+            <th>🔥 Серия</th>
+            <th>🎮 Партий</th>
+            <th>Был(а)</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </div>
+
   </main>
 </div>
 
 <script src="/static/admin-menu.js"></script>
 <script>
-adminRequireToken();
+const token = adminRequireToken();
 renderAdminMenu('users');
+
+const CHAR_EMOJI = {
+  student:'🎓', sso:'👷', prorab:'📋',
+  builder:'🏗️', prof:'🧑‍🏫', dean:'🧑‍💼', legend:'👑',
+};
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fmtTime(ts){
+  if (!ts) return '—';
+  const sec = Math.floor(Date.now()/1000 - ts);
+  if (sec < 60) return 'только что';
+  if (sec < 3600) return Math.floor(sec/60) + ' мин назад';
+  if (sec < 86400) return Math.floor(sec/3600) + ' ч назад';
+  if (sec < 7*86400) return Math.floor(sec/86400) + ' дн назад';
+  const d = new Date(ts*1000);
+  return d.toLocaleDateString('ru-RU');
+}
+
+async function loadUsers(search){
+  try{
+    const url = '/admin/api/users' + (search ? ('?search=' + encodeURIComponent(search)) : '');
+    const data = await adminApi(url);
+    renderStats(data);
+    renderUsers(data.users || []);
+  }catch(e){
+    document.getElementById('usersBody').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;padding:20px;color:#FF4D5E;">Ошибка: ' + escapeHtml(e.message) + '</td></tr>';
+  }
+}
+
+function renderStats(d){
+  const box = document.getElementById('statsRow');
+  const cards = [
+    {label:'Всего', value: d.total},
+    {label:'Активны 24ч', value: d.active_24h},
+    {label:'Активны 7д', value: d.active_7d},
+  ];
+  box.innerHTML = '';
+  cards.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'stat-card';
+    el.innerHTML = '<div class="stat-label">' + c.label + '</div><div class="stat-value">' + c.value + '</div>';
+    box.appendChild(el);
+  });
+}
+
+function renderUsers(users){
+  const body = document.getElementById('usersBody');
+  if (!users.length){
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;opacity:0.5;">Пока никого</td></tr>';
+    return;
+  }
+  body.innerHTML = '';
+  users.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' +
+        '<div class="u-name">' + escapeHtml(u.display_name) + '</div>' +
+        '<div class="u-uid">' + escapeHtml(u.uid) + '</div>' +
+      '</td>' +
+      '<td class="u-char">' + (CHAR_EMOJI[u.active_char] || '🎓') + '</td>' +
+      '<td class="u-num">' + u.coins + '</td>' +
+      '<td class="u-num">' + u.total_score + '</td>' +
+      '<td class="u-num">' + u.streak + '</td>' +
+      '<td class="u-num">' + u.games_played + '</td>' +
+      '<td class="u-date">' + fmtTime(u.last_seen) + '</td>';
+    body.appendChild(tr);
+  });
+}
+
+let searchTimer = null;
+document.getElementById('searchInput').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadUsers(e.target.value.trim()), 400);
+});
+
+loadUsers('');
+setInterval(() => loadUsers(document.getElementById('searchInput').value.trim()), 30000);
 </script>
 
 </body></html>

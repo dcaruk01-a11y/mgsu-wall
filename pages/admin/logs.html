@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Логи · Админка МГСУ</title>
+<link rel="stylesheet" href="/static/admin.css">
+<style>
+.page-header{margin-bottom:24px;}
+.page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
+
+.logs-table{width:100%;border-collapse:collapse;font-size:13px;}
+.logs-table th{text-align:left;padding:12px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.1);}
+.logs-table td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.logs-table tr:hover td{background:rgba(255,255,255,0.03);}
+.log-time{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.6);}
+.log-action{font-weight:700;color:#fff;}
+.log-uid{font-family:monospace;font-size:12px;color:#6FA8FF;}
+.log-details{color:rgba(255,255,255,0.7);}
+.empty{text-align:center;padding:60px;opacity:0.5;font-size:14px;}
+</style>
+</head><body class="admin-page">
+
+<div class="admin-shell">
+  <aside class="admin-sidebar" id="adminMenuContainer"></aside>
+  <main class="admin-main">
+
+    <div class="page-header">
+      <h1 class="page-title">Логи админки</h1>
+      <div class="page-sub">История всех действий за последнее время</div>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th>Время</th>
+            <th>Действие</th>
+            <th>Игрок</th>
+            <th>Детали</th>
+          </tr>
+        </thead>
+        <tbody id="logsBody"></tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script src="/static/admin-menu.js"></script>
+<script>
+const token = adminRequireToken();
+renderAdminMenu('system');
+
+const ACTION_LABELS = {
+  set_fields: '💰 Изменение полей',
+  give_char: '🎁 Выдача персонажа',
+  revoke_char: '❌ Забор персонажа',
+  set_active_char: '🎭 Смена активного',
+  reset_pin: '🔑 Сброс PIN',
+  ban: '🚫 Бан',
+  unban: '✅ Разбан',
+  delete_user: '🗑 Удаление',
+};
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadLogs(){
+  try{
+    const data = await adminApi('/admin/api/logs?limit=200');
+    renderLogs(data.logs || []);
+  }catch(e){
+    document.getElementById('logsBody').innerHTML =
+      '<tr><td colspan="4" style="text-align:center;padding:20px;color:#FF4D5E;">Ошибка: ' + escapeHtml(e.message) + '</td></tr>';
+  }
+}
+
+function renderLogs(logs){
+  const body = document.getElementById('logsBody');
+  if (!logs.length){
+    body.innerHTML = '<tr><td colspan="4" class="empty">Пока действий не было</td></tr>';
+    return;
+  }
+  body.innerHTML = '';
+  logs.forEach(l => {
+    const d = new Date(l.ts * 1000);
+    const time = d.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    const label = ACTION_LABELS[l.action] || l.action;
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="log-time">' + escapeHtml(time) + '</td>' +
+      '<td class="log-action">' + escapeHtml(label) + '</td>' +
+      '<td class="log-uid">' + escapeHtml(l.uid || '—') + '</td>' +
+      '<td class="log-details">' + escapeHtml(l.details || '—') + '</td>';
+    body.appendChild(tr);
+  });
+}
+
+loadLogs();
+setInterval(loadLogs, 15000);
+</script>
+
+</body></html>

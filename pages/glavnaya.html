@@ -8,50 +8,20 @@
 <style>
 /* Виджет ежедневных заданий */
 .daily-tasks-widget{
-  max-width:640px;
-  margin:0 auto;
-  padding:20px 24px;
-  border-radius:18px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.14);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
+  max-width:640px;margin:0 auto;padding:20px 24px;border-radius:18px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
 }
-.daily-tasks-widget h3{
-  font-size:13px;font-weight:700;letter-spacing:0.14em;
-  text-transform:uppercase;opacity:0.7;
-  margin:0 0 14px;
-}
-.daily-task-item{
-  display:flex;align-items:center;gap:12px;
-  padding:10px 0;
-  font-size:14px;
-  border-bottom:1px solid rgba(255,255,255,0.06);
-}
+.daily-tasks-widget h3{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.7;margin:0 0 14px;}
+.daily-task-item{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.06);}
 .daily-task-item:last-child{border-bottom:none;}
-.daily-task-check{
-  width:20px;height:20px;border-radius:50%;
-  border:2px solid rgba(255,255,255,0.3);
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;flex-shrink:0;
-}
-.daily-task-item.done .daily-task-check{
-  background:#4ADE80;border-color:#4ADE80;color:#0a1f0f;
-}
-.daily-task-item.done .daily-task-text{
-  text-decoration:line-through;opacity:0.55;
-}
+.daily-task-check{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.daily-task-item.done .daily-task-check{background:#4ADE80;border-color:#4ADE80;color:#0a1f0f;}
+.daily-task-item.done .daily-task-text{text-decoration:line-through;opacity:0.55;}
 .daily-task-text{flex:1;line-height:1.4;}
-.daily-task-reward{
-  font-size:12px;font-weight:700;color:#4ADE80;
-  white-space:nowrap;
-}
-.daily-tasks-guest{
-  font-size:13px;opacity:0.75;line-height:1.5;text-align:center;
-}
-.daily-tasks-guest a{
-  color:#4ADE80;font-weight:700;text-decoration:none;
-}
+.daily-task-reward{font-size:12px;font-weight:700;color:#4ADE80;white-space:nowrap;}
+.daily-tasks-guest{font-size:13px;opacity:0.75;line-height:1.5;text-align:center;}
+.daily-tasks-guest a{color:#4ADE80;font-weight:700;text-decoration:none;}
 .daily-tasks-guest a:hover{text-decoration:underline;}
 </style>
 </head><body>
@@ -105,6 +75,16 @@
     <button class="carousel-arrow left" type="button" onclick="scrollCarousel(-1)" aria-label="Назад">‹</button>
     <div class="games-carousel" id="gamesCarousel"></div>
     <button class="carousel-arrow right" type="button" onclick="scrollCarousel(1)" aria-label="Вперёд">›</button>
+  </div>
+</section>
+
+<!-- ═══════════ АКТИВ РАЗРАБОТЧИКОВ ═══════════ -->
+<section class="dev-credits" id="devCreditsSection" style="display:none;">
+  <div class="dev-credits__inner">
+    <div class="dev-credits__title" id="dcTitleEl"></div>
+    <div class="dev-credits__subtitle" id="dcSubtitleEl"></div>
+    <div class="dev-credits__grid" id="dcGridEl"></div>
+    <div class="dev-credits__footer" id="dcFooterEl"></div>
   </div>
 </section>
 
@@ -282,12 +262,9 @@ async function loadDailyTasks(){
   const token = localStorage.getItem('mgsu_token') || '';
   if (!token) return;
   try{
-    const r = await fetch('/api/tasks', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    const r = await fetch('/api/tasks', {headers:{'Authorization': 'Bearer ' + token}});
     const data = await r.json();
     if (!data.logged_in || !data.tasks || !data.tasks.length) return;
-
     const section = document.getElementById('dailyTasksSection');
     const list = document.getElementById('dailyTasksList');
     section.style.display = 'block';
@@ -305,6 +282,39 @@ async function loadDailyTasks(){
   }catch(e){}
 }
 
+/* ============ АКТИВ РАЗРАБОТЧИКОВ ============ */
+async function loadDevCredits(){
+  try{
+    const r = await fetch('/api/dev-credits');
+    const cfg = await r.json();
+    if (!cfg.enabled) return;
+    const section = document.getElementById('devCreditsSection');
+    document.getElementById('dcTitleEl').textContent = cfg.title || '';
+    document.getElementById('dcSubtitleEl').textContent = cfg.subtitle || '';
+    document.getElementById('dcFooterEl').textContent = cfg.footer || '';
+    const grid = document.getElementById('dcGridEl');
+    grid.innerHTML = '';
+    (cfg.cards || []).forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'dev-card';
+      el.innerHTML =
+        '<div class="dev-card__role"></div>' +
+        '<div class="dev-card__name"></div>' +
+        '<div class="dev-card__note"></div>';
+      el.querySelector('.dev-card__role').textContent = c.role || '';
+      el.querySelector('.dev-card__name').textContent = c.name || '';
+      el.querySelector('.dev-card__note').textContent = c.note || '';
+      grid.appendChild(el);
+    });
+    if (!cfg.cards || !cfg.cards.length){
+      grid.style.display = 'none';
+    } else {
+      grid.style.display = '';
+    }
+    section.style.display = 'block';
+  }catch(e){}
+}
+
 document.addEventListener('DOMContentLoaded', function(){
   ['gameModal','privacyModal'].forEach(function(id){
     var m = document.getElementById(id);
@@ -316,14 +326,13 @@ document.addEventListener('DOMContentLoaded', function(){
   document.addEventListener('keydown', e => { if (e.key==='Escape'){ closeGame(); closePrivacy(); } });
   loadGames();
   loadDailyTasks();
+  loadDevCredits();
 });
 </script>
 <script>
-// Публичный трекинг захода (IP + час) для всех, кто заходит
+// Публичный трекинг захода (IP + час)
 (function(){
-  try{
-    fetch('/api/visit', {method:'POST'}).catch(()=>{});
-  }catch(e){}
+  try{ fetch('/api/visit', {method:'POST'}).catch(()=>{}); }catch(e){}
 })();
 </script>
 </body></html>

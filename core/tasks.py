@@ -50,6 +50,13 @@ async def daily_loop():
                 print("login_attempts очищены")
             except Exception as e:
                 print("login_guard cleanup error:", e)
+                        # === Очистка registration_attempts ===
+            try:
+                from core.registration_guard import cleanup_old as rg_cleanup
+                await rg_cleanup()
+                print("registration_attempts очищены")
+            except Exception as e:
+                print("registration_guard cleanup error:", e)
 
             # === Очистка старой статистики ===
             try:

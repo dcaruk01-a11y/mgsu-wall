@@ -1,25 +1,128 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>В разработке · Админка МГСУ</title>
+<title>Игры · Админка МГСУ</title>
 <link rel="stylesheet" href="/static/admin.css">
+<style>
+.page-header{margin-bottom:28px;}
+.page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
+
+.games-list{display:flex;flex-direction:column;gap:12px;}
+.game-item{
+  padding:18px 22px;border-radius:14px;
+  background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);
+  display:flex;align-items:center;gap:16px;transition:background .15s;
+}
+.game-item:hover{background:rgba(255,255,255,0.07);}
+.game-item.disabled{opacity:0.5;}
+.game-info{flex:1;min-width:0;}
+.game-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;}
+.game-key{font-size:12px;color:rgba(255,255,255,0.4);font-family:monospace;}
+.game-status{
+  font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  padding:4px 10px;border-radius:999px;
+}
+.game-status.available{background:rgba(74,222,128,0.15);color:#4ADE80;border:1px solid rgba(74,222,128,0.4);}
+.game-status.soon{background:rgba(255,189,46,0.15);color:#FFBD2E;border:1px solid rgba(255,189,46,0.4);}
+.switch{
+  position:relative;width:52px;height:30px;
+  background:rgba(255,255,255,0.15);border-radius:999px;
+  cursor:pointer;transition:background .15s;flex-shrink:0;
+}
+.switch::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:24px;height:24px;border-radius:50%;
+  background:#fff;transition:transform .2s;
+}
+.switch.on{background:#4ADE80;}
+.switch.on::after{transform:translateX(22px);}
+
+.legend{
+  margin-top:24px;padding:16px 20px;border-radius:12px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
+  font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;
+}
+.legend b{color:#fff;}
+</style>
 </head><body class="admin-page">
 
 <div class="admin-shell">
   <aside class="admin-sidebar" id="adminMenuContainer"></aside>
   <main class="admin-main">
-    <div style="text-align:center;padding:120px 20px;">
-      <div style="font-size:64px;margin-bottom:20px;">🚧</div>
-      <h1 style="font-size:28px;font-weight:800;color:#fff;margin-bottom:12px;">Страница в разработке</h1>
-      <p style="color:rgba(255,255,255,0.6);font-size:15px;">Скоро здесь появится раздел «Название».</p>
+
+    <div class="page-header">
+      <h1 class="page-title">Игры</h1>
+      <div class="page-sub">Включай и отключай игры — изменения сразу появятся на главной</div>
     </div>
+
+    <div class="games-list" id="gamesList">Загрузка…</div>
+
+    <div class="legend">
+      <b>💡 Что значит:</b><br>
+      🟢 <b>Доступно</b> — игра открыта, плитка на главной активна.<br>
+      🟡 <b>Скоро</b> — плитка серая, кнопка «Играть» не работает.<br>
+      ⚪ Тумблер выключен — игра вообще не показывается на главной.
+    </div>
+
   </main>
 </div>
 
 <script src="/static/admin-menu.js"></script>
 <script>
-adminRequireToken();
+const token = adminRequireToken();
 renderAdminMenu('games');
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadGames(){
+  try{
+    const g = await adminApi('/admin/api/games');
+    renderGames(g.games || []);
+  }catch(e){
+    document.getElementById('gamesList').innerHTML =
+      '<div style="padding:20px;color:#FF4D5E;">Ошибка: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+function renderGames(games){
+  const box = document.getElementById('gamesList');
+  box.innerHTML = '';
+  games.forEach(g => {
+    const el = document.createElement('div');
+    el.className = 'game-item' + (g.enabled ? '' : ' disabled');
+
+    const status = g.status === 'available' ? 'available' : 'soon';
+    const statusLabel = g.status === 'available' ? 'Доступно' : 'Скоро';
+
+    el.innerHTML =
+      '<div class="game-info">' +
+        '<div class="game-name">' + escapeHtml(g.title) + '</div>' +
+        '<div class="game-key">' + escapeHtml(g.key) + '</div>' +
+      '</div>' +
+      '<div class="game-status ' + status + '">' + statusLabel + '</div>' +
+      '<div class="switch' + (g.enabled ? ' on' : '') + '"></div>';
+
+    el.querySelector('.switch').onclick = async () => {
+      const sw = el.querySelector('.switch');
+      const newVal = !sw.classList.contains('on');
+      sw.classList.toggle('on', newVal);
+      el.classList.toggle('disabled', !newVal);
+      try{
+        await adminApi('/admin/api/games', {
+          method:'POST',
+          body: JSON.stringify({key: g.key, enabled: newVal})
+        });
+      }catch(e){}
+    };
+
+    box.appendChild(el);
+  });
+}
+
+loadGames();
 </script>
 
 </body></html>

@@ -49,7 +49,8 @@ async def clicker():
 @router.get("/games/ekran")
 async def kiosk():
     return FileResponse("pages/games/kiosk.html")
-    
+
+
 @router.get("/games/broadway")
 async def broadway():
     return FileResponse("pages/games/broadway.html")
@@ -70,6 +71,7 @@ async def grable():
 async def privacy():
     return FileResponse("pages/privacy.html")
 
+
 @router.get("/auth")
 async def auth_page():
     return FileResponse("pages/auth.html")
@@ -78,3 +80,8 @@ async def auth_page():
 @router.get("/profile")
 async def profile_page():
     return FileResponse("pages/profile.html")
+
+
+@router.get("/shop")
+async def shop_page():
+    return FileResponse("pages/shop.html")

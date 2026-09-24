@@ -1,25 +1,181 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>В разработке · Админка МГСУ</title>
+<title>Ссылки · Админка МГСУ</title>
 <link rel="stylesheet" href="/static/admin.css">
+<style>
+.page-header{margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
+.page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
+.copy-btn{
+  padding:12px 20px;border-radius:10px;border:0;
+  background:#fff;color:#0F3C73;font-family:inherit;font-size:14px;
+  font-weight:800;cursor:pointer;transition:transform .1s;
+}
+.copy-btn:hover{transform:translateY(-1px);}
+
+.link-group{margin-bottom:24px;}
+.link-group-title{
+  font-size:12px;font-weight:800;letter-spacing:0.14em;
+  text-transform:uppercase;color:rgba(255,255,255,0.5);
+  padding:8px 0 12px;
+}
+.link-list{
+  border-radius:14px;background:rgba(255,255,255,0.045);
+  border:1px solid rgba(255,255,255,0.10);overflow:hidden;
+}
+.link-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);
+  font-size:14px;
+}
+.link-row:last-child{border-bottom:none;}
+.link-row span{color:rgba(255,255,255,0.85);}
+.link-row a{color:#6FA8FF;text-decoration:none;font-weight:600;font-size:13px;}
+.link-row a:hover{text-decoration:underline;}
+</style>
 </head><body class="admin-page">
 
 <div class="admin-shell">
   <aside class="admin-sidebar" id="adminMenuContainer"></aside>
   <main class="admin-main">
-    <div style="text-align:center;padding:120px 20px;">
-      <div style="font-size:64px;margin-bottom:20px;">🚧</div>
-      <h1 style="font-size:28px;font-weight:800;color:#fff;margin-bottom:12px;">Страница в разработке</h1>
-      <p style="color:rgba(255,255,255,0.6);font-size:15px;">Скоро здесь появится раздел «Название».</p>
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Ссылки</h1>
+        <div class="page-sub">Все сервисы проекта в одном месте</div>
+      </div>
+      <button class="copy-btn" id="copyAllBtn">📋 Скопировать всё</button>
     </div>
+
+    <div id="linksContainer">Загрузка…</div>
+
   </main>
 </div>
 
 <script src="/static/admin-menu.js"></script>
 <script>
-adminRequireToken();
+const token = adminRequireToken();
 renderAdminMenu('links');
+
+const host = location.origin;
+
+const GROUPS = [
+  {
+    name: 'Сайт',
+    links: [
+      {label:'Главная', url: host + '/glavnaya'},
+      {label:'Стена', url: host + '/games/wall'},
+      {label:'Кликер', url: host + '/games/clicker'},
+      {label:'Бродвей', url: host + '/games/broadway'},
+      {label:'Кампус', url: host + '/games/campus'},
+      {label:'Грабли', url: host + '/games/grable'},
+      {label:'Экран (киоск)', url: host + '/games/ekran'},
+      {label:'Рейтинги', url: host + '/ratings'},
+      {label:'Магазин', url: host + '/shop'},
+      {label:'О проекте', url: host + '/privacy'},
+    ]
+  },
+  {
+    name: 'Админка',
+    links: [
+      {label:'Дашборд', url: host + '/admin'},
+      {label:'Игры', url: host + '/admin/games'},
+      {label:'Расписание', url: host + '/admin/schedule'},
+      {label:'Аналитика', url: host + '/admin/analytics'},
+      {label:'Дизайн', url: host + '/admin/design'},
+      {label:'Команда', url: host + '/admin/team'},
+      {label:'Ссылки', url: host + '/admin/links'},
+      {label:'Статус (API)', url: host + '/status'},
+      {label:'Снимок вручную', url: host + '/snapshot'},
+    ]
+  },
+  {
+    name: 'Разработка',
+    links: [
+      {label:'GitHub репозиторий', url: 'https://github.com/dcaruk01-a11y/mgsu-wall'},
+      {label:'GitHub коммиты', url: 'https://github.com/dcaruk01-a11y/mgsu-wall/commits/main'},
+      {label:'Render дашборд', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug'},
+      {label:'Render Deploys', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug/deploys'},
+      {label:'Render Logs', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug/logs'},
+      {label:'Render Environment', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug/env'},
+    ]
+  },
+  {
+    name: 'База данных (Turso)',
+    links: [
+      {label:'Turso (сайт)', url: 'https://turso.tech'},
+      {label:'Turso Dashboard', url: 'https://app.turso.tech'},
+    ]
+  },
+  {
+    name: 'Telegram',
+    links: [
+      {label:'Канал «Стена МГСУ»', url: 'https://t.me/mgsu_wall_archive'},
+      {label:'Feedback-бот', url: 'https://t.me/mgsu_feedback_bot'},
+      {label:'BotFather', url: 'https://t.me/BotFather'},
+      {label:'UserInfoBot (узнать ID)', url: 'https://t.me/userinfobot'},
+    ]
+  },
+  {
+    name: 'Мониторинг',
+    links: [
+      {label:'Cron-job.org', url: 'https://console.cron-job.org/jobs'},
+      {label:'UptimeRobot', url: 'https://dashboard.uptimerobot.com'},
+    ]
+  },
+  {
+    name: 'Инструменты',
+    links: [
+      {label:'QR-генератор', url: 'https://www.qr-code-generator.com'},
+      {label:'Сжать изображения', url: 'https://tinypng.com'},
+      {label:'Figma', url: 'https://figma.com'},
+      {label:'Google Fonts', url: 'https://fonts.google.com'},
+      {label:'DeepSeek (для постов)', url: 'https://chat.deepseek.com'},
+    ]
+  },
+];
+
+function render(){
+  const box = document.getElementById('linksContainer');
+  box.innerHTML = '';
+  GROUPS.forEach(g => {
+    const el = document.createElement('div');
+    el.className = 'link-group';
+    let html = '<div class="link-group-title">' + g.name + '</div>';
+    html += '<div class="link-list">';
+    g.links.forEach(l => {
+      html += '<div class="link-row">' +
+        '<span>' + l.label + '</span>' +
+        '<a href="' + l.url + '" target="_blank" rel="noopener">открыть →</a>' +
+      '</div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+    box.appendChild(el);
+  });
+}
+
+document.getElementById('copyAllBtn').onclick = async () => {
+  let text = '';
+  GROUPS.forEach(g => {
+    text += '\n=== ' + g.name + ' ===\n';
+    g.links.forEach(l => {
+      text += l.label + ': ' + l.url + '\n';
+    });
+  });
+  try{
+    await navigator.clipboard.writeText(text.trim());
+    const btn = document.getElementById('copyAllBtn');
+    const old = btn.textContent;
+    btn.textContent = '✓ Скопировано!';
+    setTimeout(() => btn.textContent = old, 1500);
+  }catch(e){
+    alert('Не удалось скопировать');
+  }
+};
+
+render();
 </script>
 
 </body></html>

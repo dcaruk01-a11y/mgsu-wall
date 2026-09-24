@@ -21,16 +21,24 @@ async def db_init():
 
 
 async def save_stroke(s):
+    """Возвращает id вставленного штриха."""
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute(
-            "INSERT INTO strokes(day,x0,y0,x1,y1,color,width,ts) VALUES (?,?,?,?,?,?,?,?)",
+            "INSERT INTO strokes(day,x0,y0,x1,y1,color,width,ts) "
+            "VALUES (?,?,?,?,?,?,?,?) RETURNING id",
             (today_str(), s["x0"], s["y0"], s["x1"], s["y1"], s["color"], s["width"], s["ts"])
         )
+        row = await cur.fetchone()
         await db.commit()
-        return cur.lastrowid
+        if row:
+            return row[0]
+        # fallback на lastrowid, если RETURNING не сработал
+        return getattr(cur, "lastrowid", None)
 
 
 async def delete_stroke(stroke_id):
+    if stroke_id is None:
+        return
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM strokes WHERE id=?", (stroke_id,))
         await db.commit()
@@ -43,7 +51,7 @@ async def load_today_strokes():
             (today_str(),)
         )
         rows = await cur.fetchall()
-    return [dict(zip(["id","x0","y0","x1","y1","color","width","ts"], r)) for r in rows]
+    return [dict(zip(["id", "x0", "y0", "x1", "y1", "color", "width", "ts"], r)) for r in rows]
 
 
 async def clear_today():

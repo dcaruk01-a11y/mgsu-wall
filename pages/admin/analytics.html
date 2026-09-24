@@ -1,25 +1,228 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>В разработке · Админка МГСУ</title>
+<title>Аналитика · Админка МГСУ</title>
 <link rel="stylesheet" href="/static/admin.css">
+<style>
+.page-header{margin-bottom:28px;}
+.page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
+
+.block{margin-bottom:28px;}
+.block h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:16px;}
+.card-block{padding:20px;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
+
+.hours-chart{display:flex;align-items:flex-end;gap:4px;height:160px;padding:20px 0;}
+.hour-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;}
+.hour-bar{width:100%;min-height:2px;background:#6FA8FF;border-radius:3px 3px 0 0;transition:background .15s;}
+.hour-bar:hover{background:#fff;}
+.hour-label{font-size:9px;color:rgba(255,255,255,0.4);font-variant-numeric:tabular-nums;}
+.hour-col.peak .hour-bar{background:#4ADE80;}
+.devices{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+.device-chip{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);}
+.device-chip b{color:#fff;margin-left:6px;}
+
+.geo-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.geo-chip{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);}
+.geo-chip b{color:#fff;margin-left:6px;}
+
+.ip-table{width:100%;border-collapse:collapse;font-size:13px;}
+.ip-table th{text-align:left;padding:10px 12px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.1);}
+.ip-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
+.ip-table tr:last-child td{border-bottom:none;}
+.ip-subnet{font-family:monospace;font-size:13px;color:#fff;}
+.ip-visits{font-weight:700;font-variant-numeric:tabular-nums;}
+.ip-select{padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:12px;cursor:pointer;}
+.ip-select option{background:#0F1524;color:#fff;}
+
+.tasks-row{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:6px;font-size:13px;}
+.tasks-text{flex:1;color:#fff;font-weight:500;}
+.tasks-count{font-size:13px;font-weight:700;color:rgba(255,255,255,0.75);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.tasks-bar{width:80px;height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;flex-shrink:0;}
+.tasks-bar-fill{height:100%;background:#4ADE80;transition:width .3s;}
+.tasks-summary-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:12px;color:rgba(255,255,255,0.55);letter-spacing:0.08em;text-transform:uppercase;}
+</style>
 </head><body class="admin-page">
 
 <div class="admin-shell">
   <aside class="admin-sidebar" id="adminMenuContainer"></aside>
   <main class="admin-main">
-    <div style="text-align:center;padding:120px 20px;">
-      <div style="font-size:64px;margin-bottom:20px;">🚧</div>
-      <h1 style="font-size:28px;font-weight:800;color:#fff;margin-bottom:12px;">Страница в разработке</h1>
-      <p style="color:rgba(255,255,255,0.6);font-size:15px;">Скоро здесь появится раздел «Название».</p>
+
+    <div class="page-header">
+      <h1 class="page-title">Аналитика</h1>
+      <div class="page-sub">По часам, по IP, ежедневные задания</div>
     </div>
+
+    <div class="block">
+      <h2>По часам</h2>
+      <div class="card-block">
+        <div class="hours-chart" id="hoursChart">Загрузка…</div>
+        <div class="devices" id="devicesBox"></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2>Откуда заходят (IP)</h2>
+      <div class="card-block">
+        <div class="geo-row" id="geoRow">Загрузка…</div>
+        <div style="overflow-x:auto;">
+          <table class="ip-table">
+            <thead>
+              <tr><th>Подсеть</th><th>Заходов</th><th>Категория</th></tr>
+            </thead>
+            <tbody id="ipTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2>Ежедневные задания</h2>
+      <div class="card-block">
+        <div class="tasks-summary-head">
+          <span id="tasksDayLabel">—</span>
+          <span id="tasksTotalsLabel">—</span>
+        </div>
+        <div id="tasksSummaryBox">Загрузка…</div>
+      </div>
+    </div>
+
   </main>
 </div>
 
 <script src="/static/admin-menu.js"></script>
 <script>
-adminRequireToken();
+const token = adminRequireToken();
 renderAdminMenu('analytics');
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadHours(){
+  try{
+    const r = await adminApi('/admin/api/hours?days=1');
+    renderHours(r.hours || []);
+    renderDevices(r.devices || []);
+  }catch(e){}
+}
+
+function renderHours(hours){
+  const box = document.getElementById('hoursChart');
+  if (!hours.length){ box.textContent = 'Нет данных'; return; }
+  const max = Math.max(...hours.map(h => h.visits), 1);
+  box.innerHTML = '';
+  hours.forEach(h => {
+    const pct = (h.visits / max) * 100;
+    const isPeak = h.visits === max && h.visits > 0;
+    const col = document.createElement('div');
+    col.className = 'hour-col' + (isPeak ? ' peak' : '');
+    col.title = h.hour + ':00 — ' + h.visits + ' заходов, ' + h.uniques + ' уник.';
+    col.innerHTML = '<div class="hour-bar" style="height:' + Math.max(2, pct) + '%"></div><div class="hour-label">' + h.hour + '</div>';
+    box.appendChild(col);
+  });
+}
+
+function renderDevices(devices){
+  const box = document.getElementById('devicesBox');
+  if (!devices.length){ box.innerHTML = ''; return; }
+  const labels = {mobile:'📱 Телефон', desktop:'💻 ПК', tablet:'📱 Планшет', unknown:'—'};
+  box.innerHTML = '';
+  devices.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'device-chip';
+    el.innerHTML = (labels[d.device] || d.device) + '<b>' + d.pct + '%</b>';
+    box.appendChild(el);
+  });
+}
+
+async function loadIps(){
+  try{
+    const r = await adminApi('/admin/api/ips');
+    renderGeo(r.geo || []);
+    renderIpTable(r.ips || []);
+  }catch(e){}
+}
+
+function renderGeo(geo){
+  const box = document.getElementById('geoRow');
+  if (!geo.length){ box.textContent = 'Пока нет данных'; return; }
+  box.innerHTML = '';
+  geo.forEach(g => {
+    const el = document.createElement('div');
+    el.className = 'geo-chip';
+    el.innerHTML = g.label + '<b>' + g.pct + '%</b>';
+    box.appendChild(el);
+  });
+}
+
+function renderIpTable(ips){
+  const body = document.getElementById('ipTableBody');
+  if (!ips.length){
+    body.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;opacity:0.5;">Пока пусто</td></tr>';
+    return;
+  }
+  body.innerHTML = '';
+  ips.forEach(ip => {
+    const tr = document.createElement('tr');
+    const sel = document.createElement('select');
+    sel.className = 'ip-select';
+    [['unknown','Не размечено'],['mgsu','МГСУ'],['dorm','Общежитие'],['mobile','Мобильный'],['other','Другое']].forEach(([v,l]) => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = l;
+      if (v === ip.tag) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.onchange = async () => {
+      try{
+        await adminApi('/admin/api/ips/tag', {
+          method:'POST',
+          body: JSON.stringify({subnet: ip.subnet, tag: sel.value, label: ip.label || ''})
+        });
+        loadIps();
+      }catch(e){}
+    };
+    tr.innerHTML = '<td class="ip-subnet">' + escapeHtml(ip.subnet) + '.*</td><td class="ip-visits">' + ip.visits + '</td>';
+    const td = document.createElement('td');
+    td.appendChild(sel);
+    tr.appendChild(td);
+    body.appendChild(tr);
+  });
+}
+
+async function loadTasksSummary(){
+  try{
+    const r = await adminApi('/admin/api/tasks-summary');
+    renderTasksSummary(r);
+  }catch(e){}
+}
+
+function renderTasksSummary(data){
+  const box = document.getElementById('tasksSummaryBox');
+  document.getElementById('tasksDayLabel').textContent = 'День: ' + (data.day || '—');
+  document.getElementById('tasksTotalsLabel').textContent = (data.total_users || 0) + ' игроков · ' + (data.total_completed || 0) + ' выполнений';
+  if (!data.tasks || !data.tasks.length){
+    box.innerHTML = '<div style="padding:20px;text-align:center;opacity:0.5;font-size:13px;">Сегодня задания ещё никто не получил</div>';
+    return;
+  }
+  box.innerHTML = '';
+  data.tasks.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'tasks-row';
+    row.innerHTML =
+      '<div class="tasks-text">' + escapeHtml(t.text) + '</div>' +
+      '<div class="tasks-bar"><div class="tasks-bar-fill" style="width:' + t.pct + '%"></div></div>' +
+      '<div class="tasks-count">' + t.done + ' / ' + t.taken + '</div>';
+    box.appendChild(row);
+  });
+}
+
+loadHours();
+loadIps();
+loadTasksSummary();
+setInterval(loadHours, 60000);
+setInterval(loadIps, 120000);
+setInterval(loadTasksSummary, 60000);
 </script>
 
 </body></html>

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Дашборд · Админка Игр МГСУ</title>
+<title>Дашборд · Админка МГСУ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/static/admin.css">
@@ -22,8 +22,8 @@
 .health-label{font-size:16px;font-weight:800;margin-bottom:4px;}
 .health-text{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.5;}
 
-.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:32px;}
-.metric-card{position:relative;padding:20px 22px;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);transition:background .15s;}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.metric-card{padding:20px 22px;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
 .metric-card.good{border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.05);}
 .metric-card.warn{border-color:rgba(255,189,46,0.35);background:rgba(255,189,46,0.05);}
 .metric-card.bad{border-color:rgba(255,77,94,0.35);background:rgba(255,77,94,0.05);}
@@ -48,314 +48,62 @@
 .export-btn:disabled{opacity:0.5;cursor:wait;}
 .export-hint{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;flex:1;min-width:200px;}
 
-.schedule-block{padding:24px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);border-radius:14px;display:flex;flex-direction:column;gap:18px;}
-.schedule-status{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);}
-.schedule-status .dot{width:12px;height:12px;border-radius:50%;box-shadow:0 0 10px currentColor;}
-.schedule-status.open .dot{background:#4ADE80;color:#4ADE80;}
-.schedule-status.closed .dot{background:#FF4D5E;color:#FF4D5E;}
-.schedule-status strong{font-size:14px;font-weight:800;color:#fff;}
-.schedule-status span{font-size:13px;color:rgba(255,255,255,0.6);margin-left:auto;}
-.schedule-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.schedule-input-group label{display:block;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
-.schedule-input-group input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-family:inherit;font-size:15px;outline:none;box-sizing:border-box;}
-.schedule-input-group input:focus{border-color:rgba(255,255,255,0.4);}
-.override-row{display:flex;gap:10px;flex-wrap:wrap;}
-.override-btn{flex:1;min-width:140px;padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.8);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
-.override-btn:hover{background:rgba(255,255,255,0.10);color:#fff;}
-.override-btn.active{background:#fff;color:#0F3C73;border-color:#fff;}
-.override-btn.active.open-active{background:#4ADE80;color:#0a1f0f;border-color:#4ADE80;}
-.override-btn.active.closed-active{background:#FF4D5E;color:#fff;border-color:#FF4D5E;}
-.save-schedule-btn{padding:14px;border-radius:10px;border:0;background:#fff;color:#0F3C73;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:transform .1s;}
-.save-schedule-btn:hover{transform:translateY(-1px);}
+.page-header{margin-bottom:28px;}
+.page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
 
-.error-box{
-  padding:16px 20px;border-radius:12px;
-  background:rgba(255,77,94,0.1);border:1px solid rgba(255,77,94,0.4);
-  color:#FFB8BF;font-size:13px;line-height:1.6;
-  margin-bottom:20px;display:none;
-}
+.error-box{padding:16px 20px;border-radius:12px;background:rgba(255,77,94,0.1);border:1px solid rgba(255,77,94,0.4);color:#FFB8BF;font-size:13px;line-height:1.6;margin-bottom:20px;display:none;}
 .error-box.show{display:block;}
-
-/* IP */
-.ip-table{width:100%;border-collapse:collapse;font-size:13px;}
-.ip-table th{text-align:left;padding:10px 12px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.1);}
-.ip-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
-.ip-table tr:last-child td{border-bottom:none;}
-.ip-subnet{font-family:monospace;font-size:13px;color:#fff;}
-.ip-visits{font-weight:700;font-variant-numeric:tabular-nums;}
-.ip-select{padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:12px;cursor:pointer;}
-.ip-select option{background:#0F1524;color:#fff;}
-.geo-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
-.geo-chip{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);}
-.geo-chip b{color:#fff;margin-left:6px;}
-
-/* Часы */
-.hours-chart{display:flex;align-items:flex-end;gap:4px;height:160px;padding:20px 0;}
-.hour-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;}
-.hour-bar{width:100%;min-height:2px;background:#6FA8FF;border-radius:3px 3px 0 0;transition:background .15s;}
-.hour-bar:hover{background:#fff;}
-.hour-label{font-size:9px;color:rgba(255,255,255,0.4);font-variant-numeric:tabular-nums;}
-.hour-col.peak .hour-bar{background:#4ADE80;}
-.devices{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
-.device-chip{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);}
-.device-chip b{color:#fff;margin-left:6px;}
-
-/* Задания */
-.tasks-row{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:6px;font-size:13px;}
-.tasks-text{flex:1;color:#fff;font-weight:500;}
-.tasks-count{font-size:13px;font-weight:700;color:rgba(255,255,255,0.75);font-variant-numeric:tabular-nums;white-space:nowrap;}
-.tasks-bar{width:80px;height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;flex-shrink:0;}
-.tasks-bar-fill{height:100%;background:#4ADE80;transition:width .3s;}
-.tasks-summary-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:12px;color:rgba(255,255,255,0.55);letter-spacing:0.08em;text-transform:uppercase;}
-
-/* Актив разработчиков */
-.dc-block{padding:22px;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
-.dc-row{margin-bottom:14px;}
-.dc-row label{display:block;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
-.dc-input, .dc-textarea{
-  width:100%;padding:10px 14px;border-radius:10px;
-  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);
-  color:#fff;font-family:inherit;font-size:14px;outline:none;box-sizing:border-box;
-}
-.dc-textarea{min-height:60px;resize:vertical;}
-.dc-input:focus,.dc-textarea:focus{border-color:rgba(255,255,255,0.5);}
-.dc-card-item{
-  padding:14px;border-radius:10px;background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);margin-bottom:10px;
-  display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:center;
-}
-.dc-card-item input{margin:0;}
-.dc-card-remove{
-  width:32px;height:32px;border-radius:8px;
-  background:rgba(255,77,94,0.15);border:1px solid rgba(255,77,94,0.4);
-  color:#FF4D5E;font-weight:700;cursor:pointer;font-size:16px;
-}
-.dc-card-remove:hover{background:rgba(255,77,94,0.3);}
-.dc-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
-.dc-btn{padding:10px 18px;border-radius:10px;border:0;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:transform .1s;}
-.dc-btn:hover{transform:translateY(-1px);}
-.dc-btn-primary{background:#fff;color:#0F3C73;}
-.dc-btn-ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);}
-.dc-toggle{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
-.dc-toggle .switch{flex-shrink:0;}
-.dc-toggle span{font-size:14px;font-weight:600;}
-@media(max-width:720px){.dc-card-item{grid-template-columns:1fr;}}
 </style>
 </head><body class="admin-page">
 
-<div id="dashView" class="admin-wrap">
-  <div class="admin-header">
-    <div>
-      <div class="admin-title">Дашборд</div>
-      <div class="admin-sub" id="uptimeLabel">—</div>
+<div class="admin-shell">
+  <aside class="admin-sidebar" id="adminMenuContainer"></aside>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <h1 class="page-title">Дашборд</h1>
+      <div class="page-sub" id="uptimeLabel">Загрузка…</div>
     </div>
-    <button class="logout-btn" id="logoutBtn">Выйти</button>
-  </div>
 
-  <div class="error-box" id="errorBox"></div>
+    <div class="error-box" id="errorBox"></div>
 
-  <div class="health-banner" id="healthBanner">
-    <div class="health-dot"></div>
-    <div class="health-info">
-      <div class="health-label" id="healthLabel">—</div>
-      <div class="health-text" id="healthText">—</div>
-    </div>
-  </div>
-
-  <div class="metrics-grid" id="metricsGrid">Загрузка…</div>
-
-  <div class="section-admin">
-    <h2>Экспорт статистики</h2>
-    <div class="export-block">
-      <select id="exportPeriod">
-        <option value="1">За сегодня</option>
-        <option value="7" selected>За 7 дней</option>
-        <option value="30">За 30 дней</option>
-        <option value="90">За 90 дней</option>
-      </select>
-      <button class="export-btn" id="exportBtn">Скачать Excel</button>
-      <div class="export-hint" id="storageHint">—</div>
-    </div>
-  </div>
-
-  <div class="section-admin">
-    <h2>Расписание и доступ</h2>
-    <div class="schedule-block">
-      <div class="schedule-status" id="scheduleStatus">
-        <div class="dot"></div>
-        <strong id="scheduleStatusText">—</strong>
-        <span id="scheduleCurrentTime">—</span>
-      </div>
-      <div class="schedule-row">
-        <div class="schedule-input-group">
-          <label>Открытие — час</label>
-          <input type="number" id="openHour" min="0" max="23" value="8">
-        </div>
-        <div class="schedule-input-group">
-          <label>Открытие — минуты</label>
-          <input type="number" id="openMinute" min="0" max="59" value="30">
-        </div>
-        <div class="schedule-input-group">
-          <label>Закрытие — час</label>
-          <input type="number" id="closeHour" min="0" max="23" value="17">
-        </div>
-        <div class="schedule-input-group">
-          <label>Закрытие — минуты</label>
-          <input type="number" id="closeMinute" min="0" max="59" value="20">
-        </div>
-      </div>
-      <div>
-        <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;">Режим принудительно</label>
-        <div class="override-row">
-          <button class="override-btn" data-override="auto">По расписанию</button>
-          <button class="override-btn" data-override="open">Всегда открыто</button>
-          <button class="override-btn" data-override="close">Всегда закрыто</button>
-        </div>
-      </div>
-      <button class="save-schedule-btn" id="saveScheduleBtn">Сохранить расписание</button>
-    </div>
-  </div>
-
-  <div class="section-admin">
-    <h2>Актив разработчиков</h2>
-    <div class="dc-block">
-      <div class="dc-toggle">
-        <div class="switch" id="dcEnabled"></div>
-        <span>Показывать блок на главной странице</span>
-      </div>
-
-      <div class="dc-row">
-        <label>Заголовок</label>
-        <input type="text" class="dc-input" id="dcTitle" placeholder="Актив разработчиков">
-      </div>
-
-      <div class="dc-row">
-        <label>Подзаголовок</label>
-        <input type="text" class="dc-input" id="dcSubtitle" placeholder="Проект делает команда студентов">
-      </div>
-
-      <div class="dc-row">
-        <label>Карточки (роль / имя / примечание)</label>
-        <div id="dcCardsBox"></div>
-        <button class="dc-btn dc-btn-ghost" id="dcAddCard" type="button" style="margin-top:6px;">+ Добавить карточку</button>
-      </div>
-
-      <div class="dc-row">
-        <label>Подпись внизу</label>
-        <textarea class="dc-textarea" id="dcFooter" placeholder="Хочешь в команду? Напиши нам."></textarea>
-      </div>
-
-      <div class="dc-actions">
-        <button class="dc-btn dc-btn-primary" id="dcSave">Сохранить</button>
+    <div class="health-banner" id="healthBanner">
+      <div class="health-dot"></div>
+      <div class="health-info">
+        <div class="health-label" id="healthLabel">—</div>
+        <div class="health-text" id="healthText">—</div>
       </div>
     </div>
-  </div>
 
-  <div class="section-admin">
-    <h2>По часам</h2>
-    <div class="card-block">
-      <div class="hours-chart" id="hoursChart">Загрузка…</div>
-      <div class="devices" id="devicesBox"></div>
-    </div>
-  </div>
+    <div class="metrics-grid" id="metricsGrid">Загрузка…</div>
 
-  <div class="section-admin">
-    <h2>Откуда заходят (IP)</h2>
-    <div class="card-block">
-      <div class="geo-row" id="geoRow">Загрузка…</div>
-      <div style="overflow-x:auto;">
-        <table class="ip-table" id="ipTable">
-          <thead>
-            <tr>
-              <th>Подсеть</th>
-              <th>Заходов</th>
-              <th>Категория</th>
-            </tr>
-          </thead>
-          <tbody id="ipTableBody"></tbody>
-        </table>
+    <div class="section-admin" style="margin-top:32px;">
+      <h2 style="font-size:18px;font-weight:700;color:#fff;margin-bottom:16px;">Экспорт статистики</h2>
+      <div class="export-block">
+        <select id="exportPeriod">
+          <option value="1">За сегодня</option>
+          <option value="7" selected>За 7 дней</option>
+          <option value="30">За 30 дней</option>
+          <option value="90">За 90 дней</option>
+        </select>
+        <button class="export-btn" id="exportBtn">Скачать Excel</button>
+        <div class="export-hint" id="storageHint">—</div>
       </div>
     </div>
-  </div>
-
-  <div class="section-admin">
-    <h2>Ежедневные задания</h2>
-    <div class="card-block">
-      <div class="tasks-summary-head">
-        <span id="tasksDayLabel">—</span>
-        <span id="tasksTotalsLabel">—</span>
-      </div>
-      <div id="tasksSummaryBox">Загрузка…</div>
-    </div>
-  </div>
-
-  <div class="section-admin">
-    <h2>Топ кликера сегодня</h2>
-    <div class="card-block" id="clickerTopBox">Загрузка…</div>
-  </div>
-
-  <div class="section-admin">
-    <h2>Игры</h2>
-    <div class="card-block" id="gamesBox">Загрузка…</div>
-  </div>
-
-  <div class="section-admin">
-    <h2>Тема оформления</h2>
-    <div class="card-block">
-      <div class="theme-row" id="themeRow">
-        <button class="theme-btn" data-theme="classic">Классика</button>
-        <button class="theme-btn" data-theme="retro">Retro-Tech</button>
-        <button class="theme-btn" data-theme="notebook">Notebook (Y2K)</button>
-        <button class="theme-btn" data-theme="cyberpunk">Cyberpunk</button>
-        <button class="theme-btn" data-theme="cozy">Cozy (pixel)</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-admin">
-    <h2>Все ссылки</h2>
-    <div class="card-block" style="padding:0;" id="linksBox"></div>
-  </div>
+  </main>
 </div>
 
+<script src="/static/admin-menu.js"></script>
 <script>
-const LS_KEY = 'mgsu_admin_token';
-let token = localStorage.getItem(LS_KEY) || '';
-let refreshTimer = null;
-
-if (!token) location.href = '/admin/login';
+const token = adminRequireToken();
+renderAdminMenu('dashboard');
 
 function showError(msg){
-  const box = document.getElementById('errorBox');
-  if (!box) return;
-  box.textContent = '⚠ ' + msg;
-  box.classList.add('show');
+  const b = document.getElementById('errorBox');
+  b.textContent = '⚠ ' + msg;
+  b.classList.add('show');
 }
-function hideError(){
-  const box = document.getElementById('errorBox');
-  if (box) box.classList.remove('show');
-}
-
-async function api(path, opts = {}){
-  const headers = Object.assign({'Content-Type':'application/json'}, opts.headers || {});
-  if (token) headers['Authorization'] = 'Bearer ' + token;
-  const res = await fetch(path, Object.assign({}, opts, {headers}));
-  if (res.status === 401){
-    localStorage.removeItem(LS_KEY);
-    location.href = '/admin/login';
-    throw new Error('unauthorized');
-  }
-  if (!res.ok){
-    throw new Error('HTTP ' + res.status + ' для ' + path);
-  }
-  return res.json();
-}
-
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  try{ await api('/admin/api/logout', {method:'POST'}); }catch(e){}
-  localStorage.removeItem(LS_KEY);
-  location.href = '/admin/login';
-});
 
 function fmtUptime(sec){
   if (!sec && sec !== 0) return '—';
@@ -367,39 +115,32 @@ function fmtUptime(sec){
   return m + 'м';
 }
 
-async function refreshAll(){
-  hideError();
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadDashboard(){
   try{
-    const s = await api('/admin/api/stats');
-    const uptimeEl = document.getElementById('uptimeLabel');
-    if (uptimeEl) uptimeEl.textContent = 'Сервер работает: ' + fmtUptime(s.uptime_sec);
+    const s = await adminApi('/admin/api/stats');
+    document.getElementById('uptimeLabel').textContent = 'Сервер работает: ' + fmtUptime(s.uptime_sec);
     renderHealth(s.health);
     renderMetrics(s.metrics || []);
-    renderClickerTop(s.clicker_top || []);
-    const g = await api('/admin/api/games');
-    renderGames(g.games || []);
-    renderTheme(g.theme || 'classic');
-    renderLinks();
   }catch(e){
-    if (e.message !== 'unauthorized'){
-      showError('Ошибка загрузки: ' + e.message);
-    }
+    showError('Ошибка загрузки: ' + e.message);
   }
 }
 
 function renderHealth(h){
   const banner = document.getElementById('healthBanner');
-  const label = document.getElementById('healthLabel');
-  const text = document.getElementById('healthText');
   if (!h){
     banner.className = 'health-banner';
-    label.textContent = 'Нет данных';
-    text.textContent = '';
+    document.getElementById('healthLabel').textContent = 'Нет данных';
+    document.getElementById('healthText').textContent = '';
     return;
   }
   banner.className = 'health-banner ' + (h.status || 'neutral');
-  label.textContent = h.label || '';
-  text.textContent = h.text || '';
+  document.getElementById('healthLabel').textContent = h.label || '';
+  document.getElementById('healthText').textContent = h.text || '';
 }
 
 function renderMetrics(metrics){
@@ -430,126 +171,7 @@ function renderMetrics(metrics){
   }
 }
 
-function renderClickerTop(top){
-  const box = document.getElementById('clickerTopBox');
-  if (!top.length){ box.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:14px;">Пока никого</div>'; return; }
-  box.innerHTML = '';
-  top.forEach((e, i) => {
-    const row = document.createElement('div');
-    row.className = 'link-row';
-    row.innerHTML = '<span>#' + (i+1) + ' <b>' + escapeHtml(e.nick) + '</b></span><span>' + e.score + ' — ' + escapeHtml(e.rank) + '</span>';
-    box.appendChild(row);
-  });
-}
-
-function renderGames(games){
-  const box = document.getElementById('gamesBox');
-  box.innerHTML = '';
-  games.forEach(g => {
-    const row = document.createElement('div');
-    row.className = 'game-row';
-    row.innerHTML = '<span class="name">' + escapeHtml(g.title) + ' <span style="color:rgba(255,255,255,0.4);font-size:12px;">(' + g.key + ')</span></span>';
-    const sw = document.createElement('div');
-    sw.className = 'switch' + (g.enabled ? ' on' : '');
-    sw.onclick = async () => {
-      const newVal = !sw.classList.contains('on');
-      sw.classList.toggle('on', newVal);
-      try{ await api('/admin/api/games', {method:'POST', body: JSON.stringify({key: g.key, enabled: newVal})}); }catch(e){}
-    };
-    row.appendChild(sw);
-    box.appendChild(row);
-  });
-}
-
-function renderTheme(theme){
-  document.querySelectorAll('.theme-btn').forEach(b => {
-    if (b.dataset.theme === theme) b.classList.add('active');
-    else b.classList.remove('active');
-  });
-}
-
-document.querySelectorAll('.theme-btn').forEach(b => {
-  b.addEventListener('click', async () => {
-    if (b.classList.contains('disabled')) return;
-    const theme = b.dataset.theme;
-    try{ await api('/admin/api/theme', {method:'POST', body: JSON.stringify({theme})}); renderTheme(theme); }catch(e){}
-  });
-});
-
-/* ============ РАСПИСАНИЕ ============ */
-let currentOverride = null;
-
-async function loadSchedule(){
-  try{
-    const res = await api('/admin/api/schedule');
-    const s = res.schedule;
-    document.getElementById('openHour').value = s.open_hour;
-    document.getElementById('openMinute').value = s.open_minute;
-    document.getElementById('closeHour').value = s.close_hour;
-    document.getElementById('closeMinute').value = s.close_minute;
-    currentOverride = s.force_override;
-    renderOverrideButtons();
-    renderScheduleStatus(res);
-  }catch(e){ console.warn('schedule load error:', e.message); }
-}
-
-function renderScheduleStatus(res){
-  const el = document.getElementById('scheduleStatus');
-  const txt = document.getElementById('scheduleStatusText');
-  const cur = document.getElementById('scheduleCurrentTime');
-  const s = res.schedule;
-  if (res.is_open_now){
-    el.classList.add('open'); el.classList.remove('closed');
-    txt.textContent = 'Игры доступны';
-  } else {
-    el.classList.add('closed'); el.classList.remove('open');
-    txt.textContent = 'Технический перерыв';
-  }
-  let mode = '';
-  if (s.force_override === true) mode = ' · принудительно открыто';
-  else if (s.force_override === false) mode = ' · принудительно закрыто';
-  else mode = ' · по расписанию';
-  cur.textContent = 'Сейчас: ' + new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) + mode;
-}
-
-function renderOverrideButtons(){
-  document.querySelectorAll('.override-btn').forEach(b => {
-    b.classList.remove('active', 'open-active', 'closed-active');
-    const v = b.dataset.override;
-    if (v === 'auto' && currentOverride === null) b.classList.add('active');
-    else if (v === 'open' && currentOverride === true) b.classList.add('active', 'open-active');
-    else if (v === 'close' && currentOverride === false) b.classList.add('active', 'closed-active');
-  });
-}
-
-document.querySelectorAll('.override-btn').forEach(b => {
-  b.addEventListener('click', async () => {
-    const v = b.dataset.override;
-    const val = v === 'auto' ? null : (v === 'open');
-    try{
-      const res = await api('/admin/api/schedule', {method:'POST', body: JSON.stringify({force_override: val})});
-      currentOverride = res.schedule.force_override;
-      renderOverrideButtons();
-      renderScheduleStatus(res);
-    }catch(e){}
-  });
-});
-
-document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
-  const body = {
-    open_hour: parseInt(document.getElementById('openHour').value) || 0,
-    open_minute: parseInt(document.getElementById('openMinute').value) || 0,
-    close_hour: parseInt(document.getElementById('closeHour').value) || 0,
-    close_minute: parseInt(document.getElementById('closeMinute').value) || 0,
-  };
-  try{
-    const res = await api('/admin/api/schedule', {method:'POST', body: JSON.stringify(body)});
-    renderScheduleStatus(res);
-    alert('Расписание сохранено');
-  }catch(e){}
-});
-
-/* ============ ЭКСПОРТ ============ */
+/* Экспорт Excel */
 async function downloadExcel(){
   const btn = document.getElementById('exportBtn');
   const period = document.getElementById('exportPeriod').value;
@@ -580,287 +202,8 @@ async function downloadExcel(){
 }
 document.getElementById('exportBtn').addEventListener('click', downloadExcel);
 
-/* ============ ЧАСЫ ============ */
-async function loadHours(){
-  try{
-    const r = await api('/admin/api/hours?days=1');
-    renderHours(r.hours || []);
-    renderDevices(r.devices || []);
-  }catch(e){ console.warn('hours error:', e.message); }
-}
-
-function renderHours(hours){
-  const box = document.getElementById('hoursChart');
-  if (!box) return;
-  if (!hours.length){ box.textContent = 'Нет данных'; return; }
-  const max = Math.max(...hours.map(h => h.visits), 1);
-  box.innerHTML = '';
-  hours.forEach(h => {
-    const pct = (h.visits / max) * 100;
-    const isPeak = h.visits === max && h.visits > 0;
-    const col = document.createElement('div');
-    col.className = 'hour-col' + (isPeak ? ' peak' : '');
-    col.title = h.hour + ':00 — ' + h.visits + ' заходов, ' + h.uniques + ' уник.';
-    col.innerHTML =
-      '<div class="hour-bar" style="height:' + Math.max(2, pct) + '%"></div>' +
-      '<div class="hour-label">' + h.hour + '</div>';
-    box.appendChild(col);
-  });
-}
-
-function renderDevices(devices){
-  const box = document.getElementById('devicesBox');
-  if (!box) return;
-  if (!devices.length){ box.innerHTML = ''; return; }
-  const labels = {mobile:'📱 Телефон', desktop:'💻 ПК', tablet:'📱 Планшет', unknown:'—'};
-  box.innerHTML = '';
-  devices.forEach(d => {
-    const el = document.createElement('div');
-    el.className = 'device-chip';
-    el.innerHTML = (labels[d.device] || d.device) + '<b>' + d.pct + '%</b>';
-    box.appendChild(el);
-  });
-}
-
-/* ============ IP ============ */
-async function loadIps(){
-  try{
-    const r = await api('/admin/api/ips');
-    renderGeo(r.geo || []);
-    renderIpTable(r.ips || []);
-  }catch(e){ console.warn('ips error:', e.message); }
-}
-
-function renderGeo(geo){
-  const box = document.getElementById('geoRow');
-  if (!box) return;
-  if (!geo.length){ box.textContent = 'Пока нет данных'; return; }
-  box.innerHTML = '';
-  geo.forEach(g => {
-    const el = document.createElement('div');
-    el.className = 'geo-chip';
-    el.innerHTML = g.label + '<b>' + g.pct + '%</b>';
-    box.appendChild(el);
-  });
-}
-
-function renderIpTable(ips){
-  const body = document.getElementById('ipTableBody');
-  if (!body) return;
-  if (!ips.length){
-    body.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;opacity:0.5;">Пока пусто</td></tr>';
-    return;
-  }
-  body.innerHTML = '';
-  ips.forEach(ip => {
-    const tr = document.createElement('tr');
-    const sel = document.createElement('select');
-    sel.className = 'ip-select';
-    [['unknown','Не размечено'],['mgsu','МГСУ'],['dorm','Общежитие'],['mobile','Мобильный'],['other','Другое']].forEach(([v,l]) => {
-      const o = document.createElement('option');
-      o.value = v; o.textContent = l;
-      if (v === ip.tag) o.selected = true;
-      sel.appendChild(o);
-    });
-    sel.onchange = async () => {
-      try{
-        await api('/admin/api/ips/tag', {method:'POST', body: JSON.stringify({subnet: ip.subnet, tag: sel.value, label: ip.label || ''})});
-        loadIps();
-      }catch(e){}
-    };
-    tr.innerHTML = '<td class="ip-subnet">' + escapeHtml(ip.subnet) + '.*</td><td class="ip-visits">' + ip.visits + '</td>';
-    const td = document.createElement('td');
-    td.appendChild(sel);
-    tr.appendChild(td);
-    body.appendChild(tr);
-  });
-}
-
-/* ============ СВОДКА ПО ЗАДАНИЯМ ============ */
-async function loadTasksSummary(){
-  try{
-    const r = await api('/admin/api/tasks-summary');
-    renderTasksSummary(r);
-  }catch(e){ console.warn('tasks-summary error:', e.message); }
-}
-
-function renderTasksSummary(data){
-  const box = document.getElementById('tasksSummaryBox');
-  if (!box) return;
-  document.getElementById('tasksDayLabel').textContent = 'День: ' + (data.day || '—');
-  document.getElementById('tasksTotalsLabel').textContent = (data.total_users || 0) + ' игроков · ' + (data.total_completed || 0) + ' выполнений';
-  if (!data.tasks || !data.tasks.length){
-    box.innerHTML = '<div style="padding:20px;text-align:center;opacity:0.5;font-size:13px;">Сегодня задания ещё никто не получил</div>';
-    return;
-  }
-  box.innerHTML = '';
-  data.tasks.forEach(t => {
-    const row = document.createElement('div');
-    row.className = 'tasks-row';
-    row.innerHTML =
-      '<div class="tasks-text">' + escapeHtml(t.text) + '</div>' +
-      '<div class="tasks-bar"><div class="tasks-bar-fill" style="width:' + t.pct + '%"></div></div>' +
-      '<div class="tasks-count">' + t.done + ' / ' + t.taken + '</div>';
-    box.appendChild(row);
-  });
-}
-
-/* ============ АКТИВ РАЗРАБОТЧИКОВ ============ */
-let dcEnabledState = true;
-
-async function loadDevCredits(){
-  try{
-    const cfg = await api('/admin/api/dev-credits');
-    dcEnabledState = !!cfg.enabled;
-    renderDevCredits(cfg);
-  }catch(e){ console.warn('dev-credits load error:', e.message); }
-}
-
-function renderDevCredits(cfg){
-  const sw = document.getElementById('dcEnabled');
-  if (sw) sw.className = 'switch' + (cfg.enabled ? ' on' : '');
-  document.getElementById('dcTitle').value = cfg.title || '';
-  document.getElementById('dcSubtitle').value = cfg.subtitle || '';
-  document.getElementById('dcFooter').value = cfg.footer || '';
-  renderDcCards(cfg.cards || []);
-}
-
-function renderDcCards(cards){
-  const box = document.getElementById('dcCardsBox');
-  box.innerHTML = '';
-  cards.forEach(c => {
-    const el = document.createElement('div');
-    el.className = 'dc-card-item';
-    el.innerHTML =
-      '<input type="text" class="dc-input" placeholder="Роль" value="' + escapeHtml(c.role || '') + '">' +
-      '<input type="text" class="dc-input" placeholder="Имя" value="' + escapeHtml(c.name || '') + '">' +
-      '<input type="text" class="dc-input" placeholder="Примечание" value="' + escapeHtml(c.note || '') + '">' +
-      '<button class="dc-card-remove" type="button" title="Удалить">✕</button>';
-    el.querySelector('.dc-card-remove').onclick = () => el.remove();
-    box.appendChild(el);
-  });
-}
-
-document.getElementById('dcEnabled').onclick = () => {
-  dcEnabledState = !dcEnabledState;
-  document.getElementById('dcEnabled').className = 'switch' + (dcEnabledState ? ' on' : '');
-};
-
-document.getElementById('dcAddCard').onclick = () => {
-  const box = document.getElementById('dcCardsBox');
-  const el = document.createElement('div');
-  el.className = 'dc-card-item';
-  el.innerHTML =
-    '<input type="text" class="dc-input" placeholder="Роль">' +
-    '<input type="text" class="dc-input" placeholder="Имя">' +
-    '<input type="text" class="dc-input" placeholder="Примечание">' +
-    '<button class="dc-card-remove" type="button" title="Удалить">✕</button>';
-  el.querySelector('.dc-card-remove').onclick = () => el.remove();
-  box.appendChild(el);
-};
-
-document.getElementById('dcSave').onclick = async () => {
-  const cards = [];
-  document.querySelectorAll('#dcCardsBox .dc-card-item').forEach(el => {
-    const inputs = el.querySelectorAll('input');
-    const role = inputs[0].value.trim();
-    const name = inputs[1].value.trim();
-    const note = inputs[2].value.trim();
-    if (name || role || note) cards.push({role, name, note});
-  });
-  const body = {
-    enabled: dcEnabledState,
-    title: document.getElementById('dcTitle').value.trim(),
-    subtitle: document.getElementById('dcSubtitle').value.trim(),
-    footer: document.getElementById('dcFooter').value.trim(),
-    cards: cards,
-  };
-  try{
-    const res = await api('/admin/api/dev-credits', {method:'POST', body: JSON.stringify(body)});
-    if (res.ok) alert('Сохранено');
-  }catch(e){
-    alert('Ошибка: ' + e.message);
-  }
-};
-
-/* ============ ССЫЛКИ ============ */
-function renderLinks(){
-  const host = location.origin;
-  const links = [
-    {group:'Сайт', label:'Главная', url: host + '/glavnaya'},
-    {group:'Сайт', label:'Стена', url: host + '/games/wall'},
-    {group:'Сайт', label:'Кликер', url: host + '/games/clicker'},
-    {group:'Сайт', label:'Бродвей', url: host + '/games/broadway'},
-    {group:'Сайт', label:'Кампус', url: host + '/games/campus'},
-    {group:'Сайт', label:'Грабли', url: host + '/games/grable'},
-    {group:'Сайт', label:'Экран (киоск)', url: host + '/games/ekran'},
-    {group:'Сайт', label:'Рейтинги', url: host + '/ratings'},
-    {group:'Сайт', label:'Магазин', url: host + '/shop'},
-    {group:'Сайт', label:'О проекте', url: host + '/privacy'},
-
-    {group:'Админка', label:'Дашборд', url: host + '/admin'},
-    {group:'Админка', label:'Статус (API)', url: host + '/status'},
-    {group:'Админка', label:'Снимок вручную', url: host + '/snapshot'},
-    {group:'Админка', label:'Проверка пароля', url: host + '/admin/api/check'},
-
-    {group:'Разработка', label:'GitHub репозиторий', url: 'https://github.com/dcaruk01-a11y/mgsu-wall'},
-    {group:'Разработка', label:'GitHub коммиты', url: 'https://github.com/dcaruk01-a11y/mgsu-wall/commits/main'},
-    {group:'Разработка', label:'Render дашборд', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug'},
-    {group:'Разработка', label:'Render Deploys', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug/deploys'},
-    {group:'Разработка', label:'Render Logs', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug/logs'},
-
-    {group:'База данных', label:'Turso (сайт)', url: 'https://turso.tech'},
-    {group:'База данных', label:'Turso Dashboard', url: 'https://app.turso.tech'},
-
-    {group:'Telegram', label:'Канал (архив стены)', url: 'https://t.me/mgsu_wall_archive'},
-    {group:'Telegram', label:'Feedback-бот', url: 'https://t.me/mgsu_feedback_bot'},
-    {group:'Telegram', label:'BotFather', url: 'https://t.me/BotFather'},
-    {group:'Telegram', label:'UserInfoBot', url: 'https://t.me/userinfobot'},
-
-    {group:'Мониторинг', label:'Cron-job.org', url: 'https://console.cron-job.org/jobs'},
-    {group:'Мониторинг', label:'UptimeRobot', url: 'https://dashboard.uptimerobot.com'},
-
-    {group:'Инструменты', label:'QR-генератор', url: 'https://www.qr-code-generator.com'},
-    {group:'Инструменты', label:'Сжать изображения', url: 'https://tinypng.com'},
-    {group:'Инструменты', label:'Figma', url: 'https://figma.com'},
-  ];
-  const box = document.getElementById('linksBox');
-  box.innerHTML = '';
-  const groups = {};
-  links.forEach(l => {
-    const g = l.group || 'Прочее';
-    if (!groups[g]) groups[g] = [];
-    groups[g].push(l);
-  });
-  Object.keys(groups).forEach(gName => {
-    const header = document.createElement('div');
-    header.style.cssText = 'padding:14px 16px 8px;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);border-top:1px solid rgba(255,255,255,0.06);';
-    header.textContent = gName;
-    box.appendChild(header);
-    groups[gName].forEach(l => {
-      const row = document.createElement('div');
-      row.className = 'link-row';
-      row.innerHTML = '<span>' + l.label + '</span><a href="' + l.url + '" target="_blank" rel="noopener">открыть →</a>';
-      box.appendChild(row);
-    });
-  });
-}
-
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-/* ============ СТАРТ ============ */
-loadSchedule();
-loadDevCredits();
-loadHours();
-loadIps();
-loadTasksSummary();
-refreshAll();
-refreshTimer = setInterval(refreshAll, 5000);
-setInterval(loadHours, 30000);
-setInterval(loadIps, 60000);
-setInterval(loadTasksSummary, 60000);
+loadDashboard();
+setInterval(loadDashboard, 5000);
 </script>
 
 </body></html>

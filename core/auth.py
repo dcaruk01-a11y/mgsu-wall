@@ -55,7 +55,7 @@ async def register(payload: RegisterPayload, request: Request):
 
 @router.post("/api/auth/login")
 async def login(payload: LoginPayload, request: Request):
-    r = await users.login(payload.uid, payload.pin)
+    r = await users.login(payload.uid, payload.pin, ip=_client_ip(request))
     if not r["ok"]:
         raise HTTPException(status_code=401, detail=r["error"])
     try:

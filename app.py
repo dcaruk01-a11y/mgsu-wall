@@ -10,6 +10,7 @@ from core.top import db_init_top
 from core.daily_tasks import db_init_tasks
 from core.settings import db_init_settings
 from core.content_plan import db_init_content
+from core.login_guard import db_init_login_guard
 from core.websocket import router as ws_router
 from core.api import router as api_router
 from core.clicker import router as clicker_router
@@ -53,6 +54,7 @@ async def on_startup():
     await db_init_tasks()
     await db_init_settings()
     await db_init_content()
+    await db_init_login_guard()
     await state.load_all_settings()
     await load_history()
     asyncio.create_task(daily_loop())

@@ -252,7 +252,35 @@ function shiftWeek(delta){
 document.getElementById('prevWeek').onclick = () => shiftWeek(-1);
 document.getElementById('nextWeek').onclick = () => shiftWeek(1);
 document.getElementById('thisWeek').onclick = () => loadPlan('');
-
+document.getElementById('testPublishBtn').onclick = async () => {
+  const input = document.getElementById('testText');
+  const text = input.value.trim();
+  if (!text){
+    alert('Введите текст');
+    return;
+  }
+  const btn = document.getElementById('testPublishBtn');
+  btn.disabled = true;
+  btn.textContent = 'Публикую…';
+  try{
+    const r = await adminApi('/admin/api/content/test-publish', {
+      method:'POST',
+      body: JSON.stringify({text: text})
+    });
+    if (r.ok){
+      btn.textContent = '✓ Опубликовано';
+      input.value = '';
+      setTimeout(() => { btn.textContent = 'Опубликовать в канал'; btn.disabled = false; }, 2000);
+    } else {
+      btn.textContent = '❌ Не вышло';
+      setTimeout(() => { btn.textContent = 'Опубликовать в канал'; btn.disabled = false; }, 2000);
+    }
+  }catch(e){
+    alert('Ошибка: ' + e.message);
+    btn.textContent = 'Опубликовать в канал';
+    btn.disabled = false;
+  }
+};
 loadPlan('');
 </script>
 

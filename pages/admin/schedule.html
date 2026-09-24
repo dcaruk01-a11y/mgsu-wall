@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>В разработке · Админка МГСУ</title>
+<link rel="stylesheet" href="/static/admin.css">
+</head><body class="admin-page">
+
+<div class="admin-shell">
+  <aside class="admin-sidebar" id="adminMenuContainer"></aside>
+  <main class="admin-main">
+    <div style="text-align:center;padding:120px 20px;">
+      <div style="font-size:64px;margin-bottom:20px;">🚧</div>
+      <h1 style="font-size:28px;font-weight:800;color:#fff;margin-bottom:12px;">Страница в разработке</h1>
+      <p style="color:rgba(255,255,255,0.6);font-size:15px;">Скоро здесь появится раздел «Название».</p>
+    </div>
+  </main>
+</div>
+
+<script src="/static/admin-menu.js"></script>
+<script>
+adminRequireToken();
+renderAdminMenu('schedule');
+</script>
+
+</body></html>

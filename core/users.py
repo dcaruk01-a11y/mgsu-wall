@@ -47,15 +47,24 @@ async def db_init_users():
             )
         """)
         # миграции для старых баз
-        for col, ddl in [
+               # Миграции: проверяем существование колонок через PRAGMA
+        try:
+            cur = await db.execute("PRAGMA table_info(users)")
+            existing = {row[1] for row in await cur.fetchall()}
+        except Exception:
+            existing = set()
+
+        migrations = [
             ("owned_chars", "ALTER TABLE users ADD COLUMN owned_chars TEXT DEFAULT '[\"student\"]'"),
             ("active_char", "ALTER TABLE users ADD COLUMN active_char TEXT DEFAULT 'student'"),
             ("char_colors", "ALTER TABLE users ADD COLUMN char_colors TEXT DEFAULT '{}'"),
-        ]:
-            try:
-                await db.execute(ddl)
-            except Exception:
-                pass
+        ]
+        for col, ddl in migrations:
+            if col not in existing:
+                try:
+                    await db.execute(ddl)
+                except Exception:
+                    pass
         await db.commit()
 
 

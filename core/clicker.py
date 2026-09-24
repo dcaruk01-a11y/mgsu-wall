@@ -31,14 +31,11 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
     score = max(0, min(int(payload.score or 0), 10000))
     rank = (payload.rank or "")[:30]
 
-    # если игрок залогинен — берём его имя и uid
     if user:
         nick = user["display_name"]
         uid = user["uid"]
-        # обновляем streak при заходе в игру
         streak_info = await users.apply_streak(uid)
-        # начисляем очки и монеты
-        # рекорд — если это лучший результат этого игрока за сегодня
+
         is_record = False
         for e in state.clicker_top:
             if e.get("uid") == uid and e["score"] >= score:
@@ -46,8 +43,9 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
                 break
         else:
             is_record = score > 0
+
         progress = await users.apply_score_and_coins(uid, score, "clicker", is_record)
-                try:
+        try:
             await top.save_score(uid, nick, "clicker", score)
         except Exception as e:
             print("top save error:", e)
@@ -66,7 +64,6 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
     }
 
     async with clicker_lock:
-        # удаляем старую запись этого uid, если была
         if uid:
             state.clicker_top = [e for e in state.clicker_top if e.get("uid") != uid]
         state.clicker_top.append(entry)

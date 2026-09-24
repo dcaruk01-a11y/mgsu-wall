@@ -576,31 +576,73 @@ document.getElementById('exportBtn').addEventListener('click', downloadExcel);
 function renderLinks(){
   const host = location.origin;
   const links = [
-    {label:'Главная', url: host + '/glavnaya'},
-    {label:'Стена', url: host + '/games/wall'},
-    {label:'Кликер', url: host + '/games/clicker'},
-    {label:'Бродвей', url: host + '/games/broadway'},
-    {label:'Кампус', url: host + '/games/campus'},
-    {label:'Грабли', url: host + '/games/grable'},
-    {label:'Экран (киоск)', url: host + '/games/ekran'},
-    {label:'О проекте', url: host + '/privacy'},
-    {label:'GitHub', url: 'https://github.com/dcaruk01-a11y/mgsu-wall'},
-    {label:'Render', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug'},
-    {label:'Telegram-канал', url: 'https://t.me/mgsu_wall_archive'},
-    {label:'Feedback-бот', url: 'https://t.me/mgsu_feedback_bot'},
+    // === Сайт ===
+    {group:'Сайт', label:'Главная', url: host + '/glavnaya'},
+    {group:'Сайт', label:'Стена', url: host + '/games/wall'},
+    {group:'Сайт', label:'Кликер', url: host + '/games/clicker'},
+    {group:'Сайт', label:'Бродвей', url: host + '/games/broadway'},
+    {group:'Сайт', label:'Кампус', url: host + '/games/campus'},
+    {group:'Сайт', label:'Грабли', url: host + '/games/grable'},
+    {group:'Сайт', label:'Экран (киоск)', url: host + '/games/ekran'},
+    {group:'Сайт', label:'Рейтинги', url: host + '/ratings'},
+    {group:'Сайт', label:'Магазин', url: host + '/shop'},
+    {group:'Сайт', label:'О проекте', url: host + '/privacy'},
+
+    // === Админка ===
+    {group:'Админка', label:'Дашборд', url: host + '/admin'},
+    {group:'Админка', label:'Статус (API)', url: host + '/status'},
+    {group:'Админка', label:'Снимок вручную', url: host + '/snapshot'},
+    {group:'Админка', label:'Проверка пароля', url: host + '/admin/api/check'},
+
+    // === Разработка ===
+    {group:'Разработка', label:'GitHub репозиторий', url: 'https://github.com/dcaruk01-a11y/mgsu-wall'},
+    {group:'Разработка', label:'GitHub Commits', url: 'https://github.com/dcaruk01-a11y/mgsu-wall/commits/main'},
+    {group:'Разработка', label:'Render дашборд', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug'},
+    {group:'Разработка', label:'Render Deploys', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug/deploys'},
+    {group:'Разработка', label:'Render Logs', url: 'https://dashboard.render.com/web/srv-dani0ajtqb8s73c05vug/logs'},
+
+    // === База данных ===
+    {group:'База данных', label:'Turso (главная)', url: 'https://turso.tech'},
+    {group:'База данных', label:'Turso Dashboard', url: 'https://app.turso.tech'},
+
+    // === Telegram ===
+    {group:'Telegram', label:'Канал (архив стены)', url: 'https://t.me/mgsu_wall_archive'},
+    {group:'Telegram', label:'Feedback-бот', url: 'https://t.me/mgsu_feedback_bot'},
+
+    // === Мониторинг ===
+    {group:'Мониторинг', label:'Cron-job.org', url: 'https://console.cron-job.org/jobs'},
+    {group:'Мониторинг', label:'UptimeRobot', url: 'https://dashboard.uptimerobot.com'},
+
+    // === Инструменты ===
+    {group:'Инструменты', label:'Генератор QR', url: 'https://www.qr-code-generator.com'},
+    {group:'Инструменты', label:'Сжать изображения', url: 'https://tinypng.com'},
+    {group:'Инструменты', label:'Figma (дизайн)', url: 'https://figma.com'},
   ];
+
   const box = document.getElementById('linksBox');
   box.innerHTML = '';
-  links.forEach(l => {
-    const row = document.createElement('div');
-    row.className = 'link-row';
-    row.innerHTML = '<span>' + l.label + '</span><a href="' + l.url + '" target="_blank" rel="noopener">открыть →</a>';
-    box.appendChild(row);
-  });
-}
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // группируем по group
+  const groups = {};
+  links.forEach(l => {
+    const g = l.group || 'Прочее';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(l);
+  });
+
+  Object.keys(groups).forEach(gName => {
+    const header = document.createElement('div');
+    header.style.cssText = 'padding:14px 16px 8px;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);border-top:1px solid rgba(255,255,255,0.06);';
+    header.textContent = gName;
+    box.appendChild(header);
+
+    groups[gName].forEach(l => {
+      const row = document.createElement('div');
+      row.className = 'link-row';
+      row.innerHTML = '<span>' + l.label + '</span><a href="' + l.url + '" target="_blank" rel="noopener">открыть →</a>';
+      box.appendChild(row);
+    });
+  });
 }
 /* ============ ЧАСЫ ============ */
 async function loadHours(){

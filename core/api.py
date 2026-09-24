@@ -41,6 +41,20 @@ async def api_session(payload: dict):
     analytics.track_session(dur)
     return {"ok": True}
 
+@router.get("/api/dev-credits")
+async def api_dev_credits():
+    import core.state as state
+    dc = state.dev_credits_config
+    if not dc.get("enabled", True):
+        return {"enabled": False}
+    return {
+        "enabled": True,
+        "title": dc.get("title", ""),
+        "subtitle": dc.get("subtitle", ""),
+        "footer": dc.get("footer", ""),
+        "cards": dc.get("cards", []),
+    }
+
 
 @router.get("/api/games")
 async def api_games():

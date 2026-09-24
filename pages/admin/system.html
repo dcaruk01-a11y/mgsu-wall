@@ -1,25 +1,125 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>В разработке · Админка МГСУ</title>
+<title>Система · Админка МГСУ</title>
 <link rel="stylesheet" href="/static/admin.css">
+<style>
+.page-header{margin-bottom:28px;}
+.page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
+
+.sys-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:32px;}
+.sys-card{padding:20px;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
+.sys-card.good{border-color:rgba(74,222,128,0.35);background:rgba(74,222,128,0.05);}
+.sys-card.warn{border-color:rgba(255,189,46,0.35);background:rgba(255,189,46,0.05);}
+.sys-card.bad{border-color:rgba(255,77,94,0.35);background:rgba(255,77,94,0.05);}
+.sys-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.sys-value{font-size:28px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
+.sys-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:6px;}
+
+.section-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:16px;}
+.tables-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
+.table-item{
+  padding:14px 16px;border-radius:10px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;
+}
+.table-name{color:rgba(255,255,255,0.7);font-family:monospace;font-size:12px;}
+.table-count{font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
+</style>
 </head><body class="admin-page">
 
 <div class="admin-shell">
   <aside class="admin-sidebar" id="adminMenuContainer"></aside>
   <main class="admin-main">
-    <div style="text-align:center;padding:120px 20px;">
-      <div style="font-size:64px;margin-bottom:20px;">🚧</div>
-      <h1 style="font-size:28px;font-weight:800;color:#fff;margin-bottom:12px;">Страница в разработке</h1>
-      <p style="color:rgba(255,255,255,0.6);font-size:15px;">Скоро здесь появится раздел «Название».</p>
+
+    <div class="page-header">
+      <h1 class="page-title">Система</h1>
+      <div class="page-sub">Состояние сервера и базы данных</div>
     </div>
+
+    <div class="sys-grid" id="sysGrid">Загрузка…</div>
+
+    <div class="section-title">Записей в таблицах</div>
+    <div class="tables-grid" id="tablesGrid">Загрузка…</div>
+
   </main>
 </div>
 
 <script src="/static/admin-menu.js"></script>
 <script>
-adminRequireToken();
+const token = adminRequireToken();
 renderAdminMenu('system');
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fmtUptime(sec){
+  if (!sec) return '—';
+  const d = Math.floor(sec/86400);
+  const h = Math.floor((sec%86400)/3600);
+  const m = Math.floor((sec%3600)/60);
+  if (d>0) return d+'д '+h+'ч';
+  if (h>0) return h+'ч '+m+'м';
+  return m+'м';
+}
+
+async function loadSystem(){
+  try{
+    const s = await adminApi('/admin/api/system');
+    renderSysCards(s);
+    renderTables(s.tables || {});
+  }catch(e){
+    document.getElementById('sysGrid').innerHTML =
+      '<div style="color:#FF4D5E;padding:20px;">Ошибка: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+function renderSysCards(s){
+  const memPct = s.memory_mb ? Math.round(s.memory_mb / 512 * 100) : null;
+  const memStatus = memPct === null ? '' : (memPct >= 85 ? 'bad' : (memPct >= 60 ? 'warn' : 'good'));
+  const cpuStatus = s.cpu_pct === null ? '' : (s.cpu_pct >= 80 ? 'bad' : (s.cpu_pct >= 50 ? 'warn' : 'good'));
+
+  const cards = [
+    {label:'Uptime', value: fmtUptime(s.uptime_sec), sub:'с момента запуска'},
+    {label:'Онлайн', value: s.online, sub:'WebSocket соединений'},
+    {label:'Память', value: (s.memory_mb !== null ? s.memory_mb + ' МБ' : '—'), sub: (memPct !== null ? memPct + '% из 512 МБ' : ''), status: memStatus},
+    {label:'CPU', value: (s.cpu_pct !== null ? s.cpu_pct + '%' : '—'), sub:'загрузка процессора', status: cpuStatus},
+    {label:'Размер БД', value: (s.db_size_kb !== null ? s.db_size_kb + ' КБ' : 'облако'), sub: (s.db_size_kb === null ? 'Turso (внешняя)' : 'файл wall.db')},
+    {label:'Игр включено', value: s.games_enabled + ' / ' + s.games_total, sub:'доступно пользователям'},
+    {label:'Тема', value: s.theme, sub:'активное оформление'},
+  ];
+
+  const box = document.getElementById('sysGrid');
+  box.innerHTML = '';
+  cards.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'sys-card' + (c.status ? ' ' + c.status : '');
+    el.innerHTML =
+      '<div class="sys-label">' + c.label + '</div>' +
+      '<div class="sys-value">' + escapeHtml(String(c.value)) + '</div>' +
+      '<div class="sys-sub">' + escapeHtml(c.sub || '') + '</div>';
+    box.appendChild(el);
+  });
+}
+
+function renderTables(tables){
+  const box = document.getElementById('tablesGrid');
+  const keys = Object.keys(tables);
+  if (!keys.length){ box.textContent = 'Нет данных'; return; }
+  box.innerHTML = '';
+  keys.forEach(k => {
+    const el = document.createElement('div');
+    el.className = 'table-item';
+    el.innerHTML = '<span class="table-name">' + escapeHtml(k) + '</span><span class="table-count">' + (tables[k] === null ? '—' : tables[k]) + '</span>';
+    box.appendChild(el);
+  });
+}
+
+loadSystem();
+setInterval(loadSystem, 10000);
 </script>
 
 </body></html>

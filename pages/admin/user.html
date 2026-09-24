@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Игрок · Админка МГСУ</title>
+<link rel="stylesheet" href="/static/admin.css">
+<style>
+.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.page-title{font-size:26px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:14px;}
+.back-link:hover{color:#fff;}
+
+.card{padding:22px;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);margin-bottom:20px;}
+.card h2{font-size:16px;font-weight:700;color:#fff;margin:0 0 16px;}
+
+.field-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.field-label{width:140px;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+.field-input{flex:1;min-width:100px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:14px;outline:none;}
+.field-input:focus{border-color:rgba(255,255,255,0.5);}
+.field-btn{padding:10px 18px;border-radius:10px;border:0;background:#fff;color:#0F3C73;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;}
+.field-btn:hover{transform:translateY(-1px);}
+.field-btn.danger{background:#FF4D5E;color:#fff;}
+.field-btn.ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);}
+
+.uid-copy{font-family:monospace;font-size:14px;padding:6px 12px;background:rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;}
+.uid-copy:hover{background:rgba(255,255,255,0.12);}
+
+.chars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.char-item{padding:14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);text-align:center;cursor:pointer;transition:all .15s;}
+.char-item:hover{background:rgba(255,255,255,0.08);}
+.char-item.owned{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08);}
+.char-item.active{border-color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,0.3);}
+.char-emoji{font-size:28px;margin-bottom:6px;}
+.char-name{font-size:12px;font-weight:600;color:#fff;}
+
+.actions-row{display:flex;gap:10px;flex-wrap:wrap;}
+.action-btn{padding:12px 20px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.action-btn:hover{background:rgba(255,255,255,0.12);}
+.action-btn.danger{background:rgba(255,77,94,0.15);color:#FF4D5E;border-color:rgba(255,77,94,0.4);}
+.action-btn.danger:hover{background:rgba(255,77,94,0.25);}
+
+.banned-badge{display:inline-block;padding:4px 12px;border-radius:999px;background:#FF4D5E;color:#fff;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;}
+.ok-badge{display:inline-block;padding:4px 12px;border-radius:999px;background:#4ADE80;color:#0a1f0f;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;}
+
+.info-line{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:4px;}
+.info-line b{color:#fff;font-weight:700;}
+
+/* Модалка подтверждения */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;}
+.modal-bg.open{display:flex;}
+.modal-box{background:#0F1524;border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:28px;max-width:440px;width:100%;}
+.modal-box h3{font-size:18px;font-weight:800;color:#fff;margin:0 0 12px;}
+.modal-box p{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:16px;}
+.modal-box input{width:100%;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:14px;outline:none;margin-bottom:16px;box-sizing:border-box;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+</style>
+</head><body class="admin-page">
+
+<div class="admin-shell">
+  <aside class="admin-sidebar" id="adminMenuContainer"></aside>
+  <main class="admin-main">
+
+    <a href="/admin/users" class="back-link">← Все игроки</a>
+
+    <div id="loading" style="text-align:center;padding:60px;opacity:0.5;">Загрузка…</div>
+
+    <div id="content" style="display:none;">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" id="pName">—</h1>
+          <div class="page-sub"><span class="uid-copy" id="pUid" title="Нажми, чтобы скопировать">—</span></div>
+        </div>
+        <div id="pStatus"></div>
+      </div>
+
+      <!-- ИНФО -->
+      <div class="card">
+        <h2>📋 Информация</h2>
+        <div class="info-line">Создан: <b id="pCreated">—</b></div>
+        <div class="info-line">Последний вход: <b id="pLastSeen">—</b></div>
+        <div class="info-line">Последний IP: <b id="pLastIp">—</b></div>
+        <div class="info-line" id="pBanReason" style="display:none;color:#FF4D5E;">Причина бана: <b id="pBanReasonText">—</b></div>
+      </div>
+
+      <!-- СТАТИСТИКА -->
+      <div class="card">
+        <h2>📊 Статистика</h2>
+
+        <div class="field-row">
+          <div class="field-label">💰 Монеты</div>
+          <input type="number" class="field-input" id="fCoins" min="0">
+          <button class="field-btn" data-set="coins">Сохранить</button>
+        </div>
+
+        <div class="field-row">
+          <div class="field-label">🏆 Очки</div>
+          <input type="number" class="field-input" id="fScore" min="0">
+          <button class="field-btn" data-set="total_score">Сохранить</button>
+        </div>
+
+        <div class="field-row">
+          <div class="field-label">🔥 Серия дней</div>
+          <input type="number" class="field-input" id="fStreak" min="0">
+          <button class="field-btn" data-set="streak">Сохранить</button>
+        </div>
+
+        <div class="field-row">
+          <div class="field-label">🎮 Партий</div>
+          <div style="color:#fff;font-weight:700;" id="pGames">—</div>
+        </div>
+      </div>
+
+      <!-- ПЕРСОНАЖИ -->
+      <div class="card">
+        <h2>🎭 Персонажи</h2>
+        <div class="chars-grid" id="charsGrid"></div>
+      </div>
+
+      <!-- ДЕЙСТВИЯ -->
+      <div class="card">
+        <h2>⚙ Действия</h2>
+        <div class="actions-row">
+          <button class="action-btn" id="btnResetPin">🔑 Сбросить PIN на 1234</button>
+          <button class="action-btn" id="btnGiveAll">🎁 Выдать всех персонажей</button>
+          <button class="action-btn" id="btnClearCoins">💰 Обнулить монеты</button>
+          <button class="action-btn" id="btnClearStreak">🔥 Сбросить серию</button>
+          <button class="action-btn danger" id="btnBan">🚫 Забанить</button>
+          <button class="action-btn danger" id="btnDelete">🗑 Удалить аккаунт</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Модалка -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal-box">
+    <h3 id="modalTitle">—</h3>
+    <p id="modalText">—</p>
+    <input type="text" id="modalInput" placeholder="Введи для подтверждения" style="display:none;">
+    <div class="modal-actions">
+      <button class="field-btn ghost" id="modalCancel">Отмена</button>
+      <button class="field-btn danger" id="modalConfirm">Подтвердить</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/admin-menu.js"></script>
+<script>
+const token = adminRequireToken();
+renderAdminMenu('users');
+
+const uid = decodeURIComponent(location.pathname.split('/').pop());
+let userData = null;
+
+const CHARS = [
+  {key:'student', emoji:'🎓', name:'Студент'},
+  {key:'sso',     emoji:'👷', name:'ССОшник'},
+  {key:'prorab',  emoji:'📋', name:'Прораб'},
+  {key:'builder', emoji:'🏗️', name:'Строитель'},
+  {key:'prof',    emoji:'🧑‍🏫', name:'Преподаватель'},
+  {key:'dean',    emoji:'🧑‍💼', name:'Декан'},
+  {key:'legend',  emoji:'👑', name:'Легенда МГСУ'},
+];
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fmtTime(ts){
+  if (!ts) return '—';
+  return new Date(ts * 1000).toLocaleString('ru-RU');
+}
+
+async function load(){
+  try{
+    userData = await adminApi('/admin/api/users/' + encodeURIComponent(uid));
+    render();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+  }catch(e){
+    document.getElementById('loading').innerHTML =
+      '<div style="color:#FF4D5E;">Ошибка: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+function render(){
+  document.getElementById('pName').textContent = userData.display_name;
+  document.getElementById('pUid').textContent = userData.uid;
+  document.getElementById('pCreated').textContent = fmtTime(userData.created_at);
+  document.getElementById('pLastSeen').textContent = fmtTime(userData.last_seen);
+  document.getElementById('pLastIp').textContent = userData.last_ip || '—';
+  document.getElementById('pGames').textContent = userData.games_played;
+  document.getElementById('fCoins').value = userData.coins;
+  document.getElementById('fScore').value = userData.total_score;
+  document.getElementById('fStreak').value = userData.streak;
+
+  // Статус
+  const statusEl = document.getElementById('pStatus');
+  if (userData.banned){
+    statusEl.innerHTML = '<span class="banned-badge">Забанен</span>';
+    document.getElementById('pBanReason').style.display = 'block';
+    document.getElementById('pBanReasonText').textContent = userData.ban_reason;
+    document.getElementById('btnBan').textContent = '✓ Разбанить';
+    document.getElementById('btnBan').classList.remove('danger');
+  } else {
+    statusEl.innerHTML = '<span class="ok-badge">Активен</span>';
+    document.getElementById('pBanReason').style.display = 'none';
+    document.getElementById('btnBan').textContent = '🚫 Забанить';
+    document.getElementById('btnBan').classList.add('danger');
+  }
+
+  // Персонажи
+  const grid = document.getElementById('charsGrid');
+  grid.innerHTML = '';
+  CHARS.forEach(c => {
+    const owned = userData.owned_chars.includes(c.key);
+    const active = userData.active_char === c.key;
+    const el = document.createElement('div');
+    el.className = 'char-item' + (owned ? ' owned' : '') + (active ? ' active' : '');
+    el.innerHTML =
+      '<div class="char-emoji">' + c.emoji + '</div>' +
+      '<div class="char-name">' + c.name + '</div>';
+    el.onclick = () => toggleChar(c.key, owned);
+    grid.appendChild(el);
+  });
+}
+
+async function toggleChar(char, owned){
+  try{
+    if (owned){
+      // Если уже выбран — делаем активным
+      if (userData.active_char === char){
+        return;
+      }
+      await adminApi('/admin/api/users/set-active-char', {
+        method:'POST',
+        body: JSON.stringify({uid, char})
+      });
+    } else {
+      await adminApi('/admin/api/users/give-char', {
+        method:'POST',
+        body: JSON.stringify({uid, char})
+      });
+    }
+    await load();
+  }catch(e){
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+/* === Изменение полей === */
+document.querySelectorAll('[data-set]').forEach(btn => {
+  btn.onclick = async () => {
+    const field = btn.dataset.set;
+    const inputId = field === 'coins' ? 'fCoins' : (field === 'total_score' ? 'fScore' : 'fStreak');
+    const value = parseInt(document.getElementById(inputId).value) || 0;
+    try{
+      await adminApi('/admin/api/users/set', {
+        method:'POST',
+        body: JSON.stringify({uid, [field]: value})
+      });
+      btn.textContent = '✓';
+      setTimeout(() => btn.textContent = 'Сохранить', 1200);
+      await load();
+    }catch(e){
+      alert('Ошибка: ' + e.message);
+    }
+  };
+});
+
+/* === Сброс PIN === */
+document.getElementById('btnResetPin').onclick = async () => {
+  if (!confirm('Сбросить PIN на 1234? Все сессии игрока сбросятся.')) return;
+  try{
+    await adminApi('/admin/api/users/reset-pin', {
+      method:'POST',
+      body: JSON.stringify({uid, new_pin: '1234'})
+    });
+    alert('PIN сброшен на 1234');
+  }catch(e){
+    alert('Ошибка: ' + e.message);
+  }
+};
+
+/* === Выдать всех персонажей === */
+document.getElementById('btnGiveAll').onclick = async () => {
+  if (!confirm('Выдать игроку всех персонажей?')) return;
+  for (const c of CHARS){
+    if (!userData.owned_chars.includes(c.key)){
+      try{
+        await adminApi('/admin/api/users/give-char', {
+          method:'POST',
+          body: JSON.stringify({uid, char: c.key})
+        });
+      }catch(e){}
+    }
+  }
+  await load();
+};
+
+/* === Обнулить монеты === */
+document.getElementById('btnClearCoins').onclick = async () => {
+  if (!confirm('Обнулить монеты?')) return;
+  try{
+    await adminApi('/admin/api/users/set', {
+      method:'POST',
+      body: JSON.stringify({uid, coins: 0})
+    });
+    await load();
+  }catch(e){}
+};
+
+/* === Сбросить серию === */
+document.getElementById('btnClearStreak').onclick = async () => {
+  if (!confirm('Сбросить серию дней?')) return;
+  try{
+    await adminApi('/admin/api/users/set', {
+      method:'POST',
+      body: JSON.stringify({uid, streak: 0})
+    });
+    await load();
+  }catch(e){}
+};
+
+/* === Бан / разбан === */
+document.getElementById('btnBan').onclick = async () => {
+  if (userData.banned){
+    if (!confirm('Разбанить игрока?')) return;
+    try{
+      await adminApi('/admin/api/users/unban', {
+        method:'POST',
+        body: JSON.stringify({uid})
+      });
+      await load();
+    }catch(e){}
+  } else {
+    const reason = prompt('Причина бана:', 'Нарушение правил');
+    if (!reason) return;
+    try{
+      await adminApi('/admin/api/users/ban', {
+        method:'POST',
+        body: JSON.stringify({uid, reason})
+      });
+      await load();
+    }catch(e){}
+  }
+};
+
+/* === Удаление === */
+document.getElementById('btnDelete').onclick = () => {
+  const modalBg = document.getElementById('modalBg');
+  const modalInput = document.getElementById('modalInput');
+  document.getElementById('modalTitle').textContent = '🗑 Удалить аккаунт?';
+  document.getElementById('modalText').textContent = 'Это навсегда. Введи UID ' + uid + ' для подтверждения:';
+  modalInput.style.display = 'block';
+  modalInput.value = '';
+  modalBg.classList.add('open');
+
+  document.getElementById('modalConfirm').onclick = async () => {
+    const confirm = modalInput.value.trim().toUpperCase();
+    if (confirm !== uid){
+      alert('UID не совпал');
+      return;
+    }
+    try{
+      await adminApi('/admin/api/users/delete', {
+        method:'POST',
+        body: JSON.stringify({uid, confirm})
+      });
+      alert('Аккаунт удалён');
+      location.href = '/admin/users';
+    }catch(e){
+      alert('Ошибка: ' + e.message);
+    }
+  };
+  document.getElementById('modalCancel').onclick = () => modalBg.classList.remove('open');
+};
+
+/* Копирование UID */
+document.getElementById('pUid').onclick = async () => {
+  try{
+    await navigator.clipboard.writeText(userData.uid);
+    const el = document.getElementById('pUid');
+    const old = el.textContent;
+    el.textContent = '✓ Скопировано';
+    setTimeout(() => el.textContent = old, 1200);
+  }catch(e){}
+};
+
+load();
+</script>
+
+</body></html>

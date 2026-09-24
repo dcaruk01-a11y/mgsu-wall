@@ -1,8 +1,5 @@
 """
 Управление пользователями из админки (режим бога).
-Позволяет: менять монеты/очки/серию, выдавать персонажей,
-сбрасывать PIN, банить, удалять аккаунт.
-Все действия пишутся в admin_logs.
 """
 import time, json, aiosqlite, hashlib
 from fastapi import APIRouter, Header, HTTPException
@@ -12,18 +9,12 @@ from core.admin.common import check_admin
 router = APIRouter()
 
 
-# ============ ЛОГИ ============
-
 async def log_action(action: str, uid: str, details: str = ""):
-    """Записывает действие админа в лог."""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS admin_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ts REAL,
-                action TEXT,
-                uid TEXT,
-                details TEXT
+                ts REAL, action TEXT, uid TEXT, details TEXT
             )
         """)
         await db.execute("""
@@ -54,12 +45,9 @@ async def admin_logs_get(limit: int = 100, token: str = Header(default="", alias
             rows = await cur.fetchall()
     except Exception:
         rows = []
-
     logs = [{"ts": r[0], "action": r[1], "uid": r[2], "details": r[3]} for r in rows]
     return {"logs": logs}
 
-
-# ============ КАРТОЧКА ИГРОКА ============
 
 @router.get("/admin/api/user/{uid}")
 async def admin_user_detail(uid: str, token: str = Header(default="", alias="authorization")):
@@ -82,7 +70,6 @@ async def admin_user_detail(uid: str, token: str = Header(default="", alias="aut
         if not row:
             raise HTTPException(status_code=404, detail="Игрок не найден")
 
-        # Последний IP
         try:
             cur2 = await db.execute(
                 "SELECT ip FROM visits WHERE uid=? ORDER BY ts DESC LIMIT 1",
@@ -116,8 +103,6 @@ async def admin_user_detail(uid: str, token: str = Header(default="", alias="aut
     }
 
 
-# ============ ИЗМЕНЕНИЕ ПОЛЕЙ ============
-
 @router.post("/admin/api/user/set")
 async def admin_user_set(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
@@ -137,7 +122,7 @@ async def admin_user_set(payload: dict, token: str = Header(default="", alias="a
                 pass
 
     if not fields:
-        raise HTTPException(status_code=400, detail="Нет полей для обновления")
+        raise HTTPException(status_code=400, detail="Нет полей")
 
     sets = ", ".join(f"{k}=?" for k in fields.keys())
     vals = list(fields.values()) + [uid]
@@ -150,8 +135,6 @@ async def admin_user_set(payload: dict, token: str = Header(default="", alias="a
     await log_action("set_fields", uid, details)
     return {"ok": True, "updated": fields}
 
-
-# ============ ПЕРСОНАЖИ ============
 
 ALL_CHARS = ["student", "sso", "prorab", "builder", "prof", "dean", "legend"]
 
@@ -190,44 +173,6 @@ async def admin_user_give_char(payload: dict, token: str = Header(default="", al
     return {"ok": True, "owned": owned}
 
 
-@router.post("/admin/api/user/revoke-char")
-async def admin_user_revoke_char(payload: dict, token: str = Header(default="", alias="authorization")):
-    if not check_admin(token.replace("Bearer ", "").strip()):
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    uid = str(payload.get("uid", "")).strip().upper()
-    char = str(payload.get("char", "")).strip()
-    if char == "student":
-        raise HTTPException(status_code=400, detail="Студента забрать нельзя")
-
-    async with aiosqlite.connect(DB_PATH) as db:
-        cur = await db.execute(
-            "SELECT COALESCE(owned_chars, '[\"student\"]'), COALESCE(active_char, 'student') FROM users WHERE uid=?",
-            (uid,)
-        )
-        row = await cur.fetchone()
-        if not row:
-            raise HTTPException(status_code=404, detail="Игрок не найден")
-        try:
-            owned = json.loads(row[0] or '["student"]')
-        except Exception:
-            owned = ["student"]
-
-        owned = [c for c in owned if c != char]
-        if not owned:
-            owned = ["student"]
-        active = row[1] if row[1] in owned else "student"
-
-        await db.execute(
-            "UPDATE users SET owned_chars=?, active_char=? WHERE uid=?",
-            (json.dumps(owned), active, uid)
-        )
-        await db.commit()
-
-    await log_action("revoke_char", uid, char)
-    return {"ok": True, "owned": owned, "active": active}
-
-
 @router.post("/admin/api/user/set-active-char")
 async def admin_user_set_active_char(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
@@ -263,8 +208,6 @@ async def admin_user_set_active_char(payload: dict, token: str = Header(default=
     await log_action("set_active_char", uid, char)
     return {"ok": True, "active": char, "owned": owned}
 
-
-# ============ PIN / БАН / УДАЛЕНИЕ ============
 
 @router.post("/admin/api/user/reset-pin")
 async def admin_user_reset_pin(payload: dict, token: str = Header(default="", alias="authorization")):
@@ -345,7 +288,7 @@ async def admin_user_delete(payload: dict, token: str = Header(default="", alias
     confirm = str(payload.get("confirm", "")).strip().upper()
 
     if uid != confirm:
-        raise HTTPException(status_code=400, detail="Подтверди удаление — введи UID ещё раз")
+        raise HTTPException(status_code=400, detail="Подтверди удаление")
 
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM users WHERE uid=?", (uid,))

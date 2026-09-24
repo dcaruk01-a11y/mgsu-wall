@@ -39,17 +39,40 @@ def _client_ip(request: Request) -> str:
 
 @router.post("/api/auth/register")
 async def register(payload: RegisterPayload, request: Request):
+    import core.registration_guard as reg_guard
+
+    ip = _client_ip(request)
+
+    # Проверка лимита
+    can_register, left = await reg_guard.check_limit(ip)
+    if not can_register:
+        raise HTTPException(
+            status_code=429,
+            detail="Слишком много регистраций с этого IP. Попробуй завтра."
+        )
+
+    # Антибот-пауза (2 секунды)
+    await asyncio.sleep(2)
+
     r = await users.create_user(payload.name, payload.pin)
     if not r["ok"]:
         raise HTTPException(status_code=400, detail=r["error"])
+
+    # Записываем успешную регистрацию
+    try:
+        await reg_guard.record_registration(ip, r["uid"])
+    except Exception as e:
+        print("registration guard error:", e)
+
     try:
         await ip_tracking.track_visit(
-            ip=_client_ip(request),
+            ip=ip,
             user_agent=request.headers.get("user-agent", ""),
             uid=r["uid"],
         )
     except Exception as e:
         print("ip track error:", e)
+
     return r
 
 

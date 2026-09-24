@@ -1,25 +1,254 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>В разработке · Админка МГСУ</title>
+<title>Контент-план · Админка МГСУ</title>
 <link rel="stylesheet" href="/static/admin.css">
+<style>
+.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
+.page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
+
+.week-nav{display:flex;align-items:center;gap:12px;padding:12px 18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);border-radius:12px;margin-bottom:20px;flex-wrap:wrap;}
+.week-nav button{padding:8px 14px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.week-nav button:hover{background:rgba(255,255,255,0.12);}
+.week-nav .week-label{font-size:15px;font-weight:800;color:#fff;flex:1;text-align:center;}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px;}
+.stat-mini{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
+.stat-mini-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
+.stat-mini-value{font-size:22px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
+
+.day-card{margin-bottom:16px;padding:20px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);}
+.day-title{font-size:16px;font-weight:800;color:#fff;margin-bottom:14px;}
+.slot{margin-bottom:12px;padding:14px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);}
+.slot.auto{background:rgba(74,222,128,0.05);border-color:rgba(74,222,128,0.20);}
+.slot.published{background:rgba(74,222,128,0.10);border-color:rgba(74,222,128,0.35);}
+.slot-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;}
+.slot-label{font-size:13px;font-weight:700;color:#fff;}
+.slot-time{font-size:11px;color:rgba(255,255,255,0.5);font-family:monospace;}
+.slot-status{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px;}
+.slot-status.pending{background:rgba(255,189,46,0.15);color:#FFBD2E;border:1px solid rgba(255,189,46,0.4);}
+.slot-status.published{background:#4ADE80;color:#0a1f0f;}
+.slot-status.empty{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
+.slot-status.auto{background:rgba(74,222,128,0.15);color:#4ADE80;border:1px solid rgba(74,222,128,0.4);}
+.slot-textarea{
+  width:100%;min-height:80px;padding:10px 12px;border-radius:8px;
+  background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.10);
+  color:#fff;font-family:inherit;font-size:13px;line-height:1.5;
+  resize:vertical;box-sizing:border-box;outline:none;
+}
+.slot-textarea:focus{border-color:rgba(255,255,255,0.4);}
+.slot-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.slot-btn{padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background .12s;}
+.slot-btn:hover{background:rgba(255,255,255,0.12);}
+.slot-btn.primary{background:#fff;color:#0F3C73;border-color:#fff;}
+.slot-auto-note{font-size:12px;color:rgba(255,255,255,0.6);font-style:italic;padding:8px 0;}
+</style>
 </head><body class="admin-page">
 
 <div class="admin-shell">
   <aside class="admin-sidebar" id="adminMenuContainer"></aside>
   <main class="admin-main">
-    <div style="text-align:center;padding:120px 20px;">
-      <div style="font-size:64px;margin-bottom:20px;">🚧</div>
-      <h1 style="font-size:28px;font-weight:800;color:#fff;margin-bottom:12px;">Страница в разработке</h1>
-      <p style="color:rgba(255,255,255,0.6);font-size:15px;">Скоро здесь появится раздел «Название».</p>
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Контент-план</h1>
+        <div class="page-sub">Заполни тексты на неделю — бот опубликует по расписанию</div>
+      </div>
     </div>
+
+    <div class="week-nav">
+      <button id="prevWeek">← Пред</button>
+      <div class="week-label" id="weekLabel">—</div>
+      <button id="nextWeek">След →</button>
+      <button id="thisWeek">Сегодня</button>
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div id="daysContainer">Загрузка…</div>
+
   </main>
 </div>
 
 <script src="/static/admin-menu.js"></script>
 <script>
-adminRequireToken();
+const token = adminRequireToken();
 renderAdminMenu('content');
+
+let currentWeek = null;
+
+const SLOT_TIMES = {
+  morning: '09:00',
+  stats:   '17:05',
+  wall:    '17:10',
+  extra:   '18:00',
+  rating:  '20:00',
+  author:  '21:00',
+};
+
+const SLOT_LABELS = {
+  morning: '🌅 Игра дня',
+  stats:   '📊 Статистика',
+  wall:    '🖼 Стена дня',
+  extra:   '💡 Доп. пост',
+  rating:  '🏆 Рейтинг дня',
+  author:  '📖 Пост автора',
+};
+
+const DAY_NAMES = ['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function weekLabel(weekStr){
+  const [year, wk] = weekStr.split('-W');
+  return 'Неделя ' + wk + ' · ' + year;
+}
+
+async function loadPlan(week){
+  try{
+    const url = '/admin/api/content/plan' + (week ? '?week=' + week : '');
+    const data = await adminApi(url);
+    currentWeek = data.week;
+    document.getElementById('weekLabel').textContent = weekLabel(data.week);
+    renderStats(data.stats);
+    renderDays(data.plan, data.schedule);
+  }catch(e){
+    document.getElementById('daysContainer').innerHTML =
+      '<div style="color:#FF4D5E;padding:20px;">Ошибка: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+function renderStats(s){
+  const box = document.getElementById('statsRow');
+  box.innerHTML = '';
+  const cards = [
+    {label:'Запланировано', value: s.total_planned},
+    {label:'Заполнено',     value: s.filled},
+    {label:'Опубликовано',  value: s.published},
+    {label:'Пропущено',     value: s.skipped},
+    {label:'Пусто',         value: s.empty},
+  ];
+  cards.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'stat-mini';
+    el.innerHTML = '<div class="stat-mini-label">' + c.label + '</div><div class="stat-mini-value">' + c.value + '</div>';
+    box.appendChild(el);
+  });
+}
+
+function renderDays(plan, schedule){
+  const box = document.getElementById('daysContainer');
+  box.innerHTML = '';
+  const days = Object.keys(plan).sort();
+
+  days.forEach((day, i) => {
+    const slotsForDay = schedule[i] || [];
+    const card = document.createElement('div');
+    card.className = 'day-card';
+
+    const dayDate = new Date(day);
+    const dayName = DAY_NAMES[i] || '';
+    const humanDate = dayDate.toLocaleDateString('ru-RU', {day:'numeric', month:'long'});
+
+    let html = '<div class="day-title">' + dayName + ' · ' + humanDate + '</div>';
+
+    slotsForDay.forEach(slotKey => {
+      const slotData = plan[day][slotKey] || {text:'', status:'empty'};
+      const time = SLOT_TIMES[slotKey] || '';
+      const label = SLOT_LABELS[slotKey] || slotKey;
+      const isAuto = slotKey === 'stats' || slotKey === 'wall' || slotKey === 'rating';
+
+      let statusClass = 'empty';
+      let statusText = 'Пусто';
+      if (slotData.status === 'published'){ statusClass = 'published'; statusText = 'Опубликовано'; }
+      else if (slotData.status === 'pending'){ statusClass = 'pending'; statusText = 'Ждёт'; }
+      else if (slotData.status === 'skipped'){ statusClass = 'empty'; statusText = 'Пропущено'; }
+
+      let slotHtml = '<div class="slot' + (isAuto ? ' auto' : '') + (slotData.status === 'published' ? ' published' : '') + '">';
+      slotHtml += '<div class="slot-header">';
+      slotHtml += '<span class="slot-label">' + label + '</span>';
+      slotHtml += '<span class="slot-time">' + time + '</span>';
+      if (isAuto){
+        slotHtml += '<span class="slot-status auto">АВТО</span>';
+      } else {
+        slotHtml += '<span class="slot-status ' + statusClass + '">' + statusText + '</span>';
+      }
+      slotHtml += '</div>';
+
+      if (isAuto){
+        slotHtml += '<div class="slot-auto-note">Публикуется автоматически. Текст не нужен.</div>';
+      } else {
+        slotHtml += '<textarea class="slot-textarea" data-day="' + day + '" data-slot="' + slotKey + '" placeholder="Вставь сюда текст поста…">' + escapeHtml(slotData.text || '') + '</textarea>';
+        slotHtml += '<div class="slot-actions">';
+        slotHtml += '<button class="slot-btn" data-prompt-day="' + day + '" data-prompt-slot="' + slotKey + '">📋 Промпт для DeepSeek</button>';
+        slotHtml += '<button class="slot-btn primary" data-save-day="' + day + '" data-save-slot="' + slotKey + '">💾 Сохранить</button>';
+        slotHtml += '</div>';
+      }
+      slotHtml += '</div>';
+      html += slotHtml;
+    });
+
+    card.innerHTML = html;
+    box.appendChild(card);
+  });
+
+  // Обработчики
+  document.querySelectorAll('[data-save-day]').forEach(btn => {
+    btn.onclick = async () => {
+      const day = btn.dataset.saveDay;
+      const slot = btn.dataset.saveSlot;
+      const ta = document.querySelector('textarea[data-day="' + day + '"][data-slot="' + slot + '"]');
+      if (!ta) return;
+      try{
+        await adminApi('/admin/api/content/slot', {
+          method:'POST',
+          body: JSON.stringify({week: currentWeek, day, slot, text: ta.value})
+        });
+        btn.textContent = '✓ Сохранено';
+        setTimeout(() => { btn.textContent = '💾 Сохранить'; }, 1500);
+      }catch(e){
+        alert('Ошибка: ' + e.message);
+      }
+    };
+  });
+
+  document.querySelectorAll('[data-prompt-day]').forEach(btn => {
+    btn.onclick = async () => {
+      const day = btn.dataset.promptDay;
+      const slot = btn.dataset.promptSlot;
+      try{
+        const r = await adminApi('/admin/api/content/prompt?day=' + day + '&slot=' + slot);
+        if (r.prompt){
+          await navigator.clipboard.writeText(r.prompt);
+          btn.textContent = '✓ Промпт скопирован';
+          setTimeout(() => { btn.textContent = '📋 Промпт для DeepSeek'; }, 2000);
+        } else {
+          alert('Для этого слота промпта нет');
+        }
+      }catch(e){
+        alert('Ошибка: ' + e.message);
+      }
+    };
+  });
+}
+
+function shiftWeek(delta){
+  const [y, w] = currentWeek.split('-W');
+  let year = parseInt(y), week = parseInt(w) + delta;
+  if (week < 1){ year -= 1; week = 52; }
+  if (week > 52){ year += 1; week = 1; }
+  const newWeek = year + '-W' + String(week).padStart(2, '0');
+  loadPlan(newWeek);
+}
+
+document.getElementById('prevWeek').onclick = () => shiftWeek(-1);
+document.getElementById('nextWeek').onclick = () => shiftWeek(1);
+document.getElementById('thisWeek').onclick = () => loadPlan('');
+
+loadPlan('');
 </script>
 
 </body></html>

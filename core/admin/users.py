@@ -74,3 +74,34 @@ async def admin_users_list(
         "active_7d": active_7d,
         "users": users,
     }
+
+
+@router.post("/admin/api/users/reset-pin")
+async def admin_user_reset_pin(payload: dict, token: str = Header(default="", alias="authorization")):
+    """Сброс PIN игрока. Все сессии удаляются."""
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    uid = str(payload.get("uid", "")).strip().upper()
+    new_pin = str(payload.get("new_pin", "")).strip()
+
+    if not uid:
+        raise HTTPException(status_code=400, detail="uid required")
+    if not (new_pin.isdigit() and len(new_pin) == 4):
+        raise HTTPException(status_code=400, detail="PIN — 4 цифры")
+
+    import hashlib
+    pin_hash = hashlib.sha256(
+        (new_pin + "|" + uid + "|mgsu-salt-2026").encode()
+    ).hexdigest()
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("SELECT 1 FROM users WHERE uid=?", (uid,))
+        if not await cur.fetchone():
+            raise HTTPException(status_code=404, detail="Игрок не найден")
+
+        await db.execute("UPDATE users SET pin_hash=? WHERE uid=?", (pin_hash, uid))
+        await db.execute("DELETE FROM sessions WHERE uid=?", (uid,))
+        await db.commit()
+
+    return {"ok": True, "new_pin": new_pin}

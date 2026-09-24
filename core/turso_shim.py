@@ -1,5 +1,5 @@
 """
-Замена aiosqlite на Turso через libsql-client.
+Замена aiosqlite на Turso через libsql-client (HTTP-режим).
 Автоматически подменяет sys.modules['aiosqlite'] когда задан TURSO_DATABASE_URL.
 Совместим с текущим кодом: async with aiosqlite.connect(path) as db.
 """
@@ -7,6 +7,14 @@ import os
 
 TURSO_URL = os.environ.get("TURSO_DATABASE_URL", "").strip()
 TURSO_TOKEN = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
+
+# Принудительно используем HTTP-схему, чтобы не зависеть от WebSocket
+if TURSO_URL.startswith("libsql://"):
+    TURSO_HTTP_URL = "https://" + TURSO_URL[len("libsql://"):]
+elif TURSO_URL.startswith("turso://"):
+    TURSO_HTTP_URL = "https://" + TURSO_URL[len("turso://"):]
+else:
+    TURSO_HTTP_URL = TURSO_URL
 
 
 class _Cursor:
@@ -46,11 +54,12 @@ class _Conn:
             print("Params:", params)
             raise
         rows = list(getattr(result_set, "rows", []) or [])
+        # libsql-client может возвращать last_insert_rowid
         lastrowid = getattr(result_set, "last_insert_rowid", None)
         return _Cursor(rows, lastrowid)
 
     async def commit(self):
-        # libsql-client работает в autocommit-режиме
+        # libsql-client в HTTP-режиме работает в autocommit
         return
 
     async def close(self):
@@ -69,11 +78,11 @@ class _ConnectCtx:
 
     async def __aenter__(self):
         import libsql_client
+        # Используем HTTPS-схему
         self._client = libsql_client.create_client(
-            url=TURSO_URL,
+            url=TURSO_HTTP_URL,
             auth_token=TURSO_TOKEN,
         )
-        # на случай, если create_client возвращает корутину
         if hasattr(self._client, "__await__"):
             self._client = await self._client
         return _Conn(self._client)

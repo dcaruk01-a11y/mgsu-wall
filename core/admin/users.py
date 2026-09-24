@@ -76,7 +76,7 @@ async def admin_users_list(
     }
 
 
-@router.post("/admin/api/user/reset-pin")
+@router.post("/admin/api/users/reset-pin")
 async def admin_user_reset_pin(payload: dict, token: str = Header(default="", alias="authorization")):
     """Сброс PIN игрока. Все сессии удаляются."""
     if not check_admin(token.replace("Bearer ", "").strip()):

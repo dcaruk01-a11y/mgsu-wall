@@ -76,3 +76,32 @@ function renderSiteHeader(active){
       .catch(function(){});
   }
 }
+
+
+/* Автосохранение ника в localStorage при логине */
+(function(){
+  // Ловим момент, когда ник попадёт в localStorage вручную через другие страницы
+  var observer = setInterval(function(){
+    var token = localStorage.getItem('mgsu_token');
+    var nick = localStorage.getItem('mgsu_nick');
+    if (!token){
+      // если разлогинились — чистим ник
+      if (nick) localStorage.removeItem('mgsu_nick');
+      return;
+    }
+    if (nick) return;
+    // Подгружаем ник
+    fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + token}})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (d && d.user){
+          localStorage.setItem('mgsu_nick', d.user.display_name);
+          // Обновляем аватар, если он есть в DOM
+          var av = document.querySelector('.site-header-avatar span');
+          if (av) av.textContent = d.user.display_name.charAt(0).toUpperCase();
+          clearInterval(observer);
+        }
+      })
+      .catch(function(){});
+  }, 1500);
+})();

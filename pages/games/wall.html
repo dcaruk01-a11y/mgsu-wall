@@ -5,19 +5,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
 <style>
 html,body{height:100%;}
-body.wall-page{overflow:hidden;touch-action:none;display:flex;flex-direction:column;}
-.wall-top{padding:14px 0 10px;flex-shrink:0;}
-.wall-top .head{height:56px;padding:0 20px;}
-.wall-top .brand-logo{width:34px !important;height:34px !important;}
-.wall-top .brand-label{font-size:13px;}
-.wall-top nav a{padding:6px 14px;font-size:13px;}
+body.wall-page{overflow:hidden;display:flex;flex-direction:column;touch-action:none;}
 
 .wall-canvas-wrap{
   flex:1;position:relative;overflow:hidden;
-  margin:0 16px;border-radius:12px;
-  border:1px solid rgba(255,255,255,0.14);
+  margin:8px 16px;border-radius:12px;
+  border:1px solid rgba(128,128,128,0.25);
   background:#000;min-height:0;
 }
 #c{display:block;width:100%;height:100%;touch-action:none;background:#000;cursor:crosshair;}
@@ -25,46 +21,44 @@ body.wall-page{overflow:hidden;touch-action:none;display:flex;flex-direction:col
 .wall-bottom{flex-shrink:0;padding:14px 16px 20px;}
 .wall-panel{
   max-width:1240px;margin:0 auto;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.14);
+  background:rgba(128,128,128,0.12);
+  border:1px solid rgba(128,128,128,0.22);
   border-radius:999px;
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
   padding:12px 18px;
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;
 }
 .palette{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .sw{
   width:30px;height:30px;border-radius:50%;
-  border:2px solid rgba(255,255,255,0.25);
+  border:2px solid rgba(128,128,128,0.4);
   cursor:pointer;padding:0;background:transparent;
   transition:transform .12s,border-color .12s;
 }
 .sw:hover{transform:scale(1.1);}
-.sw.active{border-color:#fff;transform:scale(1.15);box-shadow:0 0 0 3px rgba(255,255,255,0.15);}
+.sw.active{border-color:#fff;transform:scale(1.15);box-shadow:0 0 0 3px rgba(128,128,128,0.3);}
 .slider-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:140px;}
 .slider-wrap input[type=range]{flex:1;accent-color:#fff;background:transparent;}
-.divider{width:1px;height:28px;background:rgba(255,255,255,0.15);}
+.divider{width:1px;height:28px;background:rgba(128,128,128,0.3);}
 .btn-undo{
   display:inline-flex;align-items:center;gap:8px;
   padding:9px 18px;border-radius:999px;
-  border:1px solid rgba(255,255,255,0.2);
-  background:rgba(255,255,255,0.06);color:#fff;
+  border:1px solid rgba(128,128,128,0.3);
+  background:rgba(128,128,128,0.12);color:inherit;
   font-family:inherit;font-size:13px;font-weight:600;
-  cursor:pointer;transition:background .15s,border-color .15s;
-  white-space:nowrap;
+  cursor:pointer;
 }
-.btn-undo:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.35);}
-.btn-undo:active{transform:scale(0.97);}
+.btn-undo:hover{background:rgba(128,128,128,0.22);}
 .btn-undo svg{width:16px;height:16px;}
 #banner{
   position:absolute;top:16px;left:50%;transform:translateX(-50%);
-  background:var(--red);color:#fff;
+  background:#AC1422;color:#fff;
   padding:10px 20px;border-radius:999px;
   font-size:13px;font-weight:600;display:none;z-index:5;
   box-shadow:0 8px 24px rgba(172,20,34,0.4);
 }
 @media(max-width:640px){
-  .wall-canvas-wrap{margin:0 10px;border-radius:10px;}
+  .wall-canvas-wrap{margin:8px 10px;border-radius:10px;}
   .wall-bottom{padding:10px 10px 16px;}
   .wall-panel{border-radius:16px;padding:12px 14px;gap:10px;}
   .sw{width:26px;height:26px;}
@@ -75,20 +69,7 @@ body.wall-page{overflow:hidden;touch-action:none;display:flex;flex-direction:col
 </style>
 </head><body class="wall-page">
 
-<div class="wall-top">
-  <div class="wrap">
-    <div class="head">
-      <a class="brand" href="/glavnaya">
-        <img src="/assets/Logo/logo.svg" alt="Лого" class="brand-logo">
-        <span class="brand-label"><b>НИУ МГСУ</b> · Игры</span>
-      </a>
-      <nav>
-        <a href="/glavnaya">Игры</a>
-        <a href="/privacy">О проекте</a>
-      </nav>
-    </div>
-  </div>
-</div>
+<div id="siteHeader"></div>
 
 <div class="wall-canvas-wrap">
   <div id="banner"></div>
@@ -110,7 +91,10 @@ body.wall-page{overflow:hidden;touch-action:none;display:flex;flex-direction:col
   </div>
 </div>
 
+<script src="/static/site-header.js"></script>
 <script>
+renderSiteHeader('games');
+
 const W = 1920, H = 1080;
 const c = document.getElementById('c');
 const ctx = c.getContext('2d');
@@ -157,8 +141,8 @@ function move(e){
   const p = pos(e);
   const s = {x0:last.x, y0:last.y, x1:p.x, y1:p.y, color, width};
   drawLine(s.x0,s.y0,s.x1,s.y1,color,width);
-   const msg = JSON.stringify({type:'stroke', ...s});
-  if (ws && ws.readyState === 1){ ws.send(msg); strokesSent++; } else { queue.push(msg); strokesSent++; }
+  const msg = JSON.stringify({type:'stroke', ...s});
+  if (ws && ws.readyState === 1) ws.send(msg); else queue.push(msg);
   last = p;
 }
 function end(){ drawing = false; last = null; }
@@ -173,7 +157,7 @@ c.addEventListener('mouseleave', end);
 document.getElementById('undoBtn').onclick = () => {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify({type:'undo'}));
 };
-  // === отправка результата в аккаунт каждые 60 секунд ===
+
 let strokesSent = 0;
 setInterval(async () => {
   if (strokesSent === 0) return;
@@ -188,11 +172,6 @@ setInterval(async () => {
     strokesSent = 0;
   }catch(e){}
 }, 60000);
-
-// считаем штрихи
-setInterval(() => {
-  // каждый активный штрих увеличивает счётчик
-}, 1000);
 
 async function checkStatus(){
   try{

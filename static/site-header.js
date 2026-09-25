@@ -1,7 +1,56 @@
-/**
- * Единая шапка и футер.
- * renderSiteHeader('games' | 'ratings' | 'shop' | 'profile' | 'auth' | 'about', { hideAbout: true })
- */
+/* ===== АВТОСКРЫТИЕ ШАПКИ ПРИ СКРОЛЛЕ ===== */
+(function(){
+  var lastY = window.pageYOffset || 0;
+  var ticking = false;
+
+  function onScroll(){
+    var y = window.pageYOffset || document.documentElement.scrollTop;
+    var header = document.getElementById('siteHeader');
+    if (!header){ lastY = y; ticking = false; return; }
+
+    // У самого верха — всегда показываем
+    if (y < 50){
+      header.classList.remove('hidden');
+      lastY = y;
+      ticking = false;
+      return;
+    }
+
+    // Скроллим вниз → прячем
+    if (y > lastY + 4){
+      header.classList.add('hidden');
+    }
+    // Скроллим вверх → показываем сразу
+    else if (y < lastY - 4){
+      header.classList.remove('hidden');
+    }
+
+    lastY = y;
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', function(){
+    if (!ticking){
+      window.requestAnimationFrame(onScroll);
+      ticking = true;
+    }
+  }, {passive: true});
+
+  // Следим за сменой страницы — переинициализируем при перерисовке
+  var observer = new MutationObserver(function(){
+    var header = document.getElementById('siteHeader');
+    if (header) header.classList.remove('hidden');
+  });
+  document.addEventListener('DOMContentLoaded', function(){
+    var header = document.getElementById('siteHeader');
+    if (header){
+      observer.observe(header, {childList: true, subtree: false});
+    }
+  });
+})();
+
+
+/* ===== ШАПКА ===== */
 function renderSiteHeader(active, opts){
   active = active || '';
   opts = opts || {};
@@ -71,6 +120,7 @@ function renderSiteHeader(active, opts){
   }
 }
 
+/* ===== ФУТЕР ===== */
 function renderSiteFooter(){
   var container = document.getElementById('siteFooter');
   if (!container) return;

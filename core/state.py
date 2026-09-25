@@ -43,6 +43,7 @@ games_config = {
     "broadway": {"enabled": True,  "title": "Бродвей",        "url": "/games/broadway", "status": "available"},
     "campus":   {"enabled": True,  "title": "Построй кампус", "url": "/games/campus",   "status": "available"},
     "grable":   {"enabled": True,  "title": "Грабли",         "url": "/games/grable",   "status": "available"},
+    "tetris":   {"enabled": True,  "title": "Тетрис",         "url": "/games/tetris",   "status": "available"},
     "snake":    {"enabled": False, "title": "Змейка",         "url": "",                "status": "soon"},
     "poll":     {"enabled": False, "title": "Опрос дня",      "url": "",                "status": "soon"},
     "click":    {"enabled": False, "title": "Гонка кликов",   "url": "",                "status": "soon"},

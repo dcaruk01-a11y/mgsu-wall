@@ -1,15 +1,10 @@
 /**
- * Единая шапка и футер сайта.
- * Использование:
- *   <link rel="stylesheet" href="/static/site-header.css">
- *   <div id="siteHeader"></div>
- *   ...контент...
- *   <div id="siteFooter"></div>
- *   <script src="/static/site-header.js"></script>
- *   <script>renderSiteHeader('games'); renderSiteFooter();</script>
+ * Единая шапка и футер.
+ * renderSiteHeader('games' | 'ratings' | 'shop' | 'profile' | 'auth' | 'about', { hideAbout: true })
  */
-function renderSiteHeader(active){
+function renderSiteHeader(active, opts){
   active = active || '';
+  opts = opts || {};
   var container = document.getElementById('siteHeader');
   if (!container) return;
 
@@ -21,9 +16,11 @@ function renderSiteHeader(active){
   var navItems = [
     {key:'games',   icon:'🎮', label:'Игры',      url:'/glavnaya'},
     {key:'ratings', icon:'🏆', label:'Рейтинг',   url:'/ratings'},
-    {key:'shop',    icon:'🛍', label:'Магазин',   url:'/shop'},
-    {key:'about',   icon:'ℹ️', label:'О проекте', url:'/privacy'}
+    {key:'shop',    icon:'🛍', label:'Магазин',   url:'/shop'}
   ];
+  if (!opts.hideAbout){
+    navItems.push({key:'about', icon:'ℹ️', label:'О проекте', url:'/privacy'});
+  }
 
   var navHtml = '';
   navItems.forEach(function(item){
@@ -60,7 +57,6 @@ function renderSiteHeader(active){
     + '</nav>'
     + '</div>';
 
-  // Загружаем ник, если его нет в localStorage
   if (isLoggedIn && !nick){
     fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + token}})
       .then(function(r){ return r.ok ? r.json() : null; })

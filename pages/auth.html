@@ -52,6 +52,62 @@
 }
 .forgot-link:hover{opacity:1;text-decoration:underline;}
 .hide{display:none;}
+
+/* Модалка с UID после регистрации */
+.uid-modal{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(5,14,31,0.88);
+  backdrop-filter:blur(14px);
+  display:none;
+  align-items:center;justify-content:center;
+  padding:24px;
+}
+.uid-modal.open{display:flex;}
+.uid-box{
+  background:rgba(20,26,44,0.96);
+  border:1px solid rgba(128,128,128,0.30);
+  border-radius:20px;
+  padding:36px 28px;
+  max-width:440px;width:100%;
+  text-align:center;
+  color:#fff;
+}
+.uid-emoji{font-size:64px;margin-bottom:8px;}
+.uid-title{font-size:24px;font-weight:800;margin-bottom:8px;}
+.uid-sub{font-size:14px;color:rgba(255,255,255,0.65);line-height:1.5;margin-bottom:24px;}
+.uid-value{
+  font-family:monospace;
+  font-size:26px;font-weight:800;letter-spacing:0.1em;
+  padding:16px 20px;
+  background:rgba(255,255,255,0.06);
+  border:2px dashed rgba(128,128,128,0.4);
+  border-radius:12px;
+  margin-bottom:20px;
+  cursor:pointer;
+  user-select:all;
+  word-break:break-all;
+}
+.uid-value:hover{background:rgba(255,255,255,0.10);}
+.uid-copy{
+  display:block;width:100%;
+  padding:14px;border-radius:12px;border:0;
+  background:#4ADE80;color:#0a1f0f;
+  font-family:inherit;font-size:15px;font-weight:800;
+  cursor:pointer;margin-bottom:12px;
+}
+.uid-copy:hover{transform:translateY(-1px);}
+.uid-continue{
+  display:block;width:100%;
+  padding:14px;border-radius:12px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:transparent;color:#fff;
+  font-family:inherit;font-size:15px;font-weight:700;
+  cursor:pointer;
+}
+.uid-hint{
+  font-size:12px;color:rgba(255,255,255,0.45);
+  margin-top:16px;line-height:1.5;
+}
 </style>
 </head><body>
 
@@ -101,6 +157,19 @@
   </div>
 </div>
 
+<!-- Модалка с UID -->
+<div class="uid-modal" id="uidModal">
+  <div class="uid-box">
+    <div class="uid-emoji">🎉</div>
+    <div class="uid-title">Ты в игре!</div>
+    <div class="uid-sub">Это твой ID. По нему можно войти с любого устройства.<br>Сохрани его — как пароль.</div>
+    <div class="uid-value" id="uidValue">—</div>
+    <button class="uid-copy" id="uidCopy">📋 Скопировать ID</button>
+    <button class="uid-continue" id="uidContinue">Продолжить →</button>
+    <div class="uid-hint">Если потеряешь ID — восстановить аккаунт не получится.</div>
+  </div>
+</div>
+
 <div id="siteFooter"></div>
 
 <script src="/static/site-header.js"></script>
@@ -132,13 +201,39 @@ tabLog.onclick = function(){
   errEl.textContent = '';
 };
 
-function saveAuth(data){
+function saveAuth(data, showUid){
   localStorage.setItem(LS_TOKEN, data.token);
   localStorage.setItem(LS_UID, data.uid);
   if (data.display_name){
     localStorage.setItem('mgsu_nick', data.display_name);
   }
-  location.href = '/profile';
+  if (showUid){
+    showUidModal(data.uid);
+  } else {
+    location.href = '/profile';
+  }
+}
+
+function showUidModal(uid){
+  document.getElementById('uidValue').textContent = uid;
+  document.getElementById('uidModal').classList.add('open');
+
+  document.getElementById('uidCopy').onclick = async function(){
+    try{
+      await navigator.clipboard.writeText(uid);
+      const btn = document.getElementById('uidCopy');
+      btn.textContent = '✓ Скопировано';
+      setTimeout(function(){ btn.textContent = '📋 Скопировать ID'; }, 1500);
+    }catch(e){}
+  };
+
+  document.getElementById('uidValue').onclick = async function(){
+    try{ await navigator.clipboard.writeText(uid); }catch(e){}
+  };
+
+  document.getElementById('uidContinue').onclick = function(){
+    location.href = '/profile';
+  };
 }
 
 document.getElementById('btnRegister').onclick = async function(){
@@ -159,7 +254,7 @@ document.getElementById('btnRegister').onclick = async function(){
     });
     const data = await r.json();
     if (!r.ok){ errEl.textContent = data.detail || 'Ошибка'; return; }
-    saveAuth(data);
+    saveAuth(data, true);
   }catch(e){
     errEl.textContent = 'Ошибка соединения';
   }finally{
@@ -184,7 +279,7 @@ document.getElementById('btnLogin').onclick = async function(){
     });
     const data = await r.json();
     if (!r.ok){ errEl.textContent = data.detail || 'Ошибка'; return; }
-    saveAuth(data);
+    saveAuth(data, false);
   }catch(e){
     errEl.textContent = 'Ошибка соединения';
   }finally{

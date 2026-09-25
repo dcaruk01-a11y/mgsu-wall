@@ -41,20 +41,6 @@ async def api_session(payload: dict):
     analytics.track_session(dur)
     return {"ok": True}
 
-@router.get("/api/dev-credits")
-async def api_dev_credits():
-    import core.state as state
-    dc = state.dev_credits_config
-    if not dc.get("enabled", True):
-        return {"enabled": False}
-    return {
-        "enabled": True,
-        "title": dc.get("title", ""),
-        "subtitle": dc.get("subtitle", ""),
-        "footer": dc.get("footer", ""),
-        "cards": dc.get("cards", []),
-    }
-
 
 @router.get("/api/games")
 async def api_games():
@@ -71,6 +57,32 @@ async def api_games():
         ],
         "theme": state.theme_config["current"],
     }
+
+
+@router.get("/api/dev-credits")
+async def api_dev_credits():
+    dc = state.dev_credits_config
+    if not dc.get("enabled", True):
+        return {"enabled": False}
+    return {
+        "enabled": True,
+        "title": dc.get("title", ""),
+        "subtitle": dc.get("subtitle", ""),
+        "footer": dc.get("footer", ""),
+        "cards": dc.get("cards", []),
+    }
+
+
+@router.get("/api/top-day")
+async def api_top_day():
+    """Топ-3 за сегодня — для блока на главной."""
+    try:
+        from core.top import top_day
+        top = await top_day(3)
+    except Exception as e:
+        print("top-day error:", e)
+        top = []
+    return {"top": top}
 
 
 @router.get("/snapshot")

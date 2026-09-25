@@ -7,56 +7,56 @@
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/static/site-header.css">
 <style>
-.shop-wrap{max-width:720px;margin:0 auto;padding:24px 16px 64px;}
+.shop-wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px;}
 .shop-head{text-align:center;padding:20px 0 24px;}
-.shop-title{font-size:clamp(32px,6vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:12px;}
+.shop-title{font-size:clamp(32px,6vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:12px;color:inherit;}
 .shop-coins{
   display:inline-flex;align-items:center;gap:10px;
   padding:12px 22px;border-radius:999px;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.16);
+  background:rgba(128,128,128,0.10);
+  border:1px solid rgba(128,128,128,0.25);
   font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;
+  color:inherit;
 }
 .shop-coins small{font-size:12px;font-weight:600;opacity:0.6;letter-spacing:0.1em;text-transform:uppercase;}
 .items{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
 .item{
   display:flex;align-items:center;gap:16px;
   padding:18px 20px;border-radius:16px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(128,128,128,0.10);
+  border:1px solid rgba(128,128,128,0.18);
   transition:all .2s;
 }
-.item:hover{background:rgba(255,255,255,0.08);}
-.item.owned{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.06);}
-.item.active{border-color:#fff;background:rgba(255,255,255,0.12);box-shadow:0 0 0 1px rgba(255,255,255,0.3);}
+.item:hover{background:rgba(128,128,128,0.18);}
+.item.owned{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08);}
+.item.active{border-color:rgba(128,128,128,0.6);background:rgba(128,128,128,0.22);}
 .item.locked{opacity:0.55;}
 .item-emoji{
   font-size:44px;line-height:1;flex-shrink:0;
   width:60px;height:60px;
   display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,0.06);border-radius:14px;
+  background:rgba(128,128,128,0.15);border-radius:14px;
 }
 .item-info{flex:1;min-width:0;}
-.item-name{font-size:17px;font-weight:800;margin-bottom:4px;}
+.item-name{font-size:17px;font-weight:800;margin-bottom:4px;color:inherit;}
 .item-desc{font-size:13px;opacity:0.7;line-height:1.4;}
 .item-price{font-size:12px;font-weight:700;margin-top:6px;color:#FFD700;font-variant-numeric:tabular-nums;}
 .item-actions{flex-shrink:0;}
 .item-btn{
   padding:10px 18px;border-radius:10px;
-  border:1px solid rgba(255,255,255,0.2);
-  background:rgba(255,255,255,0.08);
-  color:#fff;font-family:inherit;font-size:13px;font-weight:700;
+  border:1px solid rgba(128,128,128,0.35);
+  background:rgba(128,128,128,0.12);
+  color:inherit;font-family:inherit;font-size:13px;font-weight:700;
   cursor:pointer;transition:all .15s;white-space:nowrap;
 }
-.item-btn:hover:not(:disabled){background:rgba(255,255,255,0.16);}
-.item-btn.primary{background:#fff;color:#0F3C73;border-color:#fff;}
-.item-btn.primary:hover{transform:translateY(-1px);}
+.item-btn:hover:not(:disabled){background:rgba(128,128,128,0.24);}
+.item-btn.primary{background:rgba(128,128,128,0.25);}
 .item-btn:disabled{opacity:0.5;cursor:not-allowed;}
 .item-btn.equipped{background:rgba(74,222,128,0.15);color:#4ADE80;border-color:rgba(74,222,128,0.5);}
 .guest-hint{
   padding:24px;border-radius:16px;
-  background:rgba(255,255,255,0.05);
-  border:1px dashed rgba(255,255,255,0.2);
+  background:rgba(128,128,128,0.10);
+  border:1px dashed rgba(128,128,128,0.35);
   text-align:center;font-size:14px;line-height:1.6;margin-top:16px;
 }
 .guest-hint a{color:#4ADE80;font-weight:700;text-decoration:none;}
@@ -84,9 +84,9 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <div id="siteFooter"></div>
+
+<div class="toast" id="toast"></div>
 
 <script src="/static/site-header.js"></script>
 <script>

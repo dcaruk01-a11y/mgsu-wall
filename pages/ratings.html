@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
 <style>
 .ratings-wrap{max-width:720px;margin:0 auto;padding:24px 16px 64px;}
 
@@ -70,7 +71,7 @@
 </head><body>
 
 <div class="ratings-wrap">
-  <a href="/glavnaya" class="back-link">← На главную</a>
+  <div id="siteHeader"></div>
 
   <div class="ratings-hero">
     <div class="ratings-title">🏆 Рейтинги</div>
@@ -97,6 +98,8 @@
 </div>
 
 <script>
+<script src="/static/site-header.js"></script>
+<script>renderSiteHeader('ratings');</script>
 const LS_TOKEN = 'mgsu_token';
 const authToken = localStorage.getItem(LS_TOKEN) || '';
 let myUid = '';

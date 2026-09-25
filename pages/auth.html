@@ -7,49 +7,50 @@
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/static/site-header.css">
 <style>
-.auth-wrap{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:32px 16px;}
+.auth-wrap{flex-grow:1;display:flex;align-items:center;justify-content:center;padding:32px 16px;}
 .auth-card{
   width:100%;max-width:440px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.14);
+  background:rgba(128,128,128,0.10);
+  border:1px solid rgba(128,128,128,0.22);
   border-radius:20px;
   backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);
   padding:36px 32px;
+  color:inherit;
 }
-.auth-title{font-size:26px;font-weight:800;margin-bottom:8px;text-align:center;}
-.auth-sub{font-size:14px;opacity:0.65;text-align:center;margin-bottom:28px;line-height:1.5;}
-.tabs{display:flex;background:rgba(255,255,255,0.05);border-radius:999px;padding:4px;margin-bottom:24px;}
+.auth-title{font-size:26px;font-weight:800;margin-bottom:8px;text-align:center;color:inherit;}
+.auth-sub{font-size:14px;opacity:0.7;text-align:center;margin-bottom:28px;line-height:1.5;}
+.tabs{display:flex;background:rgba(128,128,128,0.12);border-radius:999px;padding:4px;margin-bottom:24px;}
 .tab{flex:1;padding:10px;border:0;background:transparent;color:inherit;font-family:inherit;font-size:14px;font-weight:700;border-radius:999px;cursor:pointer;opacity:0.6;transition:all .15s;}
-.tab.active{background:#fff;color:#0F3C73;opacity:1;}
+.tab.active{background:rgba(128,128,128,0.28);opacity:1;}
 .field{margin-bottom:16px;}
-.field label{display:block;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.55;margin-bottom:8px;}
+.field label{display:block;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.6;margin-bottom:8px;}
 .field input{
   width:100%;padding:14px 18px;border-radius:12px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(128,128,128,0.12);
+  border:1px solid rgba(128,128,128,0.25);
   color:inherit;font-family:inherit;font-size:16px;
   outline:none;box-sizing:border-box;
 }
-.field input:focus{border-color:rgba(255,255,255,0.5);}
+.field input:focus{border-color:rgba(128,128,128,0.6);}
 .field input.pin{letter-spacing:0.6em;text-align:center;font-size:22px;font-weight:800;}
 .btn{
   width:100%;padding:16px;margin-top:8px;
   border-radius:12px;border:0;
-  background:#fff;color:#0F3C73;
+  background:rgba(128,128,128,0.28);color:inherit;
   font-family:inherit;font-size:15px;font-weight:800;
   cursor:pointer;transition:transform .1s;
 }
 .btn:hover{transform:translateY(-1px);}
 .btn:disabled{opacity:0.5;cursor:wait;}
 .error{margin-top:12px;font-size:13px;color:#FF4D5E;min-height:18px;text-align:center;}
-.hint{margin-top:20px;font-size:12px;opacity:0.5;text-align:center;line-height:1.5;}
+.hint{margin-top:20px;font-size:12px;opacity:0.6;text-align:center;line-height:1.5;}
 .forgot-link{
   display:block;margin-top:12px;text-align:center;
-  font-size:13px;color:rgba(255,255,255,0.55);
+  font-size:13px;opacity:0.6;
   text-decoration:none;cursor:pointer;
 }
-.forgot-link:hover{color:#fff;text-decoration:underline;}
+.forgot-link:hover{opacity:1;text-decoration:underline;}
 .hide{display:none;}
 </style>
 </head><body>
@@ -66,7 +67,6 @@
       <button class="tab" id="tabLogin">Войти</button>
     </div>
 
-    <!-- РЕГИСТРАЦИЯ -->
     <div id="formRegister">
       <div class="field">
         <label>Как тебя зовут</label>
@@ -79,7 +79,6 @@
       <button class="btn" id="btnRegister">Создать аккаунт</button>
     </div>
 
-    <!-- ВХОД -->
     <div id="formLogin" class="hide">
       <div class="field">
         <label>Твой ID</label>
@@ -112,7 +111,6 @@ renderSiteFooter();
 const LS_TOKEN = 'mgsu_token';
 const LS_UID = 'mgsu_uid';
 
-// Если уже вошёл — сразу в профиль
 if (localStorage.getItem(LS_TOKEN)){
   location.href = '/profile';
 }
@@ -123,12 +121,12 @@ const formReg = document.getElementById('formRegister');
 const formLog = document.getElementById('formLogin');
 const errEl = document.getElementById('err');
 
-tabReg.onclick = () => {
+tabReg.onclick = function(){
   tabReg.classList.add('active'); tabLog.classList.remove('active');
   formReg.classList.remove('hide'); formLog.classList.add('hide');
   errEl.textContent = '';
 };
-tabLog.onclick = () => {
+tabLog.onclick = function(){
   tabLog.classList.add('active'); tabReg.classList.remove('active');
   formLog.classList.remove('hide'); formReg.classList.add('hide');
   errEl.textContent = '';
@@ -140,12 +138,10 @@ function saveAuth(data){
   if (data.display_name){
     localStorage.setItem('mgsu_nick', data.display_name);
   }
-  // Сохраняем UID для показа
-  sessionStorage.setItem('mgsu_new_uid', data.uid);
   location.href = '/profile';
 }
 
-document.getElementById('btnRegister').onclick = async () => {
+document.getElementById('btnRegister').onclick = async function(){
   const name = document.getElementById('regName').value.trim();
   const pin = document.getElementById('regPin').value.trim();
   errEl.textContent = '';
@@ -159,7 +155,7 @@ document.getElementById('btnRegister').onclick = async () => {
     const r = await fetch('/api/auth/register', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({name, pin})
+      body: JSON.stringify({name: name, pin: pin})
     });
     const data = await r.json();
     if (!r.ok){ errEl.textContent = data.detail || 'Ошибка'; return; }
@@ -171,7 +167,7 @@ document.getElementById('btnRegister').onclick = async () => {
   }
 };
 
-document.getElementById('btnLogin').onclick = async () => {
+document.getElementById('btnLogin').onclick = async function(){
   const uid = document.getElementById('logUid').value.trim();
   const pin = document.getElementById('logPin').value.trim();
   errEl.textContent = '';
@@ -184,7 +180,7 @@ document.getElementById('btnLogin').onclick = async () => {
     const r = await fetch('/api/auth/login', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({uid, pin})
+      body: JSON.stringify({uid: uid, pin: pin})
     });
     const data = await r.json();
     if (!r.ok){ errEl.textContent = data.detail || 'Ошибка'; return; }
@@ -200,10 +196,10 @@ function forgotPin(){
   alert('Если ты забыл PIN:\n\n1. Открой бота @mgsu_feedback_bot\n2. Напиши «Забыл PIN от [твой UID]»\n3. Мы сбросим его и пришлём новый.');
 }
 
-document.getElementById('regPin').addEventListener('input', e => {
+document.getElementById('regPin').addEventListener('input', function(e){
   e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);
 });
-document.getElementById('logPin').addEventListener('input', e => {
+document.getElementById('logPin').addEventListener('input', function(e){
   e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);
 });
 </script>

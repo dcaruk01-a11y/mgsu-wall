@@ -126,6 +126,26 @@
 .settings-pane{display:none;}
 .settings-pane.active{display:block;}
 .settings-actions{display:flex;gap:8px;margin-top:14px;}
+.forgot-hint{
+  margin-top:14px;
+  padding:14px 16px;
+  border-radius:10px;
+  background:rgba(128,128,128,0.10);
+  border:1px dashed rgba(128,128,128,0.3);
+  font-size:13px;
+  line-height:1.6;
+  text-align:center;
+}
+.forgot-hint a{
+  color:#4ADE80;
+  font-weight:700;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:6px;
+}
+.forgot-hint a:hover{text-decoration:underline;}
 .settings-close{
   position:absolute;top:14px;right:14px;
   width:32px;height:32px;border-radius:50%;
@@ -217,7 +237,7 @@
       </div>
     </div>
 
-    <div class="settings-pane" id="panePin">
+      <div class="settings-pane" id="panePin">
       <div class="field">
         <label>Старый PIN</label>
         <input type="tel" id="oldPin" placeholder="••••" maxlength="4" inputmode="numeric">
@@ -229,6 +249,12 @@
       <div class="err" id="pinErr"></div>
       <div class="settings-actions">
         <button class="btn btn-primary" id="btnSavePin" style="flex:1;">Сохранить</button>
+      </div>
+
+      <div class="forgot-hint">
+        🔑 Забыл старый PIN?<br>
+        Напиши нам в Telegram — сбросим вручную.
+        <a href="https://t.me/mgsu_feedback_bot?start=forgot_pin" target="_blank" rel="noopener">Открыть бота →</a>
       </div>
     </div>
   </div>
@@ -414,13 +440,23 @@ document.getElementById('btnSavePin').onclick = async function(){
   const newPin = document.getElementById('newPin').value.trim();
   const errEl = document.getElementById('pinErr');
   errEl.textContent = '';
+
+  if (!oldPin){ errEl.textContent = 'Введи старый PIN'; return; }
   if (!/^\d{4}$/.test(newPin)){ errEl.textContent = 'Новый PIN — 4 цифры'; return; }
+
   try{
     const res = await api('/api/auth/update-pin', {
       method:'POST',
       body: JSON.stringify({old_pin: oldPin, new_pin: newPin})
     });
-    if (res.status !== 200){ errEl.textContent = res.data.detail || 'Ошибка'; return; }
+
+    if (res.status !== 200){
+      // Если старый PIN неверный — показываем не только ошибку, но и подсказку
+      errEl.innerHTML = (res.data.detail || 'Ошибка') +
+        '<br><span style="opacity:0.7;font-size:12px;">Забыл старый PIN? Напиши в <a href="https://t.me/mgsu_feedback_bot?start=forgot_pin" target="_blank" style="color:#4ADE80;">Telegram-бота</a></span>';
+      return;
+    }
+
     settingsModal.classList.remove('open');
     alert('PIN изменён. Войди заново.');
     localStorage.removeItem(LS_TOKEN);

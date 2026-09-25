@@ -1,15 +1,15 @@
 /* ===== ОБЩАЯ РАСКЛАДКА СТРАНИЦЫ ===== */
-html{
-  min-height:100%;
-}
+html{min-height:100%;}
 body{
   min-height:100vh;
   display:flex;
   flex-direction:column;
   margin:0;
 }
-body > *:not(#siteHeader):not(#siteFooter):not(script):not(style){
-  flex-grow:1;
+#siteHeader{flex-shrink:0;}
+#siteFooter{
+  flex-shrink:0;
+  margin-top:auto;
 }
 
 /* ===== ЕДИНАЯ ШАПКА (подстраивается под тему) ===== */

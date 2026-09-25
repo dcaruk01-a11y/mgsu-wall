@@ -65,6 +65,9 @@ async def campus():
 async def grable():
     return FileResponse("pages/games/grable.html")
 
+@router.get("/games/tetris")
+async def tetris():
+    return FileResponse("pages/games/tetris.html")
 
 # Общие страницы
 @router.get("/privacy")

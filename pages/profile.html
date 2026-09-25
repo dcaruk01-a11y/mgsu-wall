@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/static/site-header.css">
 <style>
 .profile-wrap{max-width:640px;margin:0 auto;padding:32px 16px 48px;}
+
 .profile-header{display:flex;align-items:center;gap:20px;margin-bottom:32px;}
 .avatar{
   width:80px;height:80px;border-radius:50%;
@@ -16,33 +17,48 @@
   display:flex;align-items:center;justify-content:center;
   font-size:38px;flex-shrink:0;
 }
-.profile-name{font-size:26px;font-weight:800;line-height:1.1;word-break:break-word;color:inherit;}
+.profile-info{flex:1;min-width:0;}
+.profile-name-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.profile-name{
+  font-size:26px;font-weight:800;line-height:1.1;
+  word-break:break-word;color:inherit;
+}
+.icon-btn{
+  width:32px;height:32px;border-radius:50%;
+  border:1px solid rgba(128,128,128,0.3);
+  background:rgba(128,128,128,0.12);
+  color:inherit;opacity:0.75;
+  display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+  font-size:15px;transition:all .15s;
+  padding:0;
+}
+.icon-btn:hover{opacity:1;background:rgba(128,128,128,0.25);transform:scale(1.05);}
+
 .profile-uid{
-  font-family:monospace;font-size:14px;opacity:0.7;margin-top:6px;
-  padding:4px 10px;border-radius:999px;
-  background:rgba(128,128,128,0.15);
-  display:inline-block;cursor:pointer;transition:background .15s;
+  font-family:monospace;font-size:14px;opacity:0.75;margin-top:8px;
+  padding:4px 12px;border-radius:999px;
+  background:rgba(128,128,128,0.12);
+  display:inline-flex;align-items:center;gap:8px;
+  cursor:pointer;transition:background .15s;
   color:inherit;
 }
-.profile-uid:hover{background:rgba(128,128,128,0.28);}
+.profile-uid:hover{background:rgba(128,128,128,0.22);}
+.profile-uid-copy{font-size:13px;opacity:0.6;}
+
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:28px;}
 .stat{padding:18px;border-radius:14px;background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.18);}
 .stat-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.6;margin-bottom:8px;}
 .stat-value{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:inherit;}
-.section{margin-bottom:20px;}
-.section h3{font-size:14px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.6;margin-bottom:12px;}
-.row{display:flex;gap:10px;flex-wrap:wrap;}
-.btn{
-  padding:12px 20px;border-radius:10px;
-  border:1px solid rgba(128,128,128,0.3);
-  background:rgba(128,128,128,0.10);
-  color:inherit;font-family:inherit;font-size:14px;font-weight:700;
-  cursor:pointer;transition:all .15s;text-decoration:none;
-  display:inline-flex;align-items:center;gap:8px;
+
+.card{padding:20px;border-radius:14px;background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.18);margin-bottom:20px;}
+.card h3{
+  font-size:14px;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;opacity:0.6;margin:0 0 14px;
+  display:flex;align-items:center;gap:8px;
 }
-.btn:hover{background:rgba(128,128,128,0.20);}
-.btn-primary{background:rgba(128,128,128,0.22);color:inherit;}
-.btn-danger{color:#FF4D5E;border-color:rgba(255,77,94,0.4);}
+.card h3 .icon-btn{margin-left:auto;width:28px;height:28px;font-size:13px;}
+
 .field{margin-bottom:14px;}
 .field label{display:block;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.6;margin-bottom:8px;}
 .field input{
@@ -53,16 +69,26 @@
   outline:none;box-sizing:border-box;
 }
 .field input:focus{border-color:rgba(128,128,128,0.6);}
-.card{padding:20px;border-radius:14px;background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.18);margin-bottom:20px;}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.btn{
+  padding:12px 20px;border-radius:10px;
+  border:1px solid rgba(128,128,128,0.3);
+  background:rgba(128,128,128,0.10);
+  color:inherit;font-family:inherit;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .15s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn:hover{background:rgba(128,128,128,0.20);}
+.btn-primary{background:rgba(128,128,128,0.28);}
+.btn-danger{color:#FF4D5E;border-color:rgba(255,77,94,0.4);}
+
 .hide{display:none;}
 .err{color:#FF4D5E;font-size:13px;margin-top:8px;min-height:18px;}
 .loading{padding:60px 20px;text-align:center;opacity:0.5;}
+
 .tasks-list{display:flex;flex-direction:column;gap:10px;}
-.task-item{
-  padding:16px 18px;border-radius:12px;
-  background:rgba(128,128,128,0.10);
-  border:1px solid rgba(128,128,128,0.18);
-}
+.task-item{padding:16px 18px;border-radius:12px;background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.18);}
 .task-item.done{background:rgba(74,222,128,0.10);border-color:rgba(74,222,128,0.35);}
 .task-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
 .task-text{font-size:14px;font-weight:600;line-height:1.4;flex:1;color:inherit;}
@@ -73,6 +99,39 @@
 .task-item.done .task-progress-fill{background:#4ADE80;}
 .task-progress-text{font-size:12px;opacity:0.6;font-variant-numeric:tabular-nums;}
 .tasks-empty{padding:20px;text-align:center;opacity:0.6;font-size:13px;}
+
+/* Модалка настроек */
+.settings-modal{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(5,14,31,0.85);
+  backdrop-filter:blur(12px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.settings-modal.open{display:flex;}
+.settings-box{
+  background:rgba(20,26,44,0.96);
+  border:1px solid rgba(128,128,128,0.30);
+  border-radius:18px;
+  padding:28px 26px;max-width:420px;width:100%;
+  color:#fff;
+}
+.settings-box h3{font-size:20px;font-weight:800;margin:0 0 20px;color:#fff;}
+.settings-tabs{display:flex;background:rgba(255,255,255,0.06);border-radius:999px;padding:4px;margin-bottom:20px;}
+.settings-tab{
+  flex:1;padding:10px;border:0;background:transparent;color:#fff;
+  font-family:inherit;font-size:13px;font-weight:700;border-radius:999px;
+  cursor:pointer;opacity:0.6;transition:all .15s;
+}
+.settings-tab.active{background:rgba(255,255,255,0.18);opacity:1;}
+.settings-pane{display:none;}
+.settings-pane.active{display:block;}
+.settings-actions{display:flex;gap:8px;margin-top:14px;}
+.settings-close{
+  position:absolute;top:14px;right:14px;
+  width:32px;height:32px;border-radius:50%;
+  border:0;background:rgba(255,255,255,0.10);color:#fff;
+  cursor:pointer;font-size:16px;
+}
 </style>
 </head><body>
 
@@ -86,9 +145,16 @@
 
     <div class="profile-header">
       <div class="avatar" id="pAvatar">🎓</div>
-      <div>
-        <div class="profile-name" id="pName">—</div>
-        <div class="profile-uid" id="pUid" title="Нажми, чтобы скопировать">—</div>
+      <div class="profile-info">
+        <div class="profile-name-row">
+          <div class="profile-name" id="pName">—</div>
+          <button class="icon-btn" id="editNameBtn" title="Сменить имя">✏️</button>
+          <button class="icon-btn" id="editPinBtn" title="Сменить PIN">🔑</button>
+        </div>
+        <div class="profile-uid" id="pUid" title="Нажми, чтобы скопировать">
+          <span id="pUidText">—</span>
+          <span class="profile-uid-copy">📋</span>
+        </div>
       </div>
     </div>
 
@@ -112,42 +178,9 @@
     </div>
 
     <div class="card">
-      <h3 style="font-size:14px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.6;margin-bottom:14px;">🎯 Задания на сегодня</h3>
+      <h3>🎯 Задания на сегодня</h3>
       <div class="tasks-list" id="tasksList">
         <div class="tasks-empty">Загрузка…</div>
-      </div>
-    </div>
-
-    <div class="card" id="changeNameCard" style="display:none;">
-      <div class="section">
-        <h3>Сменить имя</h3>
-        <div class="field">
-          <input type="text" id="newName" placeholder="Новое имя" maxlength="20">
-        </div>
-        <div class="row">
-          <button class="btn btn-primary" id="btnSaveName">Сохранить</button>
-          <button class="btn" id="btnCancelName">Отмена</button>
-        </div>
-        <div class="err" id="nameErr"></div>
-      </div>
-    </div>
-
-    <div class="card" id="changePinCard" style="display:none;">
-      <div class="section">
-        <h3>Сменить PIN</h3>
-        <div class="field">
-          <label>Старый PIN</label>
-          <input type="tel" id="oldPin" placeholder="••••" maxlength="4" inputmode="numeric">
-        </div>
-        <div class="field">
-          <label>Новый PIN</label>
-          <input type="tel" id="newPin" placeholder="••••" maxlength="4" inputmode="numeric">
-        </div>
-        <div class="row">
-          <button class="btn btn-primary" id="btnSavePin">Сохранить</button>
-          <button class="btn" id="btnCancelPin">Отмена</button>
-        </div>
-        <div class="err" id="pinErr"></div>
       </div>
     </div>
 
@@ -155,12 +188,49 @@
       <div class="row">
         <a class="btn" href="/shop">🛍 Магазин</a>
         <a class="btn" href="/ratings">🏆 Рейтинги</a>
-        <button class="btn" id="btnChangeName">✏️ Сменить имя</button>
-        <button class="btn" id="btnChangePin">🔑 Сменить PIN</button>
         <button class="btn btn-danger" id="btnLogout">🚪 Выйти</button>
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- Модалка настроек -->
+<div class="settings-modal" id="settingsModal">
+  <div class="settings-box" style="position:relative;">
+    <button class="settings-close" id="settingsClose">✕</button>
+    <h3>⚙️ Настройки</h3>
+
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-pane="name">✏️ Имя</button>
+      <button class="settings-tab" data-pane="pin">🔑 PIN</button>
+    </div>
+
+    <div class="settings-pane active" id="paneName">
+      <div class="field">
+        <label>Новое имя</label>
+        <input type="text" id="newName" placeholder="Новое имя" maxlength="20">
+      </div>
+      <div class="err" id="nameErr"></div>
+      <div class="settings-actions">
+        <button class="btn btn-primary" id="btnSaveName" style="flex:1;">Сохранить</button>
+      </div>
+    </div>
+
+    <div class="settings-pane" id="panePin">
+      <div class="field">
+        <label>Старый PIN</label>
+        <input type="tel" id="oldPin" placeholder="••••" maxlength="4" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Новый PIN</label>
+        <input type="tel" id="newPin" placeholder="••••" maxlength="4" inputmode="numeric">
+      </div>
+      <div class="err" id="pinErr"></div>
+      <div class="settings-actions">
+        <button class="btn btn-primary" id="btnSavePin" style="flex:1;">Сохранить</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -175,13 +245,11 @@ const LS_TOKEN = 'mgsu_token';
 const LS_UID = 'mgsu_uid';
 const token = localStorage.getItem(LS_TOKEN);
 
-if (!token){
-  location.href = '/auth';
-}
+if (!token) location.href = '/auth';
 
 const CHAR_EMOJI = {
-  student: '🎓', sso: '👷', prorab: '📋',
-  builder: '🏗️', prof: '🧑‍🏫', dean: '🧑‍💼', legend: '👑'
+  student:'🎓', sso:'👷', prorab:'📋',
+  builder:'🏗️', prof:'🧑‍🏫', dean:'🧑‍💼', legend:'👑'
 };
 
 async function api(path, opts){
@@ -207,20 +275,16 @@ function escapeHtml(s){
 
 function setUser(u){
   document.getElementById('pName').textContent = u.display_name;
-  document.getElementById('pUid').textContent = u.uid;
+  document.getElementById('pUidText').textContent = u.uid;
   document.getElementById('pStreak').textContent = u.streak || 0;
   document.getElementById('pCoins').textContent = u.coins || 0;
   document.getElementById('pScore').textContent = u.total_score || 0;
   document.getElementById('pGames').textContent = u.games_played || 0;
   const av = document.getElementById('pAvatar');
-  if (av && u.active_char){
-    av.textContent = CHAR_EMOJI[u.active_char] || '🎓';
-  }
+  if (av && u.active_char) av.textContent = CHAR_EMOJI[u.active_char] || '🎓';
   localStorage.setItem('mgsu_nick', u.display_name);
   const headerAvatar = document.querySelector('.site-header-avatar span');
-  if (headerAvatar){
-    headerAvatar.textContent = u.display_name.charAt(0).toUpperCase();
-  }
+  if (headerAvatar) headerAvatar.textContent = u.display_name.charAt(0).toUpperCase();
 }
 
 async function loadMe(){
@@ -272,33 +336,64 @@ function renderTasks(data){
 }
 loadTasks();
 
+/* Копирование UID */
 document.getElementById('pUid').addEventListener('click', async function(){
   try{
-    await navigator.clipboard.writeText(document.getElementById('pUid').textContent);
+    const uid = document.getElementById('pUidText').textContent;
+    await navigator.clipboard.writeText(uid);
     const el = document.getElementById('pUid');
-    const old = el.textContent;
-    el.textContent = '✓ Скопировано';
-    setTimeout(function(){ el.textContent = old; }, 1200);
+    const old = el.querySelector('.profile-uid-copy').textContent;
+    el.querySelector('.profile-uid-copy').textContent = '✓';
+    setTimeout(function(){ el.querySelector('.profile-uid-copy').textContent = old; }, 1200);
   }catch(e){}
 });
 
-document.getElementById('btnChangeName').onclick = function(){
+/* Модалка настроек */
+const settingsModal = document.getElementById('settingsModal');
+
+document.getElementById('editNameBtn').onclick = function(){
   document.getElementById('newName').value = document.getElementById('pName').textContent;
-  document.getElementById('changeNameCard').style.display = 'block';
-  document.getElementById('changePinCard').style.display = 'none';
+  switchPane('name');
+  settingsModal.classList.add('open');
   document.getElementById('nameErr').textContent = '';
 };
-document.getElementById('btnCancelName').onclick = function(){
-  document.getElementById('changeNameCard').style.display = 'none';
+
+document.getElementById('editPinBtn').onclick = function(){
+  document.getElementById('oldPin').value = '';
+  document.getElementById('newPin').value = '';
+  switchPane('pin');
+  settingsModal.classList.add('open');
+  document.getElementById('pinErr').textContent = '';
 };
+
+document.getElementById('settingsClose').onclick = function(){
+  settingsModal.classList.remove('open');
+};
+
+settingsModal.addEventListener('click', function(e){
+  if (e.target === settingsModal) settingsModal.classList.remove('open');
+});
+
+function switchPane(name){
+  document.querySelectorAll('.settings-tab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.pane === name);
+  });
+  document.querySelectorAll('.settings-pane').forEach(function(p){
+    p.classList.toggle('active', p.id === 'pane' + name.charAt(0).toUpperCase() + name.slice(1));
+  });
+}
+
+document.querySelectorAll('.settings-tab').forEach(function(t){
+  t.onclick = function(){ switchPane(t.dataset.pane); };
+});
+
+/* Сохранение имени */
 document.getElementById('btnSaveName').onclick = async function(){
   const newName = document.getElementById('newName').value.trim();
   const errEl = document.getElementById('nameErr');
   errEl.textContent = '';
-  if (newName.length > 20){
-    errEl.textContent = 'Имя — до 20 символов';
-    return;
-  }
+  if (!newName){ errEl.textContent = 'Введи имя'; return; }
+  if (newName.length > 20){ errEl.textContent = 'Имя — до 20 символов'; return; }
   try{
     const res = await api('/api/auth/update-name', {
       method:'POST',
@@ -307,20 +402,13 @@ document.getElementById('btnSaveName').onclick = async function(){
     if (res.status !== 200){ errEl.textContent = res.data.detail || 'Ошибка'; return; }
     document.getElementById('pName').textContent = res.data.display_name;
     localStorage.setItem('mgsu_nick', res.data.display_name);
-    document.getElementById('changeNameCard').style.display = 'none';
+    const headerAvatar = document.querySelector('.site-header-avatar span');
+    if (headerAvatar) headerAvatar.textContent = res.data.display_name.charAt(0).toUpperCase();
+    settingsModal.classList.remove('open');
   }catch(e){ errEl.textContent = 'Ошибка'; }
 };
 
-document.getElementById('btnChangePin').onclick = function(){
-  document.getElementById('oldPin').value = '';
-  document.getElementById('newPin').value = '';
-  document.getElementById('changePinCard').style.display = 'block';
-  document.getElementById('changeNameCard').style.display = 'none';
-  document.getElementById('pinErr').textContent = '';
-};
-document.getElementById('btnCancelPin').onclick = function(){
-  document.getElementById('changePinCard').style.display = 'none';
-};
+/* Сохранение PIN */
 document.getElementById('btnSavePin').onclick = async function(){
   const oldPin = document.getElementById('oldPin').value.trim();
   const newPin = document.getElementById('newPin').value.trim();
@@ -333,7 +421,7 @@ document.getElementById('btnSavePin').onclick = async function(){
       body: JSON.stringify({old_pin: oldPin, new_pin: newPin})
     });
     if (res.status !== 200){ errEl.textContent = res.data.detail || 'Ошибка'; return; }
-    document.getElementById('changePinCard').style.display = 'none';
+    settingsModal.classList.remove('open');
     alert('PIN изменён. Войди заново.');
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_UID);
@@ -342,6 +430,7 @@ document.getElementById('btnSavePin').onclick = async function(){
   }catch(e){ errEl.textContent = 'Ошибка'; }
 };
 
+/* Выход */
 document.getElementById('btnLogout').onclick = async function(){
   try{ await api('/api/auth/logout', {method:'POST'}); }catch(e){}
   localStorage.removeItem(LS_TOKEN);

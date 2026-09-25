@@ -86,9 +86,12 @@
 
 <div class="toast" id="toast"></div>
 
+<div id="siteFooter"></div>
+
 <script src="/static/site-header.js"></script>
 <script>
 renderSiteHeader('shop');
+renderSiteFooter();
 
 const LS_TOKEN = 'mgsu_token';
 const token = localStorage.getItem(LS_TOKEN) || '';

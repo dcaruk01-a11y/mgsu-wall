@@ -81,17 +81,20 @@
 .dev-card__name{font-size:16px;font-weight:700;color:inherit;margin-bottom:4px;}
 .dev-card__note{font-size:12px;opacity:0.7;}
 .dev-credits__footer{font-size:13px;opacity:0.7;border-top:1px dashed rgba(128,128,128,0.25);padding-top:16px;margin-top:4px;}
-/* Модалка игры — кнопка «Играть» справа */
+/* Модалка игры — кнопка «Играть» по центру */
 #gameActions{
   display:flex;
-  justify-content:flex-end;
+  justify-content:center;
 }
 #gameActions .btn-play{
   margin:0;
+  min-width:240px;
+  max-width:320px;
+  width:100%;
 }
 @media(max-width:520px){
   #gameActions{justify-content:stretch;}
-  #gameActions .btn-play{width:100%;justify-content:center;}
+  #gameActions .btn-play{max-width:none;}
 }
 @media(max-width:640px){
   .games-grid{grid-template-columns:repeat(2,1fr);gap:10px;}

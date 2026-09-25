@@ -1,13 +1,12 @@
 /**
- * Единая шапка сайта.
- * Использование на странице:
+ * Единая шапка и футер сайта.
+ * Использование:
  *   <link rel="stylesheet" href="/static/site-header.css">
  *   <div id="siteHeader"></div>
- *   ...
+ *   ...контент...
+ *   <div id="siteFooter"></div>
  *   <script src="/static/site-header.js"></script>
- *   <script>renderSiteHeader('glavnaya');</script>
- *
- * active: 'games' | 'ratings' | 'shop' | 'profile' | 'auth' | ''
+ *   <script>renderSiteHeader('games'); renderSiteFooter();</script>
  */
 function renderSiteHeader(active){
   active = active || '';
@@ -19,11 +18,11 @@ function renderSiteHeader(active){
   var nick = localStorage.getItem('mgsu_nick') || '';
   var initial = nick ? nick.charAt(0).toUpperCase() : '👤';
 
-  // Навигационные ссылки
   var navItems = [
-    {key:'games',   icon:'🎮', label:'Игры',    url:'/glavnaya'},
-    {key:'ratings', icon:'🏆', label:'Рейтинг', url:'/ratings'},
-    {key:'shop',    icon:'🛍', label:'Магазин', url:'/shop'}
+    {key:'games',   icon:'🎮', label:'Игры',      url:'/glavnaya'},
+    {key:'ratings', icon:'🏆', label:'Рейтинг',   url:'/ratings'},
+    {key:'shop',    icon:'🛍', label:'Магазин',   url:'/shop'},
+    {key:'about',   icon:'ℹ️', label:'О проекте', url:'/privacy'}
   ];
 
   var navHtml = '';
@@ -35,7 +34,6 @@ function renderSiteHeader(active){
             +  '</a>';
   });
 
-  // Профиль / войти
   var authHtml = '';
   if (isLoggedIn){
     authHtml = '<a href="/profile" class="site-header-avatar' + (active==='profile'?' active':'') + '" title="' + (nick || 'Профиль') + '">'
@@ -62,7 +60,7 @@ function renderSiteHeader(active){
     + '</nav>'
     + '</div>';
 
-  // Если залогинен, но ник не в кэше — подгружаем
+  // Загружаем ник, если его нет в localStorage
   if (isLoggedIn && !nick){
     fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + token}})
       .then(function(r){ return r.ok ? r.json() : null; })
@@ -77,37 +75,6 @@ function renderSiteHeader(active){
   }
 }
 
-
-/* Автосохранение ника в localStorage при логине */
-(function(){
-  // Ловим момент, когда ник попадёт в localStorage вручную через другие страницы
-  var observer = setInterval(function(){
-    var token = localStorage.getItem('mgsu_token');
-    var nick = localStorage.getItem('mgsu_nick');
-    if (!token){
-      // если разлогинились — чистим ник
-      if (nick) localStorage.removeItem('mgsu_nick');
-      return;
-    }
-    if (nick) return;
-    // Подгружаем ник
-    fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + token}})
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(d){
-        if (d && d.user){
-          localStorage.setItem('mgsu_nick', d.user.display_name);
-          // Обновляем аватар, если он есть в DOM
-          var av = document.querySelector('.site-header-avatar span');
-          if (av) av.textContent = d.user.display_name.charAt(0).toUpperCase();
-          clearInterval(observer);
-        }
-      })
-      .catch(function(){});
-  }, 1500);
-})();
-
-
-/* Рендер единого футера */
 function renderSiteFooter(){
   var container = document.getElementById('siteFooter');
   if (!container) return;

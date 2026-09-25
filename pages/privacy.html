@@ -5,136 +5,111 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
+<style>
+.privacy-wrap{max-width:720px;margin:0 auto;padding:48px 16px 48px;}
+.privacy-hero{padding:0 0 32px;}
+.privacy-title{font-size:clamp(32px,6vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1.05;margin-bottom:12px;color:inherit;}
+.privacy-sub{font-size:14px;opacity:0.65;line-height:1.5;}
+.privacy-section{margin-bottom:32px;}
+.privacy-section h3{
+  font-size:16px;font-weight:800;letter-spacing:-0.01em;
+  color:inherit;margin-bottom:12px;
+}
+.privacy-section p{
+  font-size:15px;line-height:1.75;opacity:0.85;margin-bottom:14px;
+}
+.privacy-section ul{
+  padding-left:20px;margin-bottom:14px;
+}
+.privacy-section li{
+  font-size:15px;line-height:1.75;opacity:0.85;margin-bottom:6px;
+}
+.privacy-section b{font-weight:700;opacity:1;}
+.hr{height:1px;background:rgba(128,128,128,0.20);margin:32px 0;}
+</style>
 </head><body>
 
-<header><div class="wrap head">
-  <a class="brand" href="/glavnaya">
-    <img src="/assets/Logo/logo.svg" alt="Лого" class="brand-logo">
-    <span class="brand-label"><b>НИУ МГСУ</b> · Игры</span>
-  </a>
-  <nav>
-    <a href="/games">Игры</a>
-    <a href="/privacy" class="active">О проекте</a>
-  </nav>
-</div></header>
+<div id="siteHeader"></div>
 
-<section class="section" style="padding:80px 0 100px;">
-  <div class="wrap" style="max-width:720px;">
+<div class="privacy-wrap">
 
-    <div class="section-eyebrow">О проекте</div>
-    <h2 style="margin-bottom:14px;">Игры МГСУ</h2>
-    <p style="color:var(--grey);font-size:14px;margin-bottom:48px;">
-      Студенческий проект · 2026
+  <div class="privacy-hero">
+    <div class="privacy-title">О проекте</div>
+    <div class="privacy-sub">Игры МГСУ · Студенческий проект · 2026</div>
+  </div>
+
+  <div class="privacy-section">
+    <h3>Что это</h3>
+    <p>
+      «Игры МГСУ» — студенческий некоммерческий проект. Мы делаем интерактивные развлечения для студентов:
+      от рисования на общей стене до игр в реальном времени. Всё работает в браузере — без установки приложений,
+      без регистрации, бесплатно.
     </p>
+  </div>
 
-    <p style="font-size:16px;color:#4B5563;line-height:1.75;margin-bottom:32px;">
-      «Игры МГСУ» — неофициальный студенческий проект, который делает интерактивные развлечения для студентов университета. Всё работает прямо в браузере: без установки приложений, без регистрации, бесплатно.
-    </p>
+  <div class="privacy-section">
+    <h3>Как это работает</h3>
+    <ul>
+      <li>на стене рядом с большим экраном висит QR-код;</li>
+      <li>ты сканируешь его телефоном — открывается рисовалка;</li>
+      <li>каждый штрих мгновенно появляется на экране у всех;</li>
+      <li>в 17:00 холст «печатается» и уходит в архив Telegram.</li>
+    </ul>
+  </div>
 
-    <p style="font-size:16px;color:#4B5563;line-height:1.75;margin-bottom:32px;">
-      Первая игра — «Стена». Ты рисуешь с телефона, а твой штрих мгновенно появляется на большом экране рядом. Так может делать кто угодно и одновременно с тобой. Каждый день в 17:00 стена «печатается» — мы делаем снимок и публикуем его в Telegram-канале, а холст очищается, чтобы утром всё началось заново.
-    </p>
-
-    <h3 style="font-size:20px;color:var(--blue);margin:40px 0 14px;">Принципы</h3>
-    <ul style="font-size:15px;color:#4B5563;line-height:1.75;padding-left:22px;">
+  <div class="privacy-section">
+    <h3>Принципы</h3>
+    <ul>
       <li>открытость — код проекта доступен на GitHub;</li>
       <li>простота — ничего не нужно устанавливать;</li>
       <li>уважение — мы не собираем лишние данные;</li>
       <li>безопасность — модерация следит за контентом.</li>
     </ul>
+  </div>
 
-    <h3 style="font-size:20px;color:var(--blue);margin:40px 0 14px;">Что дальше</h3>
-    <p style="font-size:15px;color:#4B5563;line-height:1.75;">
-      Мы работаем над новыми играми: «Змейка», «Опрос дня», «Гонка кликов». Если у тебя есть идея — напиши нам через Telegram-бота проекта.
+  <div class="privacy-section">
+    <h3>Что дальше</h3>
+    <p>
+      Мы работаем над новыми играми и развлечениями. Если у тебя есть идея — напиши нам через Telegram-бота проекта.
+    </p>
+  </div>
+
+  <div class="hr"></div>
+
+  <div class="privacy-section">
+    <h3>Политика конфиденциальности</h3>
+    <p>
+      «Игры МГСУ» — студенческий некоммерческий проект. Мы стараемся собирать как можно меньше данных о пользователях
+      и не передавать их третьим лицам.
     </p>
 
+    <p><b>1. Что делаем с данными.</b> Штрихи на «Стене» используются только для отображения на общем экране
+    и создания ежедневного снимка. Снимок публикуется в Telegram-канале проекта. Все штрихи автоматически удаляются
+    на следующий день.</p>
+
+    <p><b>2. Обратная связь через Telegram-бота.</b> Если вы напишете нам через Telegram-бота, он сохранит текст
+    обращения, ваш username и ID (это делает Telegram), и выбранную категорию.</p>
+
+    <p><b>3. Что мы не делаем.</b> Мы не продаём и не передаём данные третьим лицам, не используем рекламные трекеры
+    и аналитику, не строим профили пользователей.</p>
+
+    <p><b>4. Модерация.</b> Мы оставляем за собой право удалять отдельные штрихи, содержащие оскорбления,
+    неприемлемый контент или нарушающие закон.</p>
+
+    <p><b>5. Технические данные.</b> Проект размещён на Render (render.com) и использует сервисы Telegram и Google Fonts.</p>
+
+    <p><b>6. Контакты.</b> Любые вопросы и предложения — через Telegram-бота проекта или Telegram-канал.</p>
   </div>
-</section>
 
-<footer><div class="wrap foot">
-  <div class="foot-left">
-    © 2026 · Не является официальным сайтом НИУ МГСУ
-  </div>
-  <div class="foot-right">
-    <a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>
-    <span class="foot-dot">·</span>
-    <a href="#" onclick="openPrivacy(event)">Политика конфиденциальности</a>
-    <span class="foot-dot">·</span>
-    <a href="https://t.me/mgsu_wall_archive" target="_blank" rel="noopener">Telegram-канал</a>
-  </div>
-</div></footer>
-<div id="privacyModal" class="modal-overlay" role="dialog" aria-modal="true">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closePrivacy()" aria-label="Закрыть">✕</button>
-    <div class="modal-content">
-      <div class="section-eyebrow">Документы</div>
-      <h2 style="margin-bottom:14px;">Политика конфиденциальности</h2>
-      <p style="color:var(--grey);font-size:14px;margin-bottom:36px;">
-        Последнее обновление: сентябрь 2026
-      </p>
-
-      <p style="font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:28px;">
-        «Игры МГСУ» — студенческий некоммерческий проект. Мы стараемся собирать как можно меньше данных о пользователях и не передавать их третьим лицам.
-      </p>
-
-      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">1. Что делаем с данными</h3>
-      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
-        Штрихи на «Стене» используются только для отображения на общем экране и создания ежедневного снимка. Снимок публикуется в Telegram-канале проекта. Все штрихи автоматически удаляются на следующий день.
-      </p>
-
-      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">2. Обратная связь через Telegram-бота</h3>
-      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
-        Если вы напишете нам через Telegram-бота, он сохранит текст обращения, ваш username и ID (это делает Telegram), и выбранную категорию. Эти данные видит только администратор проекта.
-      </p>
-
-      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">3. Что мы не делаем</h3>
-      <ul style="font-size:14px;color:#4B5563;line-height:1.75;padding-left:22px;">
-        <li>не продаём и не передаём данные третьим лицам;</li>
-        <li>не используем рекламные трекеры и аналитику;</li>
-        <li>не строим профили пользователей;</li>
-        <li>не храним данные дольше, чем нужно для работы сервиса.</li>
-      </ul>
-
-      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">4. Модерация</h3>
-      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
-        Мы оставляем за собой право удалять отдельные штрихи, содержащие оскорбления, неприемлемый контент или нарушающие закон.
-      </p>
-
-      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">5. Технические данные</h3>
-      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
-        Проект размещён на Render (render.com) и использует сервисы Telegram и Google Fonts. Их политики конфиденциальности применяются к техническим данным (например, IP-адресам).
-      </p>
-
-      <h3 style="font-size:18px;color:var(--blue);margin:32px 0 12px;">6. Контакты</h3>
-      <p style="font-size:14px;color:#4B5563;line-height:1.75;">
-        Любые вопросы и предложения — через Telegram-бота проекта или Telegram-канал.
-      </p>
-    </div>
-  </div>
 </div>
 
+<div id="siteFooter"></div>
+
+<script src="/static/site-header.js"></script>
 <script>
-function openPrivacy(e){
-  if(e) e.preventDefault();
-  var sw = window.innerWidth - document.documentElement.clientWidth;
-  document.documentElement.style.setProperty('--scrollbar-width', sw + 'px');
-  document.getElementById('privacyModal').classList.add('open');
-  document.body.classList.add('modal-open');
-}
-function closePrivacy(){
-  document.getElementById('privacyModal').classList.remove('open');
-  document.body.classList.remove('modal-open');
-  document.documentElement.style.removeProperty('--scrollbar-width');
-}
-document.addEventListener('DOMContentLoaded', function(){
-  var modal = document.getElementById('privacyModal');
-  if(!modal) return;
-  modal.addEventListener('click', function(e){
-    if(e.target === modal) closePrivacy();
-  });
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape') closePrivacy();
-  });
-});
+renderSiteHeader('about');
+renderSiteFooter();
 </script>
+
 </body></html>

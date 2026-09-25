@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
 <style>
 .profile-wrap{max-width:640px;margin:0 auto;padding:32px 16px 64px;}
 .profile-header{display:flex;align-items:center;gap:20px;margin-bottom:32px;}
@@ -88,7 +89,7 @@
 
 <div class="profile-wrap">
 
-  <a href="/glavnaya" class="back-link">← На главную</a>
+  <div id="siteHeader"></div>
 
   <div id="loading" class="loading">Загрузка…</div>
 
@@ -175,6 +176,8 @@
 </div>
 
 <script>
+<script src="/static/site-header.js"></script>
+<script>renderSiteHeader('profile');</script>
 const LS_TOKEN = 'mgsu_token';
 const LS_UID = 'mgsu_uid';
 const token = localStorage.getItem(LS_TOKEN);

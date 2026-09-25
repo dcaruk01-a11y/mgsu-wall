@@ -105,3 +105,22 @@ function renderSiteHeader(active){
       .catch(function(){});
   }, 1500);
 })();
+
+
+/* Рендер единого футера */
+function renderSiteFooter(){
+  var container = document.getElementById('siteFooter');
+  if (!container) return;
+  container.className = 'site-footer';
+  container.innerHTML =
+    '<div class="site-footer-inner">'
+    + '<div class="site-footer-left">© 2026 · Не является официальным сайтом НИУ МГСУ</div>'
+    + '<div class="site-footer-right">'
+    +   '<a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>'
+    +   '<span class="site-footer-dot">·</span>'
+    +   '<a href="/privacy">Политика конфиденциальности</a>'
+    +   '<span class="site-footer-dot">·</span>'
+    +   '<a href="https://t.me/mgsu_wall_archive" target="_blank" rel="noopener">Telegram-канал</a>'
+    + '</div>'
+    + '</div>';
+}

@@ -16,7 +16,7 @@
   display:flex;align-items:center;justify-content:center;
   font-size:38px;flex-shrink:0;
 }
-.profile-name{font-size:28px;font-weight:800;line-height:1.1;}
+.profile-name{font-size:26px;font-weight:800;line-height:1.1;word-break:break-word;}
 .profile-uid{
   font-family:monospace;font-size:14px;opacity:0.7;margin-top:6px;
   padding:4px 10px;border-radius:999px;
@@ -24,10 +24,10 @@
   display:inline-block;cursor:pointer;transition:background .15s;
 }
 .profile-uid:hover{background:rgba(255,255,255,0.14);}
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:28px;}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:28px;}
 .stat{padding:18px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);}
 .stat-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;margin-bottom:8px;}
-.stat-value{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;}
+.stat-value{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;}
 .section{margin-bottom:20px;}
 .section h3{font-size:14px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.55;margin-bottom:12px;}
 .row{display:flex;gap:10px;flex-wrap:wrap;}
@@ -37,6 +37,7 @@
   background:rgba(255,255,255,0.05);
   color:inherit;font-family:inherit;font-size:14px;font-weight:700;
   cursor:pointer;transition:all .15s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;
 }
 .btn:hover{background:rgba(255,255,255,0.12);}
 .btn-primary{background:#fff;color:#0F3C73;border-color:#fff;}
@@ -54,11 +55,7 @@
 .card{padding:20px;border-radius:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);margin-bottom:20px;}
 .hide{display:none;}
 .err{color:#FF4D5E;font-size:13px;margin-top:8px;min-height:18px;}
-.back-link{display:inline-flex;align-items:center;gap:6px;font-size:14px;opacity:0.7;text-decoration:none;color:inherit;margin-bottom:24px;}
-.back-link:hover{opacity:1;}
 .loading{padding:60px 20px;text-align:center;opacity:0.5;}
-
-/* Задания */
 .tasks-list{display:flex;flex-direction:column;gap:10px;}
 .task-item{
   padding:16px 18px;border-radius:12px;
@@ -68,18 +65,9 @@
 .task-item.done{background:rgba(74,222,128,0.1);border-color:rgba(74,222,128,0.35);}
 .task-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
 .task-text{font-size:14px;font-weight:600;line-height:1.4;flex:1;}
-.task-reward{
-  font-size:12px;font-weight:700;
-  padding:4px 10px;border-radius:999px;
-  background:rgba(255,255,255,0.08);
-  color:#4ADE80;white-space:nowrap;
-}
+.task-reward{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,0.08);color:#4ADE80;white-space:nowrap;}
 .task-item.done .task-reward{background:#4ADE80;color:#0a1f0f;}
-.task-progress-bar{
-  height:6px;border-radius:3px;
-  background:rgba(255,255,255,0.08);
-  overflow:hidden;margin-bottom:6px;
-}
+.task-progress-bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;margin-bottom:6px;}
 .task-progress-fill{height:100%;background:#6FA8FF;transition:width .3s;}
 .task-item.done .task-progress-fill{background:#4ADE80;}
 .task-progress-text{font-size:12px;color:rgba(255,255,255,0.55);font-variant-numeric:tabular-nums;}
@@ -87,9 +75,9 @@
 </style>
 </head><body>
 
-<div class="profile-wrap">
+<div id="siteHeader"></div>
 
-  <div id="siteHeader"></div>
+<div class="profile-wrap">
 
   <div id="loading" class="loading">Загрузка…</div>
 
@@ -164,20 +152,21 @@
 
     <div class="section">
       <div class="row">
-        <a class="btn" href="/shop">🛍 Магазин персонажей</a>
+        <a class="btn" href="/shop">🛍 Магазин</a>
         <a class="btn" href="/ratings">🏆 Рейтинги</a>
-        <button class="btn" id="btnChangeName">Сменить имя</button>
-        <button class="btn" id="btnChangePin">Сменить PIN</button>
-        <button class="btn btn-danger" id="btnLogout">Выйти</button>
+        <button class="btn" id="btnChangeName">✏️ Сменить имя</button>
+        <button class="btn" id="btnChangePin">🔑 Сменить PIN</button>
+        <button class="btn btn-danger" id="btnLogout">🚪 Выйти</button>
       </div>
     </div>
 
   </div>
 </div>
 
-<script>
 <script src="/static/site-header.js"></script>
-<script>renderSiteHeader('profile');</script>
+<script>
+renderSiteHeader('profile');
+
 const LS_TOKEN = 'mgsu_token';
 const LS_UID = 'mgsu_uid';
 const token = localStorage.getItem(LS_TOKEN);
@@ -188,20 +177,28 @@ if (!token){
 
 const CHAR_EMOJI = {
   student: '🎓', sso: '👷', prorab: '📋',
-  builder: '🏗️', prof: '🧑‍🏫', dean: '🧑‍💼', legend: '👑',
+  builder: '🏗️', prof: '🧑‍🏫', dean: '🧑‍💼', legend: '👑'
 };
 
-async function api(path, opts = {}){
+async function api(path, opts){
+  opts = opts || {};
   const headers = Object.assign({'Content-Type':'application/json'}, opts.headers || {});
   if (token) headers['Authorization'] = 'Bearer ' + token;
-  const res = await fetch(path, Object.assign({}, opts, {headers}));
+  const res = await fetch(path, Object.assign({}, opts, {headers: headers}));
   if (res.status === 401){
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_UID);
+    localStorage.removeItem('mgsu_nick');
     location.href = '/auth';
     throw new Error('unauthorized');
   }
   return { status: res.status, data: await res.json() };
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
 }
 
 function setUser(u){
@@ -215,13 +212,20 @@ function setUser(u){
   if (av && u.active_char){
     av.textContent = CHAR_EMOJI[u.active_char] || '🎓';
   }
+  // Сохраняем ник для шапки
+  localStorage.setItem('mgsu_nick', u.display_name);
+  // Обновляем аватар в шапке
+  const headerAvatar = document.querySelector('.site-header-avatar span');
+  if (headerAvatar){
+    headerAvatar.textContent = u.display_name.charAt(0).toUpperCase();
+  }
 }
 
 async function loadMe(){
   try{
-    const { status, data } = await api('/api/auth/me');
-    if (status !== 200){ location.href = '/auth'; return; }
-    setUser(data.user);
+    const res = await api('/api/auth/me');
+    if (res.status !== 200){ location.href = '/auth'; return; }
+    setUser(res.data.user);
     document.getElementById('loading').classList.add('hide');
     document.getElementById('content').classList.remove('hide');
   }catch(e){}
@@ -230,8 +234,8 @@ loadMe();
 
 async function loadTasks(){
   try{
-    const { data } = await api('/api/tasks');
-    renderTasks(data);
+    const res = await api('/api/tasks');
+    renderTasks(res.data);
   }catch(e){
     const box = document.getElementById('tasksList');
     if (box) box.innerHTML = '<div class="tasks-empty">Не удалось загрузить</div>';
@@ -250,7 +254,7 @@ function renderTasks(data){
     return;
   }
   box.innerHTML = '';
-  data.tasks.forEach(t => {
+  data.tasks.forEach(function(t){
     const item = document.createElement('div');
     item.className = 'task-item' + (t.done ? ' done' : '');
     const pct = t.target ? Math.min(100, Math.round(t.progress / t.target * 100)) : 0;
@@ -264,80 +268,88 @@ function renderTasks(data){
     box.appendChild(item);
   });
 }
-
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
 loadTasks();
 
-document.getElementById('pUid').addEventListener('click', async () => {
+document.getElementById('pUid').addEventListener('click', async function(){
   try{
     await navigator.clipboard.writeText(document.getElementById('pUid').textContent);
     const el = document.getElementById('pUid');
     const old = el.textContent;
-    el.textContent = 'Скопировано!';
-    setTimeout(() => el.textContent = old, 1200);
+    el.textContent = '✓ Скопировано';
+    setTimeout(function(){ el.textContent = old; }, 1200);
   }catch(e){}
 });
 
-document.getElementById('btnChangeName').onclick = () => {
+document.getElementById('btnChangeName').onclick = function(){
   document.getElementById('newName').value = document.getElementById('pName').textContent;
   document.getElementById('changeNameCard').style.display = 'block';
   document.getElementById('changePinCard').style.display = 'none';
   document.getElementById('nameErr').textContent = '';
 };
-document.getElementById('btnCancelName').onclick = () => {
+document.getElementById('btnCancelName').onclick = function(){
   document.getElementById('changeNameCard').style.display = 'none';
 };
-document.getElementById('btnSaveName').onclick = async () => {
+document.getElementById('btnSaveName').onclick = async function(){
   const newName = document.getElementById('newName').value.trim();
   const errEl = document.getElementById('nameErr');
   errEl.textContent = '';
+  if (newName.length > 20){
+    errEl.textContent = 'Имя — до 20 символов';
+    return;
+  }
   try{
-    const { status, data } = await api('/api/auth/update-name', {
-      method:'POST', body: JSON.stringify({display_name: newName})
+    const res = await api('/api/auth/update-name', {
+      method:'POST',
+      body: JSON.stringify({display_name: newName})
     });
-    if (status !== 200){ errEl.textContent = data.detail || 'Ошибка'; return; }
-    document.getElementById('pName').textContent = data.display_name;
+    if (res.status !== 200){ errEl.textContent = res.data.detail || 'Ошибка'; return; }
+    document.getElementById('pName').textContent = res.data.display_name;
+    localStorage.setItem('mgsu_nick', res.data.display_name);
     document.getElementById('changeNameCard').style.display = 'none';
   }catch(e){ errEl.textContent = 'Ошибка'; }
 };
 
-document.getElementById('btnChangePin').onclick = () => {
+document.getElementById('btnChangePin').onclick = function(){
   document.getElementById('oldPin').value = '';
   document.getElementById('newPin').value = '';
   document.getElementById('changePinCard').style.display = 'block';
   document.getElementById('changeNameCard').style.display = 'none';
   document.getElementById('pinErr').textContent = '';
 };
-document.getElementById('btnCancelPin').onclick = () => {
+document.getElementById('btnCancelPin').onclick = function(){
   document.getElementById('changePinCard').style.display = 'none';
 };
-document.getElementById('btnSavePin').onclick = async () => {
+document.getElementById('btnSavePin').onclick = async function(){
   const oldPin = document.getElementById('oldPin').value.trim();
   const newPin = document.getElementById('newPin').value.trim();
   const errEl = document.getElementById('pinErr');
   errEl.textContent = '';
   if (!/^\d{4}$/.test(newPin)){ errEl.textContent = 'Новый PIN — 4 цифры'; return; }
   try{
-    const { status, data } = await api('/api/auth/update-pin', {
-      method:'POST', body: JSON.stringify({old_pin: oldPin, new_pin: newPin})
+    const res = await api('/api/auth/update-pin', {
+      method:'POST',
+      body: JSON.stringify({old_pin: oldPin, new_pin: newPin})
     });
-    if (status !== 200){ errEl.textContent = data.detail || 'Ошибка'; return; }
+    if (res.status !== 200){ errEl.textContent = res.data.detail || 'Ошибка'; return; }
     document.getElementById('changePinCard').style.display = 'none';
-    alert('PIN изменён');
+    alert('PIN изменён. Войди заново.');
+    localStorage.removeItem(LS_TOKEN);
+    localStorage.removeItem(LS_UID);
+    localStorage.removeItem('mgsu_nick');
+    location.href = '/auth';
   }catch(e){ errEl.textContent = 'Ошибка'; }
 };
 
-document.getElementById('btnLogout').onclick = async () => {
+document.getElementById('btnLogout').onclick = async function(){
   try{ await api('/api/auth/logout', {method:'POST'}); }catch(e){}
   localStorage.removeItem(LS_TOKEN);
   localStorage.removeItem(LS_UID);
+  localStorage.removeItem('mgsu_nick');
   location.href = '/auth';
 };
 
-['oldPin','newPin'].forEach(id => {
-  document.getElementById(id).addEventListener('input', e => {
+['oldPin','newPin'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', function(e){
     e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);
   });
 });

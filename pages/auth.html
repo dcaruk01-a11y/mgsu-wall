@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
 <style>
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;}
 .auth-card{
@@ -48,6 +49,7 @@
 </head><body>
 
 <div class="auth-wrap">
+<div id="siteHeader"></div>
   <div class="auth-card">
     <div class="auth-title">Игры МГСУ</div>
     <div class="auth-sub">Создай аккаунт, чтобы попасть в рейтинг и копить монеты</div>
@@ -93,6 +95,8 @@
 </div>
 
 <script>
+<script src="/static/site-header.js"></script>
+<script>renderSiteHeader('auth');</script>
 const LS_TOKEN = 'mgsu_token';
 const LS_UID = 'mgsu_uid';
 

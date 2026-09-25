@@ -10,20 +10,38 @@
 /* Виджет ежедневных заданий */
 .daily-tasks-widget{
   max-width:640px;margin:0 auto;padding:20px 24px;border-radius:18px;
-  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.20);
 }
 .daily-tasks-widget h3{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.7;margin:0 0 14px;}
-.daily-task-item{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.06);}
+.daily-task-item{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:14px;border-bottom:1px solid rgba(128,128,128,0.15);}
 .daily-task-item:last-child{border-bottom:none;}
-.daily-task-check{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.daily-task-check{width:20px;height:20px;border-radius:50%;border:2px solid rgba(128,128,128,0.4);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
 .daily-task-item.done .daily-task-check{background:#4ADE80;border-color:#4ADE80;color:#0a1f0f;}
 .daily-task-item.done .daily-task-text{text-decoration:line-through;opacity:0.55;}
 .daily-task-text{flex:1;line-height:1.4;}
 .daily-task-reward{font-size:12px;font-weight:700;color:#4ADE80;white-space:nowrap;}
-.daily-tasks-guest{font-size:13px;opacity:0.75;line-height:1.5;text-align:center;}
-.daily-tasks-guest a{color:#4ADE80;font-weight:700;text-decoration:none;}
-.daily-tasks-guest a:hover{text-decoration:underline;}
+
+/* Блок «Рейтинг дня» */
+.top-day-block{
+  max-width:640px;margin:0 auto;padding:24px;border-radius:18px;
+  background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.20);
+}
+.top-day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+.top-day-title{font-size:15px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;opacity:0.85;}
+.top-day-link{font-size:13px;font-weight:700;color:inherit;opacity:0.7;text-decoration:none;}
+.top-day-link:hover{opacity:1;text-decoration:underline;}
+.top-day-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid rgba(128,128,128,0.15);}
+.top-day-row:last-child{border-bottom:none;}
+.top-day-pos{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;background:rgba(128,128,128,0.20);flex-shrink:0;color:inherit;}
+.top-day-pos.gold{background:#FFD700;color:#1a1a1a;}
+.top-day-pos.silver{background:#C0C0C0;color:#1a1a1a;}
+.top-day-pos.bronze{background:#CD7F32;color:#fff;}
+.top-day-nick{flex:1;font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.top-day-score{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;opacity:0.85;}
+.top-day-empty{text-align:center;padding:20px;opacity:0.6;font-size:13px;}
+.top-day-cta{margin-top:12px;text-align:center;}
+.top-day-cta a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:inherit;opacity:0.8;text-decoration:none;}
+.top-day-cta a:hover{opacity:1;text-decoration:underline;}
 </style>
 </head><body>
 
@@ -49,10 +67,23 @@
   </div>
 </section>
 
-<section id="dailyTasksSection" style="padding:0 16px 32px;display:none;">
+<section id="dailyTasksSection" style="padding:0 16px 24px;display:none;">
   <div class="daily-tasks-widget" id="dailyWidget">
     <h3>🎯 Задания на сегодня</h3>
     <div id="dailyTasksList"></div>
+  </div>
+</section>
+
+<section style="padding:0 16px 24px;">
+  <div class="top-day-block" id="topDayBlock" style="display:none;">
+    <div class="top-day-head">
+      <div class="top-day-title">🏆 Рейтинг дня</div>
+      <a href="/ratings" class="top-day-link">Весь рейтинг →</a>
+    </div>
+    <div id="topDayList"></div>
+    <div class="top-day-cta">
+      <a href="/games/clicker">🎮 Побей рекорд →</a>
+    </div>
   </div>
 </section>
 
@@ -68,7 +99,6 @@
   </div>
 </section>
 
-<!-- ═══════════ АКТИВ РАЗРАБОТЧИКОВ ═══════════ -->
 <section class="dev-credits" id="devCreditsSection" style="display:none;">
   <div class="dev-credits__inner">
     <div class="dev-credits__title" id="dcTitleEl"></div>
@@ -77,19 +107,6 @@
     <div class="dev-credits__footer" id="dcFooterEl"></div>
   </div>
 </section>
-
-<footer>
-  <div class="foot">
-    <div class="foot-left">© 2026 · Не является официальным сайтом НИУ МГСУ</div>
-    <div class="foot-right">
-      <a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>
-      <span class="foot-dot">·</span>
-      <a href="#" onclick="openPrivacy(event)">Политика конфиденциальности</a>
-      <span class="foot-dot">·</span>
-      <a href="https://t.me/mgsu_wall_archive" target="_blank" rel="noopener">Telegram-канал</a>
-    </div>
-  </div>
-</footer>
 
 <div id="gameModal" class="modal-overlay" role="dialog" aria-modal="true">
   <div class="modal-box glass">
@@ -132,48 +149,22 @@
   </div>
 </div>
 
+<div id="siteFooter"></div>
+
+<script src="/static/site-header.js"></script>
 <script>
+renderSiteHeader('games');
+renderSiteFooter();
+
 const GAMES_INFO = {
-  broadway: {
-    title: 'Бродвей',
-    rules: `<p class="rule-text">Игра в разработке — но уже можно попробовать.</p>`,
-    playUrl: '/games/broadway', playLabel: 'Играть'
-  },
-  campus: {
-    title: 'Построй кампус',
-    rules: `<p class="rule-text">Собери предложения по улучшению кампуса. Игра в разработке — но уже можно попробовать.</p>`,
-    playUrl: '/games/campus', playLabel: 'Играть'
-  },
-  grable: {
-    title: 'Грабли',
-    rules: `<p class="rule-text">Игра в разработке — но уже можно попробовать.</p>`,
-    playUrl: '/games/grable', playLabel: 'Играть'
-  },
-  wall: {
-    title: 'Стена',
-    rules: `<p class="rule-text">Рисуй с телефона — твой штрих мгновенно появляется на большом экране.</p>
-      <ul class="rule-list">
-        <li>выбирай цвет и толщину линии в нижней панели;</li>
-        <li>рисуй пальцем по холсту;</li>
-        <li>кнопка «Отменить» убирает твой последний штрих;</li>
-        <li>в 17:00 стена «печатается» и уходит в Telegram-архив.</li>
-      </ul>`,
-    playUrl: '/games/wall', playLabel: 'Играть'
-  },
-  clicker: {
-    title: 'Кликер',
-    rules: `<p class="rule-text">За 30 секунд накликай как можно больше. Ты растёшь от студента до легенды МГСУ.</p>
-      <ul class="rule-list">
-        <li>жми на большую кнопку как можно быстрее;</li>
-        <li>с каждым кликом меняется твой ранг и эмодзи;</li>
-        <li>в конце покажи результат другу;</li>
-        <li>7 рангов: Студент → ССОшник → Прораб → Строитель → Генподрядчик → Застройщик → Легенда МГСУ.</li>
-      </ul>`,
-    playUrl: '/games/clicker', playLabel: 'Играть'
-  },
-  snake: { title:'Змейка', rules:`<p class="rule-text">Классика на большом экране. Управление — с телефона.</p><p class="rule-text">Игра пока в разработке.</p>`, playUrl:null, playLabel:'Скоро' },
-  poll:  { title:'Опрос дня', rules:`<p class="rule-text">Один вопрос — много мнений. Голосуй с телефона, результаты видны всем.</p><p class="rule-text">Игра пока в разработке.</p>`, playUrl:null, playLabel:'Скоро' },
-  click: { title:'Гонка кликов', rules:`<p class="rule-text">Нажимай быстрее всех. Таблица лидеров обновляется мгновенно.</p><p class="rule-text">Игра пока в разработке.</p>`, playUrl:null, playLabel:'Скоро' }
+  broadway: { title: 'Бродвей', rules: `<p class="rule-text">Пробеги по коридору, собирай кофе и монеты.</p>`, playUrl: '/games/broadway', playLabel: 'Играть' },
+  campus: { title: 'Построй кампус', rules: `<p class="rule-text">Голосуй за улучшения МГСУ.</p>`, playUrl: '/games/campus', playLabel: 'Играть' },
+  grable: { title: 'Грабли', rules: `<p class="rule-text">Открой все безопасные клетки.</p>`, playUrl: '/games/grable', playLabel: 'Играть' },
+  wall: { title: 'Стена', rules: `<p class="rule-text">Рисуй с телефона — твой штрих мгновенно появляется на большом экране.</p>`, playUrl: '/games/wall', playLabel: 'Играть' },
+  clicker: { title: 'Кликер', rules: `<p class="rule-text">30 секунд, 7 рангов от Студента до Легенды МГСУ.</p>`, playUrl: '/games/clicker', playLabel: 'Играть' },
+  snake: { title:'Змейка', rules:`<p class="rule-text">Игра в разработке.</p>`, playUrl:null, playLabel:'Скоро' },
+  poll:  { title:'Опрос дня', rules:`<p class="rule-text">Игра в разработке.</p>`, playUrl:null, playLabel:'Скоро' },
+  click: { title:'Гонка кликов', rules:`<p class="rule-text">Игра в разработке.</p>`, playUrl:null, playLabel:'Скоро' }
 };
 
 async function loadGames(){
@@ -247,7 +238,6 @@ function unlockScroll(){
   document.documentElement.style.removeProperty('--scrollbar-width');
 }
 
-/* ============ ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ============ */
 async function loadDailyTasks(){
   const token = localStorage.getItem('mgsu_token') || '';
   if (!token) return;
@@ -272,7 +262,6 @@ async function loadDailyTasks(){
   }catch(e){}
 }
 
-/* ============ АКТИВ РАЗРАБОТЧИКОВ ============ */
 async function loadDevCredits(){
   try{
     const r = await fetch('/api/dev-credits');
@@ -287,22 +276,48 @@ async function loadDevCredits(){
     (cfg.cards || []).forEach(c => {
       const el = document.createElement('div');
       el.className = 'dev-card';
-      el.innerHTML =
-        '<div class="dev-card__role"></div>' +
-        '<div class="dev-card__name"></div>' +
-        '<div class="dev-card__note"></div>';
+      el.innerHTML = '<div class="dev-card__role"></div><div class="dev-card__name"></div><div class="dev-card__note"></div>';
       el.querySelector('.dev-card__role').textContent = c.role || '';
       el.querySelector('.dev-card__name').textContent = c.name || '';
       el.querySelector('.dev-card__note').textContent = c.note || '';
       grid.appendChild(el);
     });
-    if (!cfg.cards || !cfg.cards.length){
-      grid.style.display = 'none';
-    } else {
-      grid.style.display = '';
-    }
+    if (!cfg.cards || !cfg.cards.length) grid.style.display = 'none';
+    else grid.style.display = '';
     section.style.display = 'block';
   }catch(e){}
+}
+
+async function loadTopDay(){
+  try{
+    const r = await fetch('/api/top-day');
+    const data = await r.json();
+    renderTopDay(data.top || []);
+  }catch(e){}
+}
+
+function renderTopDay(top){
+  const block = document.getElementById('topDayBlock');
+  const list = document.getElementById('topDayList');
+  if (!block || !list) return;
+  block.style.display = 'block';
+  if (!top.length){
+    list.innerHTML = '<div class="top-day-empty">Сегодня пока никто не играл. Стань первым! 🚀</div>';
+    return;
+  }
+  list.innerHTML = '';
+  const medals = ['gold', 'silver', 'bronze'];
+  top.forEach(function(t, i){
+    const row = document.createElement('div');
+    row.className = 'top-day-row';
+    const posCls = 'top-day-pos' + (i < 3 ? ' ' + medals[i] : '');
+    row.innerHTML =
+      '<div class="' + posCls + '">' + (i + 1) + '</div>' +
+      '<div class="top-day-nick"></div>' +
+      '<div class="top-day-score">' + t.score + '</div>';
+    row.querySelector('.top-day-nick').textContent = t.nick || 'Аноним';
+    list.appendChild(row);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -317,15 +332,12 @@ document.addEventListener('DOMContentLoaded', function(){
   loadGames();
   loadDailyTasks();
   loadDevCredits();
+  loadTopDay();
 });
 </script>
-<script src="/static/site-header.js"></script>
 <script>
-  renderSiteHeader('games');
-
-  // Публичный трекинг захода (IP + час)
-  (function(){
-    try{ fetch('/api/visit', {method:'POST'}).catch(()=>{}); }catch(e){}
-  })();
+(function(){
+  try{ fetch('/api/visit', {method:'POST'}).catch(()=>{}); }catch(e){}
+})();
 </script>
 </body></html>

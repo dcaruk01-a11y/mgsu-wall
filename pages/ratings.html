@@ -9,14 +9,28 @@
 <style>
 .ratings-wrap{max-width:720px;margin:0 auto;padding:24px 16px 64px;}
 
-.ratings-hero{padding:40px 0 24px;text-align:center;}
+.ratings-hero{padding:20px 0 24px;text-align:center;}
 .ratings-title{font-size:clamp(32px,6vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:10px;}
 .ratings-sub{font-size:15px;opacity:0.7;}
 
+/* Моя карточка */
+.my-card{
+  padding:20px 22px;border-radius:16px;
+  background:linear-gradient(135deg,rgba(111,168,255,0.12),rgba(15,60,115,0.08));
+  border:1px solid rgba(111,168,255,0.30);
+  margin-bottom:20px;
+}
+.my-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap;}
+.my-name{font-size:17px;font-weight:800;color:#fff;}
+.my-coins{font-size:14px;font-weight:700;color:#FFD700;}
+.my-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.my-stat{padding:12px;border-radius:10px;background:rgba(255,255,255,0.05);text-align:center;}
+.my-stat-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
+.my-stat-value{font-size:20px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;line-height:1;}
+
 .tabs{display:flex;background:rgba(255,255,255,0.05);border-radius:999px;padding:4px;margin-bottom:20px;}
-.tab{flex:1;padding:12px;border:0;background:transparent;color:inherit;font-family:inherit;font-size:14px;font-weight:700;border-radius:999px;cursor:pointer;opacity:0.6;transition:all .15s;}
+.tab{flex:1;padding:12px;border:0;background:transparent;color:inherit;font-family:inherit;font-size:13px;font-weight:700;border-radius:999px;cursor:pointer;opacity:0.6;transition:all .15s;}
 .tab.active{background:#fff;color:#0F3C73;opacity:1;}
-.tab:hover:not(.active){opacity:0.9;}
 
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
@@ -24,23 +38,19 @@
 .rating-list{display:flex;flex-direction:column;gap:8px;}
 .rating-row{
   display:flex;align-items:center;gap:14px;
-  padding:16px 18px;border-radius:14px;
+  padding:14px 18px;border-radius:14px;
   background:rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.10);
-  transition:background .15s;
 }
-.rating-row.me{
-  background:rgba(255,255,255,0.14);
-  border-color:rgba(255,255,255,0.4);
-}
-.rating-row.top-1{background:linear-gradient(90deg, rgba(255,215,0,0.15), rgba(255,255,255,0.05));border-color:rgba(255,215,0,0.4);}
-.rating-row.top-2{background:linear-gradient(90deg, rgba(192,192,192,0.13), rgba(255,255,255,0.05));border-color:rgba(192,192,192,0.35);}
-.rating-row.top-3{background:linear-gradient(90deg, rgba(205,127,50,0.13), rgba(255,255,255,0.05));border-color:rgba(205,127,50,0.35);}
+.rating-row.me{background:rgba(111,168,255,0.14);border-color:rgba(111,168,255,0.5);}
+.rating-row.top-1{background:linear-gradient(90deg,rgba(255,215,0,0.15),rgba(255,255,255,0.05));border-color:rgba(255,215,0,0.4);}
+.rating-row.top-2{background:linear-gradient(90deg,rgba(192,192,192,0.13),rgba(255,255,255,0.05));border-color:rgba(192,192,192,0.35);}
+.rating-row.top-3{background:linear-gradient(90deg,rgba(205,127,50,0.13),rgba(255,255,255,0.05));border-color:rgba(205,127,50,0.35);}
 
 .rating-pos{
   width:36px;height:36px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:800;
+  font-size:15px;font-weight:800;
   background:rgba(255,255,255,0.08);
   flex-shrink:0;
 }
@@ -51,37 +61,43 @@
 .rating-info{flex:1;min-width:0;}
 .rating-nick{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rating-games{font-size:11px;opacity:0.55;margin-top:2px;letter-spacing:0.05em;}
-.rating-score{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;flex-shrink:0;}
-
-.me-hint{
-  margin-top:20px;padding:16px 20px;border-radius:14px;
-  background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);
-  font-size:13px;line-height:1.6;opacity:0.85;
-}
-.me-hint b{color:#fff;}
-.me-hint a{color:#4ADE80;text-decoration:none;font-weight:700;}
-.me-hint a:hover{text-decoration:underline;}
+.rating-score{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;flex-shrink:0;}
 
 .empty{text-align:center;padding:60px 20px;opacity:0.5;font-size:14px;}
 .loading{text-align:center;padding:60px 20px;opacity:0.5;font-size:14px;}
 
-.back-link{display:inline-flex;align-items:center;gap:6px;font-size:14px;opacity:0.7;text-decoration:none;color:inherit;margin-bottom:12px;}
-.back-link:hover{opacity:1;}
+.me-hint{
+  margin-top:16px;padding:14px 18px;border-radius:12px;
+  background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.2);
+  font-size:13px;line-height:1.6;opacity:0.85;
+}
+.me-hint a{color:#4ADE80;text-decoration:none;font-weight:700;}
+.me-hint a:hover{text-decoration:underline;}
+
+@media(max-width:520px){
+  .my-grid{grid-template-columns:repeat(3,1fr);gap:6px;}
+  .my-stat{padding:10px 6px;}
+  .my-stat-value{font-size:17px;}
+  .rating-score{font-size:17px;}
+}
 </style>
 </head><body>
 
+<div id="siteHeader"></div>
+
 <div class="ratings-wrap">
-  <div id="siteHeader"></div>
 
   <div class="ratings-hero">
     <div class="ratings-title">🏆 Рейтинги</div>
     <div class="ratings-sub" id="subText">Топ игроков МГСУ</div>
   </div>
 
+  <div id="myCardBox"></div>
+
   <div class="tabs">
     <button class="tab active" data-tab="day">Сегодня</button>
     <button class="tab" data-tab="week">Неделя</button>
-    <button class="tab" data-tab="alltime">Все времена</button>
+    <button class="tab" data-tab="alltime">Всё время</button>
   </div>
 
   <div class="tab-panel active" id="panelDay">
@@ -94,34 +110,42 @@
     <div class="rating-list" id="listAll"><div class="loading">Загрузка…</div></div>
   </div>
 
-  <div id="meHintBox"></div>
 </div>
 
-<script>
 <script src="/static/site-header.js"></script>
-<script>renderSiteHeader('ratings');</script>
+<script>
+renderSiteHeader('ratings');
+
 const LS_TOKEN = 'mgsu_token';
 const authToken = localStorage.getItem(LS_TOKEN) || '';
 let myUid = '';
 
-document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(x){ x.classList.remove('active'); });
     t.classList.add('active');
     const id = t.dataset.tab;
-    document.getElementById('panel' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
+    const panel = document.getElementById('panel' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (panel) panel.classList.add('active');
   });
 });
 
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
 function renderList(elId, items, emptyText){
   const box = document.getElementById(elId);
+  if (!box) return;
   if (!items || !items.length){
     box.innerHTML = '<div class="empty">' + emptyText + '</div>';
     return;
   }
   box.innerHTML = '';
-  items.forEach((it, i) => {
+  items.forEach(function(it, i){
     const row = document.createElement('div');
     let cls = 'rating-row';
     if (i === 0) cls += ' top-1';
@@ -142,26 +166,43 @@ function renderList(elId, items, emptyText){
   });
 }
 
-function renderMe(me){
-  const box = document.getElementById('meHintBox');
+function renderMe(me, weekLabel){
+  const box = document.getElementById('myCardBox');
   if (!authToken){
     box.innerHTML = '<div class="me-hint">💡 <a href="/auth">Создай аккаунт</a>, чтобы попасть в рейтинг и видеть свою позицию.</div>';
     return;
   }
   if (!me){
-    box.innerHTML = '';
+    box.innerHTML = '<div class="me-hint">📊 Сыграй партию — и увидишь свою позицию.</div>';
     return;
   }
-  const day = me.day ? ('<b>' + me.day.pos + '</b> место сегодня (' + me.day.score + ' очков)') : 'сегодня ты ещё не играл';
-  const week = me.week ? ('<b>' + me.week.pos + '</b> место за неделю (' + me.week.score + ')') : 'за неделю пусто';
-  const all = me.all ? ('<b>' + me.all.pos + '</b> в общем топе (' + me.all.score + ')') : 'в общем топе пусто';
+
+  const dayPos = me.day ? me.day.pos + ' место' : '—';
+  const dayScore = me.day ? me.day.score : 0;
+  const weekPos = me.week ? me.week.pos + ' место' : '—';
+  const allPos = me.all ? me.all.pos + ' место' : '—';
+  const coins = me.coins || 0;
+
   box.innerHTML =
-    '<div class="me-hint">' +
-      '👤 <b>' + (me.nick || 'Ты') + '</b><br>' +
-      '📊 Твои позиции:<br>' +
-      '• ' + day + '<br>' +
-      '• ' + week + '<br>' +
-      '• ' + all +
+    '<div class="my-card">' +
+      '<div class="my-head">' +
+        '<div class="my-name">👤 ' + escapeHtml(me.nick || 'Ты') + '</div>' +
+        '<div class="my-coins">💰 ' + coins + ' монет</div>' +
+      '</div>' +
+      '<div class="my-grid">' +
+        '<div class="my-stat">' +
+          '<div class="my-stat-label">Сегодня</div>' +
+          '<div class="my-stat-value">' + (me.day ? me.day.pos : '—') + '</div>' +
+        '</div>' +
+        '<div class="my-stat">' +
+          '<div class="my-stat-label">Неделя</div>' +
+          '<div class="my-stat-value">' + (me.week ? me.week.pos : '—') + '</div>' +
+        '</div>' +
+        '<div class="my-stat">' +
+          '<div class="my-stat-label">Всё время</div>' +
+          '<div class="my-stat-value">' + (me.all ? me.all.pos : '—') + '</div>' +
+        '</div>' +
+      '</div>' +
     '</div>';
 }
 
@@ -170,17 +211,17 @@ async function loadRatings(){
     const headers = {};
     if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
 
-    const r = await fetch('/api/ratings', {headers});
+    const r = await fetch('/api/ratings', {headers: headers});
     const data = await r.json();
 
     if (data.me && data.me.uid) myUid = data.me.uid;
 
+    renderMe(data.me, data.week_label);
     renderList('listDay', data.day, 'Сегодня пока никто не играл. Будь первым!');
     renderList('listWeek', data.week, 'На этой неделе пока пусто.');
     renderList('listAll', data.alltime, 'Рейтинг ещё пуст. Начни первым!');
 
     document.getElementById('subText').textContent = 'Неделя: ' + (data.week_label || '');
-    renderMe(data.me);
   }catch(e){
     document.getElementById('listDay').innerHTML = '<div class="empty">Не удалось загрузить</div>';
   }

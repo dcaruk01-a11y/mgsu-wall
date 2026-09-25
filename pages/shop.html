@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
 <style>
 .shop-wrap{max-width:720px;margin:0 auto;padding:24px 16px 64px;}
 .shop-head{text-align:center;padding:32px 0 24px;}
@@ -74,7 +75,7 @@
 </head><body>
 
 <div class="shop-wrap">
-  <a href="/profile" class="back-link">← В профиль</a>
+  <div id="siteHeader"></div>
   <div class="shop-head">
     <div class="shop-title">🛍 Магазин</div>
     <div class="shop-coins">💰 <span id="coinsValue">0</span><small>монет</small></div>
@@ -88,6 +89,8 @@
 
 <script>
 const LS_TOKEN = 'mgsu_token';
+<script src="/static/site-header.js"></script>
+<script>renderSiteHeader('shop');</script>
 const token = localStorage.getItem(LS_TOKEN) || '';
 const toast = document.getElementById('toast');
 

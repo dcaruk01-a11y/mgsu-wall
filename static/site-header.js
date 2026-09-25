@@ -96,7 +96,7 @@ function renderSiteHeader(active, opts){
   container.innerHTML =
     '<div class="site-header-inner">'
     + '<a href="/glavnaya" class="site-header-brand">'
-    +   '<img src="/assets/Logo/logo.svg" alt="Лого" class="site-header-logo">'
+    +   '<img src="/assets/icons/logo-square.svg" alt="Лого" class="site-header-logo">'
     +   '<span class="site-header-label"><b>НИУ МГСУ</b> · Игры</span>'
     + '</a>'
     + '<nav class="site-header-nav">'
@@ -137,3 +137,27 @@ function renderSiteFooter(){
     + '</div>'
     + '</div>';
 }
+
+
+/* ===== FAVICON (шильдик вкладки, без фона) ===== */
+(function(){
+  // Удаляем старые иконки, если были
+  document.querySelectorAll('link[rel*="icon"]').forEach(function(l){ l.remove(); });
+
+  var links = [
+    { rel: 'icon',             type: 'image/svg+xml', href: '/assets/icons/favicon.svg' },
+    // Fallback для старых браузеров (можно удалить, если не нужен)
+    { rel: 'alternate icon',   type: 'image/png',     href: '/assets/icons/favicon.svg' },
+    { rel: 'apple-touch-icon',                        href: '/assets/icons/favicon.svg' },
+    { rel: 'mask-icon',                               href: '/assets/icons/favicon.svg', color: '#0F3C73' }
+  ];
+
+  links.forEach(function(ic){
+    var link = document.createElement('link');
+    link.rel = ic.rel;
+    if (ic.type) link.type = ic.type;
+    if (ic.color) link.setAttribute('color', ic.color);
+    link.href = ic.href;
+    document.head.appendChild(link);
+  });
+})();

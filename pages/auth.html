@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/static/site-header.css">
 <style>
-.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;}
+.auth-wrap{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:32px 16px;}
 .auth-card{
   width:100%;max-width:440px;
   background:rgba(255,255,255,0.06);
@@ -44,12 +44,19 @@
 .btn:disabled{opacity:0.5;cursor:wait;}
 .error{margin-top:12px;font-size:13px;color:#FF4D5E;min-height:18px;text-align:center;}
 .hint{margin-top:20px;font-size:12px;opacity:0.5;text-align:center;line-height:1.5;}
+.forgot-link{
+  display:block;margin-top:12px;text-align:center;
+  font-size:13px;color:rgba(255,255,255,0.55);
+  text-decoration:none;cursor:pointer;
+}
+.forgot-link:hover{color:#fff;text-decoration:underline;}
 .hide{display:none;}
 </style>
 </head><body>
 
-<div class="auth-wrap">
 <div id="siteHeader"></div>
+
+<div class="auth-wrap">
   <div class="auth-card">
     <div class="auth-title">Игры МГСУ</div>
     <div class="auth-sub">Создай аккаунт, чтобы попасть в рейтинг и копить монеты</div>
@@ -83,6 +90,7 @@
         <input type="tel" id="logPin" class="pin" placeholder="••••" maxlength="4" inputmode="numeric" autocomplete="off">
       </div>
       <button class="btn" id="btnLogin">Войти</button>
+      <a class="forgot-link" onclick="forgotPin()">Забыл PIN?</a>
     </div>
 
     <div class="error" id="err"></div>
@@ -94,13 +102,14 @@
   </div>
 </div>
 
-<script>
 <script src="/static/site-header.js"></script>
-<script>renderSiteHeader('auth');</script>
+<script>
+renderSiteHeader('auth');
+
 const LS_TOKEN = 'mgsu_token';
 const LS_UID = 'mgsu_uid';
 
-// если уже вошёл — сразу в профиль
+// Если уже вошёл — сразу в профиль
 if (localStorage.getItem(LS_TOKEN)){
   location.href = '/profile';
 }
@@ -125,6 +134,11 @@ tabLog.onclick = () => {
 function saveAuth(data){
   localStorage.setItem(LS_TOKEN, data.token);
   localStorage.setItem(LS_UID, data.uid);
+  if (data.display_name){
+    localStorage.setItem('mgsu_nick', data.display_name);
+  }
+  // Сохраняем UID для показа
+  sessionStorage.setItem('mgsu_new_uid', data.uid);
   location.href = '/profile';
 }
 
@@ -133,6 +147,7 @@ document.getElementById('btnRegister').onclick = async () => {
   const pin = document.getElementById('regPin').value.trim();
   errEl.textContent = '';
   if (!name){ errEl.textContent = 'Введи имя'; return; }
+  if (name.length > 20){ errEl.textContent = 'Имя — до 20 символов'; return; }
   if (!/^\d{4}$/.test(pin)){ errEl.textContent = 'PIN — 4 цифры'; return; }
 
   const btn = document.getElementById('btnRegister');
@@ -145,8 +160,6 @@ document.getElementById('btnRegister').onclick = async () => {
     });
     const data = await r.json();
     if (!r.ok){ errEl.textContent = data.detail || 'Ошибка'; return; }
-    // показать UID пользователю
-    alert('Твой ID: ' + data.uid + '\n\nЗапиши его — по нему можно войти с другого устройства.');
     saveAuth(data);
   }catch(e){
     errEl.textContent = 'Ошибка соединения';
@@ -179,6 +192,10 @@ document.getElementById('btnLogin').onclick = async () => {
     btn.disabled = false;
   }
 };
+
+function forgotPin(){
+  alert('Если ты забыл PIN:\n\n1. Открой бота @mgsu_feedback_bot\n2. Напиши «Забыл PIN от [твой UID]»\n3. Мы сбросим его и пришлём новый.');
+}
 
 document.getElementById('regPin').addEventListener('input', e => {
   e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);

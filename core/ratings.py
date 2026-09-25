@@ -28,6 +28,7 @@ async def api_ratings(authorization: str = Header(default="")):
         my = await top.my_position(user["uid"])
         my["uid"] = user["uid"]
         my["nick"] = user["display_name"]
+        my["coins"] = user.get("coins", 0)
 
     return {
         "day": day,

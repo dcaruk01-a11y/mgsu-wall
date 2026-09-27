@@ -1,165 +1,81 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Игрок · Админка МГСУ</title>
+<title>Пользователи · Админка МГСУ</title>
 <link rel="stylesheet" href="/static/admin.css">
 <style>
-.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
-.page-title{font-size:26px;font-weight:800;color:#fff;margin:0 0 6px;}
+.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
+.page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
 .page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
-.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;margin-bottom:14px;}
-.back-link:hover{color:#fff;}
 
-.card{padding:22px;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);margin-bottom:20px;}
-.card h2{font-size:16px;font-weight:700;color:#fff;margin:0 0 16px;}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.stat-card{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
+.stat-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
+.stat-value{font-size:24px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
 
-.field-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
-.field-label{width:140px;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
-.field-input{flex:1;min-width:100px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:14px;outline:none;}
-.field-input:focus{border-color:rgba(255,255,255,0.5);}
-.field-btn{padding:10px 18px;border-radius:10px;border:0;background:#fff;color:#0F3C73;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:transform .1s;}
-.field-btn:hover{transform:translateY(-1px);}
-.field-btn.danger{background:#FF4D5E;color:#fff;}
-.field-btn.ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);}
+.search-bar{
+  display:flex;gap:10px;margin-bottom:18px;
+}
+.search-bar input{
+  flex:1;padding:12px 16px;border-radius:10px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);
+  color:#fff;font-family:inherit;font-size:14px;outline:none;
+}
+.search-bar input:focus{border-color:rgba(255,255,255,0.5);}
 
-.uid-copy{font-family:monospace;font-size:14px;padding:6px 12px;background:rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;}
-.uid-copy:hover{background:rgba(255,255,255,0.12);}
+.users-table{width:100%;border-collapse:collapse;font-size:13px;}
+.users-table th{
+  text-align:left;padding:12px;font-size:11px;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+.users-table td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
+.users-table tr:last-child td{border-bottom:none;}
+.users-table tr:hover td{background:rgba(255,255,255,0.03);}
+.u-name{font-weight:700;color:#fff;}
+.u-uid{font-family:monospace;font-size:11px;color:rgba(255,255,255,0.5);}
+.u-num{font-variant-numeric:tabular-nums;font-weight:700;}
+.u-char{font-size:18px;}
+.u-date{font-size:12px;color:rgba(255,255,255,0.6);}
 
-/* ═══════════ КАРТОЧКИ ПЕРСОНАЖЕЙ ═══════════ */
-.chars-header{
-  display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:16px;gap:12px;flex-wrap:wrap;
+.u-actions{
+  display:flex;
+  gap:6px;
+  justify-content:flex-end;
 }
-.chars-counter{
-  font-size:13px;
-  color:rgba(255,255,255,0.7);
-}
-.chars-counter b{color:#fff;font-weight:900;font-size:16px;}
-.chars-actions-top{
-  display:flex;gap:8px;flex-wrap:wrap;
-}
-
-.chars-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:12px;
-}
-
-.char-card{
-  padding:16px 12px 14px;
-  border-radius:14px;
-  background:rgba(255,255,255,0.04);
-  border:2px solid rgba(255,255,255,0.10);
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  text-align:center;
-  position:relative;
-  transition:all .15s;
-}
-.char-card.owned{
-  border-color:rgba(74,222,128,0.4);
-  background:rgba(74,222,128,0.06);
-}
-.char-card.active{
-  border-color:#FFD700;
-  background:linear-gradient(180deg, rgba(255,215,0,0.12), rgba(74,222,128,0.05));
-  box-shadow:0 0 20px rgba(255,215,0,0.2);
-}
-.char-card.locked{
-  opacity:0.75;
-}
-
-.char-status-badge{
-  position:absolute;
-  top:8px;right:8px;
-  font-size:9px;
-  font-weight:900;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-  padding:3px 8px;
-  border-radius:999px;
-}
-.char-card.active .char-status-badge{
-  background:#FFD700;color:#1a1a1a;
-}
-.char-card.owned .char-status-badge{
-  background:#4ADE80;color:#0a1f0f;
-}
-.char-card.locked .char-status-badge{
-  background:rgba(255,255,255,0.12);
-  color:rgba(255,255,255,0.55);
-}
-
-.char-emoji{font-size:36px;line-height:1;margin-top:6px;}
-.char-name{font-size:13px;font-weight:700;color:#fff;line-height:1.2;}
-
-.char-buttons{
-  display:flex;flex-direction:column;gap:6px;width:100%;
-  margin-top:4px;
-}
-.char-btn{
-  padding:8px 10px;
-  border-radius:8px;
+.u-btn{
+  padding:6px 10px;
+  border-radius:6px;
   border:0;
   font-family:inherit;
-  font-size:12px;
+  font-size:11px;
   font-weight:800;
   cursor:pointer;
-  transition:all .12s;
+  transition:transform .1s, background .15s;
   white-space:nowrap;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
 }
-.char-btn:active{transform:scale(0.96);}
-.char-btn:disabled{opacity:0.4;cursor:not-allowed;filter:grayscale(0.5);}
-
-.char-btn.select{
-  background:#4ADE80;
-  color:#0a1f0f;
+.u-btn:hover{transform:translateY(-1px);}
+.u-btn.manage{
+  background:rgba(111,168,255,0.15);
+  color:#6FA8FF;
+  border:1px solid rgba(111,168,255,0.4);
 }
-.char-btn.select:hover:not(:disabled){background:#6BFF8E;}
-
-.char-btn.give{
-  background:#6FA8FF;
-  color:#0a1f3d;
+.u-btn.manage:hover{background:rgba(111,168,255,0.25);}
+.u-btn.feedback{
+  background:rgba(255,180,80,0.15);
+  color:#FFB347;
+  border:1px solid rgba(255,180,80,0.4);
 }
-.char-btn.give:hover:not(:disabled){background:#8BC0FF;}
-
-.char-btn.revoke{
-  background:rgba(255,77,94,0.15);
-  color:#FF8B8B;
-  border:1px solid rgba(255,77,94,0.4);
+.u-btn.feedback:hover{background:rgba(255,180,80,0.25);}
+.u-btn.feedback.pending{
+  background:rgba(74,222,128,0.15);
+  color:#4ADE80;
+  border-color:rgba(74,222,128,0.4);
 }
-.char-btn.revoke:hover:not(:disabled){background:rgba(255,77,94,0.3);color:#fff;}
-
-.char-btn.current{
-  background:rgba(255,215,0,0.15);
-  color:#FFD700;
-  border:1px solid rgba(255,215,0,0.4);
-  cursor:default;
-}
-
-/* ═══════════ ДЕЙСТВИЯ ═══════════ */
-.actions-row{display:flex;gap:10px;flex-wrap:wrap;}
-.action-btn{padding:12px 20px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
-.action-btn:hover{background:rgba(255,255,255,0.12);}
-.action-btn.danger{background:rgba(255,77,94,0.15);color:#FF4D5E;border-color:rgba(255,77,94,0.4);}
-.action-btn.danger:hover{background:rgba(255,77,94,0.25);}
-
-.banned-badge{display:inline-block;padding:4px 12px;border-radius:999px;background:#FF4D5E;color:#fff;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;}
-.ok-badge{display:inline-block;padding:4px 12px;border-radius:999px;background:#4ADE80;color:#0a1f0f;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;}
-
-.info-line{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:4px;}
-.info-line b{color:#fff;font-weight:700;}
-
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;}
-.modal-bg.open{display:flex;}
-.modal-box{background:#0F1524;border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:28px;max-width:440px;width:100%;}
-.modal-box h3{font-size:18px;font-weight:800;color:#fff;margin:0 0 12px;}
-.modal-box p{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:16px;}
-.modal-box input{width:100%;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:14px;outline:none;margin-bottom:16px;box-sizing:border-box;}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
-
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:700;box-shadow:0 12px 32px rgba(0,0,0,0.3);z-index:200;opacity:0;transition:all .3s;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-.toast.err{background:#FF4D5E;color:#fff;}
+.u-btn.feedback.pending:hover{background:rgba(74,222,128,0.25);}
 </style>
 </head><body class="admin-page">
 
@@ -167,119 +83,49 @@
   <aside class="admin-sidebar" id="adminMenuContainer"></aside>
   <main class="admin-main">
 
-    <a href="/admin/users" class="back-link">← Все игроки</a>
-
-    <div id="loading" style="text-align:center;padding:60px;opacity:0.5;">Загрузка…</div>
-
-    <div id="content" style="display:none;">
-
-      <div class="page-header">
-        <div>
-          <h1 class="page-title" id="pName">—</h1>
-          <div class="page-sub"><span class="uid-copy" id="pUid" title="Нажми, чтобы скопировать">—</span></div>
-        </div>
-        <div id="pStatus"></div>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Пользователи</h1>
+        <div class="page-sub">Кто зарегистрирован и когда заходил</div>
       </div>
-
-      <!-- ИНФО -->
-      <div class="card">
-        <h2>📋 Информация</h2>
-        <div class="info-line">Создан: <b id="pCreated">—</b></div>
-        <div class="info-line">Последний вход: <b id="pLastSeen">—</b></div>
-        <div class="info-line">Последний IP: <b id="pLastIp">—</b></div>
-        <div class="info-line" id="pBanReason" style="display:none;color:#FF4D5E;">Причина бана: <b id="pBanReasonText">—</b></div>
-      </div>
-
-      <!-- СТАТИСТИКА -->
-      <div class="card">
-        <h2>📊 Статистика</h2>
-
-        <div class="field-row">
-          <div class="field-label">💰 Монеты</div>
-          <input type="number" class="field-input" id="fCoins" min="0">
-          <button class="field-btn" data-set="coins">Сохранить</button>
-        </div>
-
-        <div class="field-row">
-          <div class="field-label">🏆 Очки</div>
-          <input type="number" class="field-input" id="fScore" min="0">
-          <button class="field-btn" data-set="total_score">Сохранить</button>
-        </div>
-
-        <div class="field-row">
-          <div class="field-label">🔥 Серия дней</div>
-          <input type="number" class="field-input" id="fStreak" min="0">
-          <button class="field-btn" data-set="streak">Сохранить</button>
-        </div>
-
-        <div class="field-row">
-          <div class="field-label">🎮 Партий</div>
-          <div style="color:#fff;font-weight:700;" id="pGames">—</div>
-        </div>
-      </div>
-
-      <!-- ПЕРСОНАЖИ -->
-      <div class="card">
-        <h2>🎭 Персонажи</h2>
-
-        <div class="chars-header">
-          <div class="chars-counter">Куплено: <b id="charsOwnedCount">0</b> / 7</div>
-          <div class="chars-actions-top">
-            <button class="field-btn ghost" id="btnResetActive">🎓 Сбросить на Студента</button>
-            <button class="field-btn danger" id="btnClearAll">🗑 Забрать всех</button>
-          </div>
-        </div>
-
-        <div class="chars-grid" id="charsGrid"></div>
-      </div>
-
-      <!-- ДЕЙСТВИЯ -->
-      <div class="card">
-        <h2>⚙ Действия</h2>
-        <div class="actions-row">
-          <button class="action-btn" id="btnResetPin">🔑 Сбросить PIN на 1234</button>
-          <button class="action-btn" id="btnClearCoins">💰 Обнулить монеты</button>
-          <button class="action-btn" id="btnClearStreak">🔥 Сбросить серию</button>
-          <button class="action-btn danger" id="btnBan">🚫 Забанить</button>
-          <button class="action-btn danger" id="btnDelete">🗑 Удалить аккаунт</button>
-        </div>
-      </div>
-
     </div>
+
+    <div class="stats-row" id="statsRow">Загрузка…</div>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Поиск по имени или UID…">
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Игрок</th>
+            <th>Персонаж</th>
+            <th>💰 Монеты</th>
+            <th>🏆 Очки</th>
+            <th>🔥 Серия</th>
+            <th>🎮 Партий</th>
+            <th>Был(а)</th>
+            <th style="text-align:right;">Действия</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </div>
+
   </main>
 </div>
-
-<div class="modal-bg" id="modalBg">
-  <div class="modal-box">
-    <h3 id="modalTitle">—</h3>
-    <p id="modalText">—</p>
-    <input type="text" id="modalInput" placeholder="Введи для подтверждения" style="display:none;">
-    <div class="modal-actions">
-      <button class="field-btn ghost" id="modalCancel">Отмена</button>
-      <button class="field-btn danger" id="modalConfirm">Подтвердить</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script src="/static/admin-menu.js"></script>
 <script>
 const token = adminRequireToken();
 renderAdminMenu('users');
 
-const uid = decodeURIComponent(location.pathname.split('/').pop());
-let userData = null;
-
-const CHARS = [
-  {key:'student', emoji:'🎓', name:'Студент'},
-  {key:'sso',     emoji:'👷', name:'ССОшник'},
-  {key:'prorab',  emoji:'📋', name:'Прораб'},
-  {key:'builder', emoji:'🏗️', name:'Строитель'},
-  {key:'prof',    emoji:'🧑‍🏫', name:'Преподаватель'},
-  {key:'dean',    emoji:'🧑‍💼', name:'Декан'},
-  {key:'legend',  emoji:'👑', name:'Легенда МГСУ'},
-];
+const CHAR_EMOJI = {
+  student:'🎓', sso:'👷', prorab:'📋',
+  builder:'🏗️', prof:'🧑‍🏫', dean:'🧑‍💼', legend:'👑',
+};
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -287,322 +133,116 @@ function escapeHtml(s){
 
 function fmtTime(ts){
   if (!ts) return '—';
-  return new Date(ts * 1000).toLocaleString('ru-RU');
+  const sec = Math.floor(Date.now()/1000 - ts);
+  if (sec < 60) return 'только что';
+  if (sec < 3600) return Math.floor(sec/60) + ' мин назад';
+  if (sec < 86400) return Math.floor(sec/3600) + ' ч назад';
+  if (sec < 7*86400) return Math.floor(sec/86400) + ' дн назад';
+  const d = new Date(ts*1000);
+  return d.toLocaleDateString('ru-RU');
 }
 
-function showToast(text, isError){
-  const el = document.getElementById('toast');
-  el.textContent = text;
-  el.className = 'toast show' + (isError ? ' err' : '');
-  setTimeout(() => { el.className = 'toast'; }, 2000);
-}
-
-async function load(){
+async function loadUsers(search){
   try{
-    userData = await adminApi('/admin/api/user/' + encodeURIComponent(uid));
-    render();
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('content').style.display = 'block';
+    const url = '/admin/api/users' + (search ? ('?search=' + encodeURIComponent(search)) : '');
+    const data = await adminApi(url);
+    renderStats(data);
+    renderUsers(data.users || []);
   }catch(e){
-    document.getElementById('loading').innerHTML =
-      '<div style="color:#FF4D5E;">Ошибка: ' + escapeHtml(e.message) + '</div>';
+    document.getElementById('usersBody').innerHTML =
+      '<tr><td colspan="8" style="text-align:center;padding:20px;color:#FF4D5E;">Ошибка: ' + escapeHtml(e.message) + '</td></tr>';
   }
 }
 
-function render(){
-  document.getElementById('pName').textContent = userData.display_name;
-  document.getElementById('pUid').textContent = userData.uid;
-  document.getElementById('pCreated').textContent = fmtTime(userData.created_at);
-  document.getElementById('pLastSeen').textContent = fmtTime(userData.last_seen);
-  document.getElementById('pLastIp').textContent = userData.last_ip || '—';
-  document.getElementById('pGames').textContent = userData.games_played;
-  document.getElementById('fCoins').value = userData.coins;
-  document.getElementById('fScore').value = userData.total_score;
-  document.getElementById('fStreak').value = userData.streak;
-
-  const statusEl = document.getElementById('pStatus');
-  if (userData.banned){
-    statusEl.innerHTML = '<span class="banned-badge">Забанен</span>';
-    document.getElementById('pBanReason').style.display = 'block';
-    document.getElementById('pBanReasonText').textContent = userData.ban_reason;
-    document.getElementById('btnBan').textContent = '✓ Разбанить';
-    document.getElementById('btnBan').classList.remove('danger');
-  } else {
-    statusEl.innerHTML = '<span class="ok-badge">Активен</span>';
-    document.getElementById('pBanReason').style.display = 'none';
-    document.getElementById('btnBan').textContent = '🚫 Забанить';
-    document.getElementById('btnBan').classList.add('danger');
-  }
-
-  renderChars();
-}
-
-function renderChars(){
-  const grid = document.getElementById('charsGrid');
-  const ownedCount = document.getElementById('charsOwnedCount');
-  grid.innerHTML = '';
-
-  const owned = userData.owned_chars || ['student'];
-  const active = userData.active_char || 'student';
-
-  ownedCount.textContent = owned.length;
-
-  CHARS.forEach(c => {
-    const isOwned = owned.includes(c.key);
-    const isActive = active === c.key;
-    const isStudent = c.key === 'student';
-
-    let cls = 'char-card';
-    if (isActive) cls += ' active';
-    else if (isOwned) cls += ' owned';
-    else cls += ' locked';
-
-    let badge = '';
-    if (isActive) badge = '<div class="char-status-badge">Активен</div>';
-    else if (isOwned) badge = '<div class="char-status-badge">Куплен</div>';
-    else badge = '<div class="char-status-badge">—</div>';
-
+function renderStats(d){
+  const box = document.getElementById('statsRow');
+  const cards = [
+    {label:'Всего', value: d.total},
+    {label:'Активны 24ч', value: d.active_24h},
+    {label:'Активны 7д', value: d.active_7d},
+  ];
+  box.innerHTML = '';
+  cards.forEach(c => {
     const el = document.createElement('div');
-    el.className = cls;
-    el.innerHTML =
-      badge +
-      '<div class="char-emoji">' + c.emoji + '</div>' +
-      '<div class="char-name">' + escapeHtml(c.name) + '</div>' +
-      '<div class="char-buttons"></div>';
+    el.className = 'stat-card';
+    el.innerHTML = '<div class="stat-label">' + c.label + '</div><div class="stat-value">' + c.value + '</div>';
+    box.appendChild(el);
+  });
+}
 
-    const btnBox = el.querySelector('.char-buttons');
-
-    // ─── Кнопка выбора/выдачи ───
-    const mainBtn = document.createElement('button');
-    if (isActive){
-      mainBtn.className = 'char-btn current';
-      mainBtn.textContent = '✓ Сейчас активен';
-      mainBtn.disabled = true;
-    } else if (isOwned){
-      mainBtn.className = 'char-btn select';
-      mainBtn.textContent = '✓ Выбрать';
-      mainBtn.onclick = () => setActiveChar(c.key);
-    } else {
-      mainBtn.className = 'char-btn give';
-      mainBtn.textContent = '🎁 Выдать';
-      mainBtn.onclick = () => giveChar(c.key);
-    }
-    btnBox.appendChild(mainBtn);
-
-    // ─── Кнопка «Забрать» (не для студента и не для активного «пустого места») ───
-    if (!isStudent){
-      const revokeBtn = document.createElement('button');
-      revokeBtn.className = 'char-btn revoke';
-      if (!isOwned){
-        revokeBtn.textContent = '— Нет';
-        revokeBtn.disabled = true;
-      } else {
-        revokeBtn.textContent = '🗑 Забрать';
-        revokeBtn.onclick = () => revokeChar(c.key, c.name);
-      }
-      btnBox.appendChild(revokeBtn);
-    }
-
-    grid.appendChild(el);
+function renderUsers(users){
+  const body = document.getElementById('usersBody');
+  if (!users.length){
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;opacity:0.5;">Пока никого</td></tr>';
+    return;
+  }
+  body.innerHTML = '';
+  users.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' +
+        '<div class="u-name">' + escapeHtml(u.display_name) + '</div>' +
+        '<div class="u-uid">' + escapeHtml(u.uid) + '</div>' +
+      '</td>' +
+      '<td class="u-char">' + (CHAR_EMOJI[u.active_char] || '🎓') + '</td>' +
+      '<td class="u-num">' + u.coins + '</td>' +
+      '<td class="u-num">' + u.total_score + '</td>' +
+      '<td class="u-num">' + u.streak + '</td>' +
+      '<td class="u-num">' + u.games_played + '</td>' +
+      '<td class="u-date">' + fmtTime(u.last_seen) + '</td>' +
+      '<td><div class="u-actions">' +
+        '<button class="u-btn feedback' + (u.feedback_pending ? ' pending' : '') + '" data-feedback-uid="' + escapeHtml(u.uid) + '">' +
+          (u.feedback_pending ? '✓ Отзыв' : '💌 Отзыв') +
+        '</button>' +
+        '<a class="u-btn manage" href="/admin/player/' + encodeURIComponent(u.uid) + '">Управлять</a>' +
+      '</div></td>';
+    body.appendChild(tr);
   });
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ДЕЙСТВИЯ С ПЕРСОНАЖАМИ
+   Кнопка "Запросить отзыв" в списке
    ═══════════════════════════════════════════════════════════ */
-async function giveChar(char){
-  try{
-    await adminApi('/admin/api/user/give-char', {
-      method:'POST',
-      body: JSON.stringify({uid, char, make_active: false})
-    });
-    showToast('Персонаж выдан');
-    await load();
-  }catch(e){
-    showToast('Ошибка: ' + e.message, true);
-  }
-}
+document.addEventListener('click', async function(e){
+  const btn = e.target.closest('[data-feedback-uid]');
+  if (!btn) return;
+  e.preventDefault();
 
-async function revokeChar(char, name){
-  if (!confirm('Забрать «' + name + '» у игрока?')) return;
-  try{
-    await adminApi('/admin/api/user/revoke-char', {
-      method:'POST',
-      body: JSON.stringify({uid, char})
-    });
-    showToast('Персонаж забран');
-    await load();
-  }catch(e){
-    showToast('Ошибка: ' + e.message, true);
-  }
-}
+  const uid = btn.dataset.feedbackUid;
+  const isPending = btn.classList.contains('pending');
 
-async function setActiveChar(char){
-  try{
-    await adminApi('/admin/api/user/set-active-char', {
-      method:'POST',
-      body: JSON.stringify({uid, char})
-    });
-    showToast('Активный персонаж изменён');
-    await load();
-  }catch(e){
-    showToast('Ошибка: ' + e.message, true);
-  }
-}
-
-document.getElementById('btnResetActive').onclick = async () => {
-  if (!confirm('Сбросить активного персонажа на Студента?')) return;
-  try{
-    await adminApi('/admin/api/user/reset-char', {
-      method:'POST',
-      body: JSON.stringify({uid})
-    });
-    showToast('Активный сброшен на Студента');
-    await load();
-  }catch(e){
-    showToast('Ошибка: ' + e.message, true);
-  }
-};
-
-document.getElementById('btnClearAll').onclick = async () => {
-  if (!confirm('Забрать ВСЕХ персонажей у игрока? Останется только Студент.')) return;
-  try{
-    await adminApi('/admin/api/user/clear-chars', {
-      method:'POST',
-      body: JSON.stringify({uid})
-    });
-    showToast('Все персонажи забраны');
-    await load();
-  }catch(e){
-    showToast('Ошибка: ' + e.message, true);
-  }
-};
-
-/* ═══════════════════════════════════════════════════════════
-   Поля статистики
-   ═══════════════════════════════════════════════════════════ */
-document.querySelectorAll('[data-set]').forEach(btn => {
-  btn.onclick = async () => {
-    const field = btn.dataset.set;
-    const inputId = field === 'coins' ? 'fCoins' : (field === 'total_score' ? 'fScore' : 'fStreak');
-    const value = parseInt(document.getElementById(inputId).value) || 0;
+  if (isPending){
+    if (!confirm('Отменить запрос отзыва для ' + uid + '?')) return;
     try{
-      await adminApi('/admin/api/user/set', {
-        method:'POST',
-        body: JSON.stringify({uid, [field]: value})
-      });
-      btn.textContent = '✓';
-      setTimeout(() => btn.textContent = 'Сохранить', 1200);
-      await load();
-    }catch(e){
-      showToast('Ошибка: ' + e.message, true);
-    }
-  };
-});
-
-/* ═══════════════════════════════════════════════════════════
-   Прочие действия
-   ═══════════════════════════════════════════════════════════ */
-document.getElementById('btnResetPin').onclick = async () => {
-  if (!confirm('Сбросить PIN на 1234? Все сессии игрока сбросятся.')) return;
-  try{
-    await adminApi('/admin/api/user/reset-pin', {
-      method:'POST',
-      body: JSON.stringify({uid, new_pin: '1234'})
-    });
-    showToast('PIN сброшен на 1234');
-  }catch(e){ showToast('Ошибка: ' + e.message, true); }
-};
-
-document.getElementById('btnClearCoins').onclick = async () => {
-  if (!confirm('Обнулить монеты?')) return;
-  try{
-    await adminApi('/admin/api/user/set', {
-      method:'POST',
-      body: JSON.stringify({uid, coins: 0})
-    });
-    await load();
-    showToast('Монеты обнулены');
-  }catch(e){ showToast('Ошибка: ' + e.message, true); }
-};
-
-document.getElementById('btnClearStreak').onclick = async () => {
-  if (!confirm('Сбросить серию дней?')) return;
-  try{
-    await adminApi('/admin/api/user/set', {
-      method:'POST',
-      body: JSON.stringify({uid, streak: 0})
-    });
-    await load();
-    showToast('Серия сброшена');
-  }catch(e){ showToast('Ошибка: ' + e.message, true); }
-};
-
-document.getElementById('btnBan').onclick = async () => {
-  if (userData.banned){
-    if (!confirm('Разбанить игрока?')) return;
-    try{
-      await adminApi('/admin/api/user/unban', {
+      await adminApi('/admin/api/user/cancel-feedback', {
         method:'POST',
         body: JSON.stringify({uid})
       });
-      await load();
-      showToast('Игрок разбанен');
-    }catch(e){ showToast('Ошибка: ' + e.message, true); }
+      loadUsers(document.getElementById('searchInput').value.trim());
+    }catch(err){ alert('Ошибка: ' + err.message); }
   } else {
-    const reason = prompt('Причина бана:', 'Нарушение правил');
-    if (!reason) return;
+    if (!confirm('Запросить отзыв у ' + uid + '? Игрок увидит попап при следующем заходе.')) return;
     try{
-      await adminApi('/admin/api/user/ban', {
+      await adminApi('/admin/api/user/request-feedback', {
         method:'POST',
-        body: JSON.stringify({uid, reason})
+        body: JSON.stringify({uid})
       });
-      await load();
-      showToast('Игрок забанен');
-    }catch(e){ showToast('Ошибка: ' + e.message, true); }
+      loadUsers(document.getElementById('searchInput').value.trim());
+    }catch(err){ alert('Ошибка: ' + err.message); }
   }
-};
+});
 
-document.getElementById('btnDelete').onclick = () => {
-  const modalBg = document.getElementById('modalBg');
-  const modalInput = document.getElementById('modalInput');
-  document.getElementById('modalTitle').textContent = '🗑 Удалить аккаунт?';
-  document.getElementById('modalText').textContent = 'Это навсегда. Введи UID ' + uid + ' для подтверждения:';
-  modalInput.style.display = 'block';
-  modalInput.value = '';
-  modalBg.classList.add('open');
+/* ═══════════════════════════════════════════════════════════
+   Поиск + автообновление
+   ═══════════════════════════════════════════════════════════ */
+let searchTimer = null;
+document.getElementById('searchInput').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadUsers(e.target.value.trim()), 400);
+});
 
-  document.getElementById('modalConfirm').onclick = async () => {
-    const confirm = modalInput.value.trim().toUpperCase();
-    if (confirm !== uid){
-      showToast('UID не совпал', true);
-      return;
-    }
-    try{
-      await adminApi('/admin/api/user/delete', {
-        method:'POST',
-        body: JSON.stringify({uid, confirm})
-      });
-      showToast('Аккаунт удалён');
-      setTimeout(() => location.href = '/admin/users', 800);
-    }catch(e){
-      showToast('Ошибка: ' + e.message, true);
-    }
-  };
-  document.getElementById('modalCancel').onclick = () => modalBg.classList.remove('open');
-};
-
-document.getElementById('pUid').onclick = async () => {
-  try{
-    await navigator.clipboard.writeText(userData.uid);
-    const el = document.getElementById('pUid');
-    const old = el.textContent;
-    el.textContent = '✓ Скопировано';
-    setTimeout(() => el.textContent = old, 1200);
-  }catch(e){}
-};
-
-load();
+loadUsers('');
+setInterval(() => loadUsers(document.getElementById('searchInput').value.trim()), 30000);
 </script>
 
 </body></html>

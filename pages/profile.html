@@ -46,43 +46,6 @@
 .profile-uid:hover{background:rgba(128,128,128,0.22);}
 .profile-uid-copy{font-size:13px;opacity:0.6;}
 
-    <!-- Ранг аккаунта -->
-    <div class="card" id="rankCard" style="margin-bottom:20px;">
-      <h3>🏅 Твой ранг</h3>
-      <div id="rankBody">
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
-          <div id="rankEmoji" style="font-size:48px;line-height:1;">🎓</div>
-          <div style="flex:1;min-width:0;">
-            <div id="rankName" style="font-size:20px;font-weight:800;">Первокурсник</div>
-            <div id="rankNext" style="font-size:12px;opacity:0.65;margin-top:2px;">До «Студент»</div>
-          </div>
-        </div>
-        <div style="height:8px;border-radius:4px;background:rgba(128,128,128,0.20);overflow:hidden;margin-bottom:8px;">
-          <div id="rankProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,#6FA8FF,#B794F6);border-radius:4px;transition:width .4s;"></div>
-        </div>
-        <div id="rankProgressText" style="font-size:12px;opacity:0.6;text-align:center;">—</div>
-      </div>
-    </div>
-
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-label">🔥 Серия</div>
-        <div class="stat-value" id="pStreak">0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">💰 Монеты</div>
-        <div class="stat-value" id="pCoins">0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">🏆 Очки</div>
-        <div class="stat-value" id="pScore">0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">🎮 Партий</div>
-        <div class="stat-value" id="pGames">0</div>
-      </div>
-    </div>
-
 .card{padding:20px;border-radius:14px;background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.18);margin-bottom:20px;}
 .card h3{
   font-size:14px;font-weight:700;letter-spacing:0.12em;
@@ -90,6 +53,11 @@
   display:flex;align-items:center;gap:8px;
 }
 .card h3 .icon-btn{margin-left:auto;width:28px;height:28px;font-size:13px;}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-bottom:28px;}
+.stat{padding:18px;border-radius:14px;background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.18);}
+.stat-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.6;margin-bottom:8px;}
+.stat-value{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:inherit;}
 
 .field{margin-bottom:14px;}
 .field label{display:block;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.6;margin-bottom:8px;}
@@ -210,6 +178,24 @@
       </div>
     </div>
 
+    <!-- Ранг аккаунта -->
+    <div class="card" id="rankCard" style="margin-bottom:20px;">
+      <h3>🏅 Твой ранг</h3>
+      <div id="rankBody">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+          <div id="rankEmoji" style="font-size:48px;line-height:1;">🎓</div>
+          <div style="flex:1;min-width:0;">
+            <div id="rankName" style="font-size:20px;font-weight:800;">Первокурсник</div>
+            <div id="rankNext" style="font-size:12px;opacity:0.65;margin-top:2px;">До «Студент»</div>
+          </div>
+        </div>
+        <div style="height:8px;border-radius:4px;background:rgba(128,128,128,0.20);overflow:hidden;margin-bottom:8px;">
+          <div id="rankProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,#6FA8FF,#B794F6);border-radius:4px;transition:width .4s;"></div>
+        </div>
+        <div id="rankProgressText" style="font-size:12px;opacity:0.6;text-align:center;">—</div>
+      </div>
+    </div>
+
     <div class="stats">
       <div class="stat">
         <div class="stat-label">🔥 Серия</div>
@@ -269,7 +255,7 @@
       </div>
     </div>
 
-      <div class="settings-pane" id="panePin">
+    <div class="settings-pane" id="panePin">
       <div class="field">
         <label>Старый PIN</label>
         <input type="tel" id="oldPin" placeholder="••••" maxlength="4" inputmode="numeric">
@@ -514,7 +500,6 @@ document.getElementById('btnSavePin').onclick = async function(){
     });
 
     if (res.status !== 200){
-      // Если старый PIN неверный — показываем не только ошибку, но и подсказку
       errEl.innerHTML = (res.data.detail || 'Ошибка') +
         '<br><span style="opacity:0.7;font-size:12px;">Забыл старый PIN? Напиши в <a href="https://t.me/mgsu_feedback_bot?start=forgot_pin" target="_blank" style="color:#4ADE80;">Telegram-бота</a></span>';
       return;

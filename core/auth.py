@@ -104,7 +104,14 @@ async def me(authorization: str = Header(default="")):
     user = await users.get_user_by_token(_token(authorization))
     if not user:
         raise HTTPException(status_code=401, detail="Не авторизован")
-    return {"ok": True, "user": user}
+
+    # Ранг аккаунта
+    rank = users.get_account_rank(
+        user.get("total_score", 0),
+        user.get("games_played", 0),
+    )
+
+    return {"ok": True, "user": {**user, "rank": rank}}
 
 
 @router.post("/api/auth/update-name")

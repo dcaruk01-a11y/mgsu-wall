@@ -24,7 +24,6 @@ body.clicker-page{
   padding:8px max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
 }
 
-/* ═══════ DUEL TOP BAR (всегда видна в дуэли) ═══════ */
 .duel-bar{
   position:absolute;top:4px;left:4px;right:4px;z-index:50;
   display:none;gap:6px;align-items:center;
@@ -146,7 +145,6 @@ body.clicker-page{
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(60px);background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 12px 32px rgba(0,0,0,0.3);z-index:300;opacity:0;transition:all .3s;pointer-events:none;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 
-/* ═══════ DUEL PANEL ═══════ */
 .duel-panel{
   position:absolute;inset:0;
   background:rgba(5,14,31,0.96);
@@ -181,7 +179,6 @@ body.clicker-page{
 .duel-player.empty{color:rgba(255,255,255,0.4);font-style:italic;}
 .duel-vs-pill{font-size:14px;font-weight:900;color:rgba(255,255,255,0.4);}
 
-/* Public rooms list */
 .rooms-list{
   display:flex;flex-direction:column;gap:8px;
   width:100%;max-width:340px;margin-top:8px;
@@ -264,7 +261,6 @@ body.clicker-page{
 
 <div id="siteHeader"></div>
 
-<!-- Верхняя плашка дуэли (во время игры) -->
 <div class="duel-bar" id="duelBar">
   <div class="duel-side">
     <div class="duel-nick you" id="duelNickYou">Ты</div>
@@ -301,7 +297,6 @@ body.clicker-page{
     <div class="timer-bar"><div class="timer-bar-fill" id="timerBar" style="width:100%"></div></div>
   </div>
 
-  <!-- Старт -->
   <div class="overlay" id="startOverlay">
     <div class="start-title">Кликер МГСУ</div>
     <div class="start-sub">30 секунд. Максимум кликов.</div>
@@ -309,7 +304,6 @@ body.clicker-page{
     <button class="btn-big ghost" id="soloBtn" type="button">Играть одному</button>
   </div>
 
-  <!-- Финал соло -->
   <div class="overlay hide" id="finishOverlay">
     <div class="finish-emoji" id="finishEmoji">🎓</div>
     <div class="finish-rank" id="finishRank">Студент</div>
@@ -327,15 +321,12 @@ body.clicker-page{
     </div>
   </div>
 
-  <!-- Оверлей отсчёта -->
   <div class="countdown-overlay hide" id="countdownOverlay">
     <div class="countdown-num" id="countdownNum">3</div>
   </div>
 
-  <!-- Панель дуэли (главный экран) -->
   <div class="duel-panel hide" id="duelPanel">
 
-    <!-- Главный экран -->
     <div id="duelMain">
       <h2 style="text-align:center;">⚔️ Дуэль</h2>
       <p style="text-align:center;">Играй с другом — у кого больше кликов за 30 секунд</p>
@@ -354,7 +345,6 @@ body.clicker-page{
       <button class="btn-big ghost" id="duelCloseBtn" type="button" style="margin-top:8px;">← Назад</button>
     </div>
 
-    <!-- Ввод кода -->
     <div id="duelJoinForm" class="hide" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
       <h2>Введи код</h2>
       <p>4 буквы/цифры от друга</p>
@@ -365,7 +355,6 @@ body.clicker-page{
       </div>
     </div>
 
-    <!-- Лобби -->
     <div id="duelLobby" class="hide" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
       <h2 id="duelLobbyTitle">Ждём соперника</h2>
       <div class="duel-code-box">
@@ -394,7 +383,6 @@ body.clicker-page{
 
   </div>
 
-  <!-- Результат дуэли -->
   <div class="overlay hide" id="duelResultOverlay">
     <div class="duel-verdict" id="duelVerdict">—</div>
     <div class="duel-result">
@@ -432,14 +420,14 @@ const MULT_MIN = 1.0, MULT_MAX = 5.0;
 const FAST_CLICK_MS = 350, SLOW_CLICK_MS = 700;
 const MULT_STEP_UP = 0.18, MULT_STEP_DOWN = 0.35;
 const COMBO_DECAY_INTERVAL = 300, COMBO_IDLE_THRESHOLD = 800;
-const COIN_BONUS = 25;          // ← увеличено с 15
-const COIN_PENALTY = 60;        // ← СИЛЬНО увеличено с 5
+const COIN_BONUS = 25;
+const COIN_PENALTY = 60;
 const COIN_TYPES = ['🪙', '💎', '⭐', '🔮', '🍀'];
 const COIN_SPAWN_MIN = 900, COIN_SPAWN_MAX = 1800;
 const COIN_FALL_MIN_MS = 3000, COIN_FALL_MAX_MS = 4800;
 const SOUND_ENABLED = true, VIBRATION_ENABLED = true;
-const DUEL_POLL_MS = 800;
-const DUEL_PROGRESS_MS = 900;   // как часто отправляем свой счёт
+const DUEL_POLL_MS = 2000;
+const DUEL_PROGRESS_MS = 1500;
 
 const RANKS = [
   {max:50, name:'Студент', emoji:'🎓'}, {max:120, name:'ССОшник', emoji:'👷'},
@@ -673,12 +661,11 @@ function onMouseDown(e){ if (Date.now() - lastTouchAt < 700) return; e.preventDe
 btn.addEventListener('touchstart', onTouchStart, {passive: false});
 btn.addEventListener('mousedown', onMouseDown);
 
-// ПРОБЕЛ — только одиночные клики, без auto-repeat
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space'){
     e.preventDefault();
     if (!running || !scheduleOpen) return;
-    if (e.repeat) return;   // ← игнорируем авто-повтор при зажатии
+    if (e.repeat) return;
     handleClick();
   }
 });
@@ -1037,13 +1024,16 @@ async function loadRoomsList(){
 function startPolling(){
   stopDuelPolling();
   pollDuelStatus();
-  duelPollTimer = setInterval(pollDuelStatus, DUEL_POLL_MS);
-  // Обновляем список открытых комнат раз в 3 сек
+  duelPollTimer = setInterval(() => {
+    if (document.hidden) return;
+    pollDuelStatus();
+  }, DUEL_POLL_MS);
   if (!window._roomsInterval){
     window._roomsInterval = setInterval(() => {
+      if (document.hidden) return;
       if (duelPanel.classList.contains('hide')) return;
       if (!duelMain.classList.contains('hide')) loadRoomsList();
-    }, 3000);
+    }, 5000);
   }
 }
 
@@ -1057,7 +1047,6 @@ async function pollDuelStatus(){
   try{
     const r = await fetch('/api/duel/status?code=' + encodeURIComponent(duelCode), {headers: duelHeaders()});
     if (r.status === 404 || r.status === 403){
-      // Комната закрылась — выходим
       stopDuelPolling();
       showToast('Хост закрыл комнату');
       duelCode = ''; duelRole = ''; duelMode = false;
@@ -1075,7 +1064,6 @@ function applyDuelState(data){
   const room = data.room;
   duelState = room;
 
-  // Если играем — обновляем live-счёт
   if (room.status === 'playing' || room.status === 'finished'){
     if (duelRole === 'host'){
       duelNickYou.textContent = room.host.nick;
@@ -1088,7 +1076,6 @@ function applyDuelState(data){
     }
   }
 
-  // Лобби
   if (room.guest){
     duelPThem.textContent = '🧑 ' + room.guest.nick;
     duelPThem.classList.remove('empty');
@@ -1108,13 +1095,11 @@ function applyDuelState(data){
     duelStartBtn.classList.add('hide');
   }
 
-  // Отсчёт
   if (room.status === 'playing' && !running && countdownOverlay.classList.contains('hide')){
     stopDuelPolling();
     startCountdown(room.start_at);
   }
 
-  // Результат
   if (room.status === 'finished' && !running && duelResultOverlay.classList.contains('hide')){
     showDuelResult(room);
   }
@@ -1127,7 +1112,6 @@ function startCountdown(startAt){
   duelResultOverlay.classList.add('hide');
   countdownOverlay.classList.remove('hide');
 
-  // Имена в баре
   if (duelState){
     duelNickYou.textContent = myNick || 'Ты';
     const opp = duelRole === 'host'
@@ -1169,10 +1153,10 @@ function beginDuelPlay(){
   duelScoreThem.textContent = 0;
   runGameLoop();
 
-  // Отправляем свой прогресс раз в 900мс
   clearInterval(duelProgressTimer);
   duelProgressTimer = setInterval(async () => {
     if (!running || !duelCode) return;
+    if (document.hidden) return;
     try{
       await fetch('/api/duel/progress', {
         method:'POST', headers: duelHeaders(),
@@ -1181,7 +1165,6 @@ function beginDuelPlay(){
     }catch(e){}
   }, DUEL_PROGRESS_MS);
 
-  // Продолжаем опрос статуса — чтобы ловить результат соперника
   startPolling();
 }
 
@@ -1201,7 +1184,6 @@ async function duelSubmitScore(finalScore){
       if (data.room && data.room.status === 'finished'){
         showDuelResult(data.room);
       } else {
-        // Ждём второго
         duelResultOverlay.classList.remove('hide');
         duelVerdict.textContent = 'Ждём соперника…';
         duelVerdict.className = 'duel-verdict';
@@ -1261,7 +1243,6 @@ function showDuelResult(room){
 
   duelResultOverlay.classList.remove('hide');
 
-  // Награда как за обычную партию
   const r = rankFor(youScore);
   try{
     const headers = {'Content-Type':'application/json'};
@@ -1289,15 +1270,33 @@ document.getElementById('duelJoinBtn').addEventListener('click', () => duelJoin(
 document.getElementById('duelJoinBackBtn').addEventListener('click', showDuelMain);
 document.getElementById('duelLeaveBtn').addEventListener('click', duelLeave);
 document.getElementById('duelStartBtn').addEventListener('click', duelStart);
+
 duelLeaveBarBtn.addEventListener('click', async () => {
   if (running){
-    if (!confirm('Выйти из дуэли? Твой результат отправится как есть.')) return;
+    if (!confirm('Выйти из дуэли? Твой результат не отправится.')) return;
+    running = false;
     clearInterval(timerId);
-    await stopGame();
-    await duelLeave();
-  } else {
-    duelLeave();
+    clearInterval(comboDecayTimer);
+    clearTimeout(coinSpawnTimer);
+    document.querySelectorAll('.falling-coin').forEach(c => c.remove());
+
+    if (duelCode){
+      try{
+        await fetch('/api/duel/leave', {
+          method:'POST', headers: duelHeaders(),
+          body: JSON.stringify({code: duelCode})
+        });
+      }catch(e){}
+    }
   }
+  duelMode = false;
+  duelCode = '';
+  duelRole = '';
+  duelSubmitted = false;
+  duelBar.classList.remove('show');
+  duelResultOverlay.classList.add('hide');
+  duelPanel.classList.add('hide');
+  startOv.classList.remove('hide');
 });
 
 duelCodeShow.addEventListener('click', async () => {
@@ -1318,17 +1317,72 @@ duelCodeInput.addEventListener('input', (e) => {
 });
 
 againBtn.addEventListener('click', startSolo);
-document.getElementById('duelAgainBtn').addEventListener('click', () => {
-  duelResultOverlay.classList.add('hide');
+
+document.getElementById('duelAgainBtn').addEventListener('click', async () => {
+  stopDuelPolling();
+  clearInterval(timerId);
+  clearInterval(comboDecayTimer);
+  clearTimeout(coinSpawnTimer);
+  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
+
+  if (duelCode){
+    try{
+      await fetch('/api/duel/leave', {
+        method:'POST', headers: duelHeaders(),
+        body: JSON.stringify({code: duelCode})
+      });
+    }catch(e){}
+  }
+
   duelMode = false;
   duelCode = '';
-  openDuelPanel();
+  duelRole = '';
+  duelSubmitted = false;
+  running = false;
+
+  duelResultOverlay.classList.add('hide');
+  duelBar.classList.remove('show');
+  finishOv.classList.add('hide');
+  countdownOverlay.classList.add('hide');
+
+  duelPanel.classList.remove('hide');
+  showDuelMain();
 });
-document.getElementById('duelExitBtn').addEventListener('click', () => {
-  duelResultOverlay.classList.add('hide');
+
+document.getElementById('duelExitBtn').addEventListener('click', async () => {
+  stopDuelPolling();
+  clearInterval(timerId);
+  clearInterval(comboDecayTimer);
+  clearTimeout(coinSpawnTimer);
+  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
+
+  if (duelCode){
+    try{
+      await fetch('/api/duel/leave', {
+        method:'POST', headers: duelHeaders(),
+        body: JSON.stringify({code: duelCode})
+      });
+    }catch(e){}
+  }
+
   duelMode = false;
   duelCode = '';
+  duelRole = '';
+  duelSubmitted = false;
+  running = false;
+
+  duelResultOverlay.classList.add('hide');
+  duelBar.classList.remove('show');
+  duelPanel.classList.add('hide');
+  finishOv.classList.add('hide');
+  countdownOverlay.classList.add('hide');
+
   startOv.classList.remove('hide');
+
+  badge.textContent = 'Студент';
+  btn.textContent = '🎓';
+  updateScore(0);
+  updateMultiplier();
 });
 
 shareBtn.addEventListener('click', async () => {
@@ -1361,7 +1415,6 @@ window.addEventListener('load', () => {
     setTimeout(() => location.href = '/auth', 600);
     return;
   }
-  // Сразу присоединяемся
   const code = codeFromUrl.toUpperCase().slice(0,4);
   setTimeout(async () => {
     duelPanel.classList.remove('hide');
@@ -1369,9 +1422,7 @@ window.addEventListener('load', () => {
     showDuelLobby();
     duelPYou.textContent = '🧑 ' + (myNick || 'Ты');
     duelCodeShow.textContent = code;
-    // Присоединяемся сразу
     await duelJoin(code);
-    // Ссылку из URL убираем, чтобы при обновлении не заходило заново
     history.replaceState(null, '', '/games/clicker');
   }, 500);
 });

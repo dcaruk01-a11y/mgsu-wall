@@ -23,6 +23,7 @@ from core.ratings import router as ratings_router
 from core.game_score import router as game_score_router
 from core.tasks_api import router as tasks_api_router
 from core.shop import router as shop_router
+from core.duel import router as duel_router
 from core.tasks import daily_loop
 import core.state as state
 from feedback_bot import feedback_bot_loop
@@ -42,6 +43,7 @@ app.include_router(ratings_router)
 app.include_router(game_score_router)
 app.include_router(tasks_api_router)
 app.include_router(shop_router)
+app.include_router(duel_router)
 app.include_router(ws_router)
 
 

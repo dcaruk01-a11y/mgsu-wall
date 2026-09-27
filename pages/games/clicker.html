@@ -1,14 +1,19 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Кликер · Игры МГСУ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/static/site-header.css">
 <style>
+/* ═══════════ БАЗА ═══════════ */
+html,body{height:100%;}
 body.clicker-page{
-  min-height:100vh;
+  height:100vh;
+  height:100dvh;
+  max-height:100dvh;
+  min-height:100dvh;
   display:flex;
   flex-direction:column;
   touch-action:manipulation;
@@ -27,7 +32,7 @@ body.clicker-page{
 .status-banner.show{display:block;}
 .status-banner small{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:2px;}
 
-/* ============ СЦЕНА ============ */
+/* ═══════════ СЦЕНА ═══════════ */
 .clicker-stage{
   flex:1;
   position:relative;
@@ -35,45 +40,30 @@ body.clicker-page{
   flex-direction:column;
   overflow:hidden;
   min-height:0;
-  padding:14px 14px max(14px, env(safe-area-inset-bottom)) 14px;
+  padding:12px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 }
 
-/* ============ ВЕРХ: СЧЁТЧИК + МНОЖИТЕЛЬ ============ */
+/* ═══════════ ВЕРХНИЙ СЧЁТЧИК ═══════════ */
 .top-hud{
+  flex-shrink:0;
   display:flex;
   align-items:flex-end;
   justify-content:center;
   gap:14px;
-  margin-bottom:8px;
-  min-height:80px;
+  min-height:70px;
+  padding-bottom:6px;
 }
-
-.score-wrap{
-  display:flex;
-  align-items:baseline;
-  gap:10px;
-}
-
+.score-wrap{display:flex;align-items:baseline;gap:10px;}
 .score-display{
-  font-size:64px;
+  font-size:60px;
   font-weight:900;
   line-height:0.9;
   letter-spacing:-0.03em;
   font-variant-numeric:tabular-nums;
   color:inherit;
-  transition:transform .2s cubic-bezier(.2,1.4,.5,1), color .2s;
-  transform-origin:center bottom;
+  transition:color .2s;
   text-shadow:0 4px 20px rgba(0,0,0,0.25);
 }
-.score-display.milestone{
-  animation:scoreMilestone .45s ease-out;
-}
-@keyframes scoreMilestone{
-  0%  {transform:scale(1);}
-  35% {transform:scale(1.25);}
-  100%{transform:scale(var(--score-scale, 1));}
-}
-
 .multiplier{
   font-size:22px;
   font-weight:900;
@@ -104,78 +94,18 @@ body.clicker-page{
   to  {box-shadow:0 0 20px 4px rgba(255,80,80,0.5);}
 }
 
-/* ============ ИГРОВОЕ ПОЛЕ (для падающих бонусов) ============ */
-.play-field{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:1;
-  overflow:hidden;
-}
-
-.falling-coin{
-  position:absolute;
-  top:-70px;
-  width:56px;
-  height:56px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:34px;
-  line-height:1;
-  cursor:pointer;
-  pointer-events:auto;
-  user-select:none;
-  filter:drop-shadow(0 6px 16px rgba(0,0,0,0.5));
-  animation:coinFall linear forwards;
-  transform-origin:center;
-}
-.falling-coin:hover{
-  filter:drop-shadow(0 6px 20px rgba(255,220,120,0.7)) brightness(1.15);
-}
-.falling-coin.caught{
-  animation:none !important;
-  pointer-events:none;
-  transition:transform .2s, opacity .2s;
-  transform:scale(1.6);
-  opacity:0;
-}
-@keyframes coinFall{
-  from{transform:translateY(0) rotate(0deg);}
-  to  {transform:translateY(calc(100vh + 140px)) rotate(360deg);}
-}
-
-/* Всплывающие +15 / -5 */
-.float-num{
-  position:absolute;
-  z-index:2;
-  font-size:22px;
-  font-weight:900;
-  pointer-events:none;
-  animation:floatUp .9s ease-out forwards;
-  font-variant-numeric:tabular-nums;
-  text-shadow:0 2px 8px rgba(0,0,0,0.6);
-}
-.float-num.good{color:#6BFF8E;}
-.float-num.bad {color:#FF6B6B;}
-@keyframes floatUp{
-  0%  {transform:translateY(0) scale(0.8); opacity:0;}
-  20% {transform:translateY(-10px) scale(1.1); opacity:1;}
-  100%{transform:translateY(-70px) scale(1); opacity:0;}
-}
-
-/* ============ КНОПКА КЛИКА ============ */
+/* ═══════════ ЗОНА КНОПКИ ═══════════ */
 .button-zone{
   flex:1;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:flex-end;
-  padding-bottom:6px;
+  padding-bottom:4px;
   position:relative;
   z-index:5;
   min-height:0;
+  gap:10px;
 }
 
 .rank-badge{
@@ -188,8 +118,8 @@ body.clicker-page{
   border:1px solid rgba(128,128,128,0.3);
   border-radius:999px;
   background:rgba(128,128,128,0.1);
-  margin-bottom:14px;
   transition:all .2s;
+  flex-shrink:0;
 }
 .rank-badge.up{
   background:rgba(128,128,128,0.3);
@@ -198,8 +128,8 @@ body.clicker-page{
 }
 
 .click-btn{
-  width:200px;
-  height:200px;
+  width:280px;
+  height:280px;
   border-radius:50%;
   border:3px solid rgba(128,128,128,0.35);
   background:
@@ -208,32 +138,23 @@ body.clicker-page{
   box-shadow:
     0 24px 60px rgba(15,60,115,0.5),
     inset 0 -8px 24px rgba(0,0,0,0.35);
-  font-size:88px;
+  font-size:120px;
   line-height:1;
   cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
-  transition:transform .08s, box-shadow .15s, background .2s;
+  transition:box-shadow .15s, background .2s;
   padding:0;
   color:#fff;
   position:relative;
   touch-action:manipulation;
-}
-.click-btn:active{
-  transform:scale(0.94);
+  -webkit-tap-highlight-color:transparent;
+  flex-shrink:0;
 }
 .click-btn:disabled{
   opacity:0.4;
   cursor:not-allowed;
-}
-.click-btn.pop{
-  animation:pop .2s ease-out;
-}
-@keyframes pop{
-  0%  {transform:scale(0.92);}
-  50% {transform:scale(1.06);}
-  100%{transform:scale(1);}
 }
 .click-btn.hot{
   background:
@@ -259,29 +180,29 @@ body.clicker-page{
   to  {box-shadow:0 24px 90px rgba(255,60,60,0.9), inset 0 -8px 24px rgba(0,0,0,0.4);}
 }
 
-/* ============ НИЗ: ТАЙМЕР ============ */
+/* ═══════════ НИЖНИЙ ТАЙМЕР ═══════════ */
 .bottom-hud{
-  margin-top:14px;
+  flex-shrink:0;
+  margin-top:10px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:6px;
+  gap:4px;
   z-index:5;
 }
 .timer-row{
   display:flex;
   align-items:baseline;
-  gap:10px;
-  font-size:14px;
+  gap:8px;
+  font-size:13px;
   opacity:0.8;
 }
 .timer-num{
-  font-size:36px;
+  font-size:32px;
   font-weight:900;
-  min-width:64px;
+  min-width:56px;
   text-align:center;
   font-variant-numeric:tabular-nums;
-  color:inherit;
   transition:color .2s;
 }
 .timer-num.low{
@@ -307,20 +228,72 @@ body.clicker-page{
   background:linear-gradient(90deg, #FF6B6B, #FF4D5E);
 }
 
-/* ============ ОВЕРЛЕИ ============ */
+/* ═══════════ ПАДАЮЩИЕ МОНЕТКИ ═══════════ */
+.falling-coin{
+  position:fixed;
+  top:-90px;
+  width:76px;
+  height:76px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:44px;
+  line-height:1;
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-user-drag:none;
+  filter:drop-shadow(0 0 20px rgba(255,220,120,0.7)) drop-shadow(0 6px 16px rgba(0,0,0,0.5));
+  animation:coinFall linear forwards;
+  z-index:100;
+  touch-action:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.falling-coin.caught{
+  animation:none !important;
+  pointer-events:none;
+  transition:transform .22s, opacity .22s;
+  transform:scale(1.8);
+  opacity:0;
+}
+@keyframes coinFall{
+  from{transform:translateY(0) rotate(0deg);}
+  to  {transform:translateY(calc(100vh + 200px)) rotate(360deg);}
+}
+
+/* ═══════════ ВСПЛЫВАЮЩИЕ +N ═══════════ */
+.float-num{
+  position:fixed;
+  z-index:200;
+  font-size:24px;
+  font-weight:900;
+  pointer-events:none;
+  animation:floatUp 1s ease-out forwards;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 12px rgba(0,0,0,0.8);
+}
+.float-num.good{color:#6BFF8E;}
+.float-num.bad {color:#FF6B6B;}
+@keyframes floatUp{
+  0%  {transform:translate(-50%, 0) scale(0.6); opacity:0;}
+  15% {transform:translate(-50%, -14px) scale(1.15); opacity:1;}
+  100%{transform:translate(-50%, -90px) scale(1); opacity:0;}
+}
+
+/* ═══════════ ОВЕРЛЕИ ═══════════ */
 .overlay{
   position:absolute;inset:0;
   background:rgba(5,14,31,0.94);
   backdrop-filter:blur(10px);
   display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:20px;padding:28px;text-align:center;
-  z-index:20;overflow-y:auto;transition:opacity .3s;
+  flex-direction:column;gap:18px;padding:24px;text-align:center;
+  z-index:200;overflow-y:auto;transition:opacity .3s;
 }
 .overlay.hide{opacity:0;pointer-events:none;}
-.start-title{font-size:30px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.15;}
+.start-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.15;}
 .start-sub{font-size:14px;color:rgba(255,255,255,0.7);max-width:360px;line-height:1.6;}
 .start-hint{
-  margin-top:6px;
   padding:12px 18px;
   border-radius:12px;
   background:rgba(255,255,255,0.06);
@@ -329,11 +302,12 @@ body.clicker-page{
   color:rgba(255,255,255,0.75);
   line-height:1.6;
   max-width:360px;
+  text-align:left;
 }
 
 .btn-big{
   display:inline-flex;align-items:center;gap:12px;
-  padding:16px 36px;border-radius:999px;background:#fff;color:#0F3C73;
+  padding:16px 34px;border-radius:999px;background:#fff;color:#0F3C73;
   font-family:inherit;font-size:16px;font-weight:700;text-decoration:none;
   border:0;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,0.3);
   transition:transform .15s;
@@ -342,9 +316,9 @@ body.clicker-page{
 .btn-big:active{transform:translateY(0) scale(0.98);}
 .btn-ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);box-shadow:none;}
 
-.finish-emoji{font-size:80px;line-height:1;filter:drop-shadow(0 12px 40px rgba(255,255,255,0.15));}
-.finish-rank{font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
-.finish-score{font-size:64px;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums;}
+.finish-emoji{font-size:72px;line-height:1;filter:drop-shadow(0 12px 40px rgba(255,255,255,0.15));}
+.finish-rank{font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.finish-score{font-size:58px;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums;}
 .finish-label{font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
 
 .top-block{width:100%;max-width:420px;margin-top:6px;}
@@ -354,7 +328,6 @@ body.clicker-page{
 .top-row.me{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.4);color:#fff;}
 .top-row.me .top-nick::after{content:' •  ты';color:rgba(255,255,255,0.55);font-weight:400;}
 .top-pos{font-weight:800;color:rgba(255,255,255,0.4);min-width:24px;font-variant-numeric:tabular-nums;}
-.top-row.me .top-pos{color:#fff;}
 .top-nick{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .top-score{font-weight:800;font-variant-numeric:tabular-nums;color:#fff;}
 .top-empty{font-size:13px;color:rgba(255,255,255,0.4);padding:20px;text-align:center;}
@@ -371,9 +344,7 @@ body.clicker-page{
 .progress-line b{color:#fff;font-weight:700;}
 .progress-guest{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;}
 .progress-guest a{color:#4ADE80;font-weight:700;text-decoration:none;}
-.progress-guest a:hover{text-decoration:underline;}
 .progress-link{color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;font-weight:600;}
-.progress-link:hover{color:#fff;}
 
 .finish-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
 
@@ -382,33 +353,35 @@ body.clicker-page{
   transform:translateX(-50%) translateY(60px);
   background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;
   font-size:14px;font-weight:600;box-shadow:0 12px 32px rgba(0,0,0,0.3);
-  z-index:100;opacity:0;transition:all .3s;pointer-events:none;
+  z-index:300;opacity:0;transition:all .3s;pointer-events:none;
 }
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 
-/* ============ АДАПТИВ ============ */
-@media(max-width:640px){
-  .clicker-stage{padding:10px 10px max(10px, env(safe-area-inset-bottom)) 10px;}
-  .top-hud{min-height:64px;margin-bottom:4px;}
-  .score-display{font-size:48px;}
+/* ═══════════ АДАПТИВ ═══════════ */
+@media(max-width:520px){
+  .score-display{font-size:46px;}
   .multiplier{font-size:18px;padding:4px 10px;min-width:56px;}
-  .click-btn{width:170px;height:170px;font-size:72px;}
-  .timer-num{font-size:28px;min-width:52px;}
-  .bottom-hud{margin-top:8px;gap:4px;}
-  .rank-badge{font-size:11px;padding:5px 12px;margin-bottom:10px;}
-  .falling-coin{width:48px;height:48px;font-size:28px;}
+  .click-btn{width:240px;height:240px;font-size:100px;}
+  .timer-num{font-size:26px;min-width:48px;}
+  .top-hud{min-height:56px;padding-bottom:2px;}
+  .rank-badge{font-size:11px;padding:5px 12px;}
   .start-title{font-size:24px;}
-  .finish-emoji{font-size:64px;}
-  .finish-rank{font-size:22px;}
-  .finish-score{font-size:48px;}
 }
 
-/* Очень маленькие экраны */
-@media(max-height:640px){
-  .click-btn{width:150px;height:150px;font-size:64px;}
-  .score-display{font-size:42px;}
-  .timer-num{font-size:24px;}
-  .rank-badge{margin-bottom:6px;}
+/* Очень низкие экраны — уменьшаем кнопку */
+@media(max-height:700px){
+  .click-btn{width:200px;height:200px;font-size:84px;}
+  .score-display{font-size:40px;}
+  .timer-num{font-size:22px;}
+  .top-hud{min-height:48px;}
+  .rank-badge{font-size:10px;padding:4px 10px;}
+}
+@media(max-height:580px){
+  .click-btn{width:160px;height:160px;font-size:68px;}
+  .score-display{font-size:34px;}
+  .timer-num{font-size:20px;}
+  .top-hud{min-height:40px;}
+  .bottom-hud{margin-top:4px;}
 }
 </style>
 </head><body class="clicker-page">
@@ -422,9 +395,6 @@ body.clicker-page{
 
 <div class="clicker-stage">
 
-  <!-- Падающие бонусы -->
-  <div class="play-field" id="playField"></div>
-
   <!-- ВЕРХ: счётчик + множитель -->
   <div class="top-hud">
     <div class="score-wrap">
@@ -433,7 +403,7 @@ body.clicker-page{
     </div>
   </div>
 
-  <!-- КНОПКА КЛИКА (внизу средней зоны) -->
+  <!-- ЦЕНТР-НИЗ: бейдж + кнопка -->
   <div class="button-zone">
     <div class="rank-badge" id="rankBadge">Студент</div>
     <button class="click-btn" id="clickBtn" type="button" aria-label="Кликать">🎓</button>
@@ -455,8 +425,8 @@ body.clicker-page{
     <div class="start-sub">За 30 секунд накликай как можно больше.<br>Стартуешь студентом — закончишь легендой.</div>
     <div class="start-hint">
       🔥 <b>Темп:</b> кликай быстро — множитель растёт до x5.<br>
-      🪙 <b>Бонусы:</b> с боков падают монетки — успей кликнуть!<br>
-      ⌨️ <b>Комп:</b> работает пробел.
+      🪙 <b>Бонусы:</b> с боков падают монетки — успей тапнуть!<br>
+      ⌨️ <b>На компе:</b> работает пробел.
     </div>
     <button class="btn-big" id="startBtn" type="button">Начать →</button>
   </div>
@@ -491,34 +461,34 @@ body.clicker-page{
 renderSiteHeader('games');
 
 /* ═══════════════════════════════════════════════════════════
-   ПЕРЕМЕННЫЕ
+   НАСТРОЙКИ — можно менять
    ═══════════════════════════════════════════════════════════ */
-const LS_TOKEN = 'mgsu_token';
-const authToken = localStorage.getItem(LS_TOKEN) || '';
-const isLoggedIn = !!authToken;
-
 const DURATION = 30;
 
-// combo / множитель
+// Множитель / комбо
 const MULT_MIN = 1.0;
 const MULT_MAX = 5.0;
-const FAST_CLICK_MS = 350;   // < этого — растёт
-const SLOW_CLICK_MS = 700;   // > этого — падает
+const FAST_CLICK_MS = 350;
+const SLOW_CLICK_MS = 700;
 const MULT_STEP_UP = 0.18;
 const MULT_STEP_DOWN = 0.35;
-const COMBO_DECAY_INTERVAL = 300;   // мс, как часто проверяем паузу
-const COMBO_IDLE_THRESHOLD = 800;   // если > этого не кликали — множитель тает
+const COMBO_DECAY_INTERVAL = 300;
+const COMBO_IDLE_THRESHOLD = 800;
 
-// падающие бонусы
+// Падающие бонусы
 const COIN_BONUS = 15;
 const COIN_PENALTY = 5;
 const COIN_TYPES = ['🪙', '💎', '⭐', '🔮', '🍀'];
 const COIN_SPAWN_MIN = 1100;
 const COIN_SPAWN_MAX = 2400;
-const COIN_FALL_MIN_MS = 2600;   // быстрый
-const COIN_FALL_MAX_MS = 4200;   // медленный
+const COIN_FALL_MIN_MS = 2600;
+const COIN_FALL_MAX_MS = 4200;
 
-// ранги (пересчитаны под множитель)
+// Эффекты
+const SOUND_ENABLED = true;      // звук клика
+const VIBRATION_ENABLED = true;  // вибрация на телефоне (Android)
+
+// Ранги
 const RANKS = [
   {max:50,    name:'Студент',        emoji:'🎓'},
   {max:120,   name:'ССОшник',        emoji:'👷'},
@@ -534,7 +504,7 @@ function rankFor(score){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   СОСТОЯНИЕ РАУНДА
+   СОСТОЯНИЕ
    ═══════════════════════════════════════════════════════════ */
 let score = 0;
 let timeLeft = DURATION;
@@ -546,6 +516,7 @@ let lastMilestone = 0;
 let coinSpawnTimer = null;
 let comboDecayTimer = null;
 let myUid = '';
+const isLoggedIn = !!localStorage.getItem('mgsu_token');
 
 /* ═══════════════════════════════════════════════════════════
    DOM
@@ -556,7 +527,6 @@ const timerEl     = document.getElementById('timer');
 const timerBar    = document.getElementById('timerBar');
 const scoreEl     = document.getElementById('scoreDisplay');
 const multEl      = document.getElementById('multiplier');
-const playField   = document.getElementById('playField');
 const startOv     = document.getElementById('startOverlay');
 const finishOv    = document.getElementById('finishOverlay');
 const startBtn    = document.getElementById('startBtn');
@@ -571,7 +541,55 @@ const progressBlock = document.getElementById('progressBlock');
 const toast       = document.getElementById('toast');
 
 /* ═══════════════════════════════════════════════════════════
-   РАСПИСАНИЕ (не играем в нерабочие часы)
+   ЗВУК — Web Audio API, без файлов
+   ═══════════════════════════════════════════════════════════ */
+let audioCtx = null;
+let lastSoundTime = 0;
+
+function initAudio(){
+  if (audioCtx) return;
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }catch(e){}
+}
+
+function playClickSound(){
+  if (!SOUND_ENABLED || !audioCtx) return;
+  const now = performance.now();
+  // Не даём звукам накладываться слишком плотно
+  if (now - lastSoundTime < 25) return;
+  lastSoundTime = now;
+
+  try{
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    const freq = 1100 + Math.random() * 500;
+    osc.frequency.setValueAtTime(freq, t);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.55, t + 0.05);
+    gain.gain.setValueAtTime(0.07, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.1);
+  }catch(e){}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ВИБРАЦИЯ
+   ═══════════════════════════════════════════════════════════ */
+function vibrate(ms){
+  if (!VIBRATION_ENABLED) return;
+  if (navigator.vibrate){
+    try{ navigator.vibrate(ms); }catch(e){}
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   РАСПИСАНИЕ
    ═══════════════════════════════════════════════════════════ */
 let scheduleOpen = true;
 async function checkScheduleStatus(){
@@ -599,23 +617,19 @@ setInterval(checkScheduleStatus, 60000);
    ПРОФИЛЬ
    ═══════════════════════════════════════════════════════════ */
 if (isLoggedIn){
-  fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + authToken}})
+  const t = localStorage.getItem('mgsu_token');
+  fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + t}})
     .then(r => r.json())
     .then(d => { if (d && d.user) myUid = d.user.uid; })
     .catch(()=>{});
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ОТРИСОВКА СЧЁТЧИКА
+   ОТРИСОВКА
    ═══════════════════════════════════════════════════════════ */
 function updateScore(newScore){
   score = Math.max(0, Math.round(newScore));
   scoreEl.textContent = score;
-
-  // Масштаб растёт с очками (макс +40%)
-  const scale = 1 + Math.min(score / 800, 0.4);
-  scoreEl.style.setProperty('--score-scale', scale);
-  scoreEl.style.transform = `scale(${scale})`;
 
   // Цвет по диапазонам
   let color = '';
@@ -624,22 +638,20 @@ function updateScore(newScore){
   else if (score >= 200) color = '#FFB347';
   else if (score >= 100) color = '#FFD24A';
   else if (score >= 50)  color = '#A6E22E';
-  if (color) scoreEl.style.color = color;
-  else scoreEl.style.color = '';
+  scoreEl.style.color = color || '';
 
   // Рубеж каждые 50
   const milestone = Math.floor(score / 50) * 50;
   if (milestone > lastMilestone && milestone > 0){
     lastMilestone = milestone;
-    scoreEl.classList.remove('milestone');
-    // reflow, чтобы перезапустить анимацию
-    void scoreEl.offsetWidth;
-    scoreEl.classList.add('milestone');
-    setTimeout(() => scoreEl.classList.remove('milestone'), 500);
+    scoreEl.animate([
+      {transform: 'scale(1)'},
+      {transform: 'scale(1.35)'},
+      {transform: 'scale(1)'}
+    ], {duration: 400, easing: 'ease-out'});
   }
-  // Если очки упали ниже рубежа (штраф) — сбрасываем, чтобы снова сработал
-  if (Math.floor(score / 50) * 50 < lastMilestone){
-    lastMilestone = Math.floor(score / 50) * 50;
+  if (milestone < lastMilestone){
+    lastMilestone = milestone;
   }
 }
 
@@ -667,6 +679,24 @@ function updateRank(){
 }
 
 /* ═══════════════════════════════════════════════════════════
+   АНИМАЦИЯ КНОПКИ — через Web Animations API
+   Работает одинаково от пальца, мыши и пробела
+   ═══════════════════════════════════════════════════════════ */
+function punchButton(){
+  try{
+    btn.animate([
+      {transform: 'scale(1)'},
+      {transform: 'scale(0.86)'},
+      {transform: 'scale(1)'}
+    ], {duration: 160, easing: 'cubic-bezier(.2,1.4,.5,1)'});
+  }catch(e){
+    // fallback для очень старых браузеров
+    btn.style.transform = 'scale(0.9)';
+    setTimeout(() => { btn.style.transform = ''; }, 100);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
    КЛИК
    ═══════════════════════════════════════════════════════════ */
 function handleClick(){
@@ -676,47 +706,68 @@ function handleClick(){
   const dt = now - lastClickTime;
   lastClickTime = now;
 
-  // Комбо
   if (dt > 0 && dt < FAST_CLICK_MS){
     multiplier = Math.min(MULT_MAX, multiplier + MULT_STEP_UP);
   } else if (dt > SLOW_CLICK_MS){
     multiplier = Math.max(MULT_MIN, multiplier - MULT_STEP_DOWN);
   }
 
-  // Очки = множитель (округлённо)
   const points = Math.max(1, Math.round(multiplier));
   updateScore(score + points);
   updateMultiplier();
   updateRank();
 
-  // Анимация кнопки
-  btn.classList.remove('pop');
-  void btn.offsetWidth;
-  btn.classList.add('pop');
-  setTimeout(() => btn.classList.remove('pop'), 200);
+  punchButton();
+  playClickSound();
+  vibrate(8);
 
-  // Всплывающее +N над кнопкой
-  spawnFloatAtBtn('+' + points, false);
+  // Всплывающее +N
+  const rect = btn.getBoundingClientRect();
+  spawnFloat(
+    rect.left + rect.width / 2 + (Math.random() - 0.5) * 50,
+    rect.top + rect.height * 0.3,
+    '+' + points,
+    false
+  );
 }
 
+// Нажатие на кнопку
 btn.addEventListener('pointerdown', (e) => {
   e.preventDefault();
+  if (!running) return;
   handleClick();
 });
 
-// Пробел
+// Пробел на компе — с авто-повтором при удержании
+let spaceHeld = false;
+let spaceRepeatTimer = null;
 document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && !e.repeat){
+  if (e.code === 'Space'){
     e.preventDefault();
-    if (running) handleClick();
-    else if (!finishOv.classList.contains('hide') === false && startOv.classList.contains('hide')){
-      // ничего
-    }
+    if (!running || !scheduleOpen) return;
+    if (spaceHeld) return;
+    spaceHeld = true;
+    handleClick();
+    // Авто-повтор через 400мс (как на телефоне при зажатии)
+    setTimeout(() => {
+      if (!spaceHeld) return;
+      spaceRepeatTimer = setInterval(() => {
+        if (!spaceHeld || !running) { clearInterval(spaceRepeatTimer); return; }
+        handleClick();
+      }, 100);
+    }, 400);
+  }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'Space'){
+    spaceHeld = false;
+    if (spaceRepeatTimer) clearInterval(spaceRepeatTimer);
+    spaceRepeatTimer = null;
   }
 });
 
 /* ═══════════════════════════════════════════════════════════
-   ПАДАЮЩИЕ БОНУСЫ
+   ПАДАЮЩИЕ МОНЕТКИ — в document.body (не в контейнере)
    ═══════════════════════════════════════════════════════════ */
 function spawnCoin(){
   if (!running) return;
@@ -725,37 +776,52 @@ function spawnCoin(){
   coin.className = 'falling-coin';
   coin.textContent = COIN_TYPES[Math.floor(Math.random() * COIN_TYPES.length)];
 
-  // Спавним с боков, чтобы не перекрывать кнопку
   const side = Math.random() < 0.5 ? 'left' : 'right';
-  const offset = 6 + Math.random() * 20;   // 6–26%
+  const offset = 6 + Math.random() * 18;
   coin.style[side] = offset + '%';
 
   const duration = COIN_FALL_MIN_MS + Math.random() * (COIN_FALL_MAX_MS - COIN_FALL_MIN_MS);
   coin.style.animationDuration = duration + 'ms';
 
-  // Клик по монетке
-  coin.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!running || coin.classList.contains('caught')) return;
+  // Защита от двойного срабатывания
+  let handled = false;
+
+  function onHit(e){
+    if (handled) return;
+    if (!running) return;
+    handled = true;
+    if (e){ e.preventDefault(); e.stopPropagation(); }
     coin.classList.add('caught');
     updateScore(score + COIN_BONUS);
-    spawnFloatAtEl(coin, '+' + COIN_BONUS, false);
-    setTimeout(() => coin.remove(), 220);
-  }, {passive: false});
+    spawnFloatAt(coin, '+' + COIN_BONUS, false);
+    playClickSound();
+    vibrate(15);
+    setTimeout(() => coin.remove(), 240);
+  }
 
-  // Пропустил — штраф
+  // Слушаем всё подряд — что сработает первым, то и работает
+  coin.addEventListener('pointerdown', onHit, {passive: false});
+  coin.addEventListener('touchstart', onHit, {passive: false});
+  coin.addEventListener('mousedown', onHit);
+
+  // Пропустил
   coin.addEventListener('animationend', () => {
-    if (!coin.classList.contains('caught') && running){
-      updateScore(score - COIN_PENALTY);
-      spawnFloatAtEl(coin, '-' + COIN_PENALTY, true);
-    }
+    if (handled) return;
+    if (!running){ coin.remove(); return; }
+    handled = true;
+    updateScore(score - COIN_PENALTY);
+    spawnFloatAt(coin, '-' + COIN_PENALTY, true);
+    vibrate(30);
     coin.remove();
   });
 
-  playField.appendChild(coin);
+  // На случай если animationend не сработает
+  setTimeout(() => {
+    if (coin.parentNode && !handled) coin.remove();
+  }, duration + 500);
 
-  // Планируем следующего
+  document.body.appendChild(coin);
+
   const next = COIN_SPAWN_MIN + Math.random() * (COIN_SPAWN_MAX - COIN_SPAWN_MIN);
   coinSpawnTimer = setTimeout(spawnCoin, next);
 }
@@ -763,28 +829,19 @@ function spawnCoin(){
 /* ═══════════════════════════════════════════════════════════
    ВСПЛЫВАЮЩИЕ ЧИСЛА
    ═══════════════════════════════════════════════════════════ */
-function spawnFloatAtEl(el, text, isBad){
+function spawnFloatAt(el, text, isBad){
   const rect = el.getBoundingClientRect();
   spawnFloat(rect.left + rect.width / 2, rect.top + rect.height / 2, text, isBad);
-}
-
-function spawnFloatAtBtn(text, isBad){
-  const rect = btn.getBoundingClientRect();
-  // Немного смещаем, чтобы не совпадало с самим кликом
-  const dx = (Math.random() - 0.5) * 40;
-  spawnFloat(rect.left + rect.width / 2 + dx, rect.top + rect.height * 0.35, text, isBad);
 }
 
 function spawnFloat(x, y, text, isBad){
   const el = document.createElement('div');
   el.className = 'float-num ' + (isBad ? 'bad' : 'good');
   el.textContent = text;
-  el.style.left = (x - 20) + 'px';
-  el.style.top  = (y - 20) + 'px';
-  el.style.position = 'fixed';
-  el.style.zIndex = '50';
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 1000);
+  setTimeout(() => el.remove(), 1100);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -793,7 +850,12 @@ function spawnFloat(x, y, text, isBad){
 function startGame(){
   if (!scheduleOpen){ checkScheduleStatus(); return; }
 
-  // Сброс
+  // Инициализация звука (требует user gesture)
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended'){
+    audioCtx.resume().catch(()=>{});
+  }
+
   updateScore(0);
   timeLeft = DURATION;
   timerEl.textContent = timeLeft;
@@ -807,10 +869,11 @@ function startGame(){
   btn.textContent = '🎓';
   updateMultiplier();
 
-  // Очистить поле от старых монет
-  playField.innerHTML = '';
+  // Убрать старые монетки
+  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
 
   running = true;
+  spaceHeld = false;
   startOv.classList.add('hide');
   finishOv.classList.add('hide');
   progressBlock.style.display = 'none';
@@ -819,7 +882,6 @@ function startGame(){
   clearInterval(timerId);
   timerId = setInterval(tick, 1000);
 
-  // Запуск комбо-затухания
   clearInterval(comboDecayTimer);
   comboDecayTimer = setInterval(() => {
     if (!running) return;
@@ -830,7 +892,6 @@ function startGame(){
     }
   }, COMBO_DECAY_INTERVAL);
 
-  // Запуск падающих монет
   clearTimeout(coinSpawnTimer);
   spawnCoin();
 }
@@ -852,9 +913,12 @@ async function stopGame(){
   clearInterval(timerId);
   clearInterval(comboDecayTimer);
   clearTimeout(coinSpawnTimer);
+  if (spaceRepeatTimer) clearInterval(spaceRepeatTimer);
+  spaceRepeatTimer = null;
+  spaceHeld = false;
 
-  // Убрать все висящие монеты
-  playField.innerHTML = '';
+  // Убрать монетки
+  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
 
   const r = rankFor(score);
   finishEmoji.textContent = r.emoji;
@@ -867,7 +931,8 @@ async function stopGame(){
 
   try{
     const headers = {'Content-Type':'application/json'};
-    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+    const t = localStorage.getItem('mgsu_token');
+    if (t) headers['Authorization'] = 'Bearer ' + t;
 
     const res = await fetch('/clicker/score', {
       method:'POST',
@@ -883,7 +948,7 @@ async function stopGame(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ТОП ДНЯ
+   ТОП
    ═══════════════════════════════════════════════════════════ */
 function renderTop(top, myScore, pos){
   if (!top.length){
@@ -967,9 +1032,12 @@ function showToast(text){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   СТАРТОВОЕ СОСТОЯНИЕ
+   ИНИЦИАЛИЗАЦИЯ
    ═══════════════════════════════════════════════════════════ */
 updateMultiplier();
 updateRank();
+
+// Инициализируем аудио при первом касании чего угодно
+document.addEventListener('pointerdown', initAudio, {once: true});
 </script>
 </body></html>

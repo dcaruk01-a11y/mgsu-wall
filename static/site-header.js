@@ -240,3 +240,44 @@ function renderSiteFooter(){
     document.head.appendChild(link);
   });
 })();
+/* ═══════════════════════════════════════════════════════════
+   PWA — манифест + мета-теги для полноэкранного режима
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  // 1. Подключаем манифест
+  if (!document.querySelector('link[rel="manifest"]')){
+    var link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = '/static/manifest.json';
+    document.head.appendChild(link);
+  }
+
+  // 2. Мета-теги для iOS (работают при добавлении на домашний экран)
+  var metas = [
+    {name:'apple-mobile-web-app-capable',       content:'yes'},
+    {name:'apple-mobile-web-app-status-bar-style', content:'black-translucent'},
+    {name:'apple-mobile-web-app-title',         content:'МГСУ Игры'},
+    {name:'mobile-web-app-capable',             content:'yes'},
+    {name:'theme-color',                        content:'#0F3C73'},
+    {name:'format-detection',                   content:'telephone=no'}
+  ];
+  metas.forEach(function(m){
+    var existing = document.querySelector('meta[name="' + m.name + '"]');
+    if (existing){
+      existing.content = m.content;
+    } else {
+      var meta = document.createElement('meta');
+      meta.name = m.name;
+      meta.content = m.content;
+      document.head.appendChild(meta);
+    }
+  });
+
+  // 3. Apple touch icon (iOS берёт его для иконки на домашнем экране)
+  if (!document.querySelector('link[rel="apple-touch-icon"]')){
+    var ati = document.createElement('link');
+    ati.rel = 'apple-touch-icon';
+    ati.href = '/assets/icons/logo-square.svg';
+    document.head.appendChild(ati);
+  }
+})();

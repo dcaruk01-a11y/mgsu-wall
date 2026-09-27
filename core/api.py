@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from datetime import datetime
-from config import MSK
+from config import MSK, TG_FEEDBACK_BOT_TOKEN, TG_ADMIN_ID
+import httpx
 import core.state as state
 import core.analytics as analytics
 from core.storage import make_snapshot, post_to_telegram
@@ -90,3 +91,64 @@ async def manual_snapshot():
     path = await make_snapshot()
     await post_to_telegram(path)
     return {"ok": True, "path": path}
+
+
+# ═══════════════════════════════════════════════════════════
+# FEEDBACK — обратная связь от игроков
+# ═══════════════════════════════════════════════════════════
+@router.post("/api/feedback/app")
+async def api_feedback_app(payload: dict, authorization: str = Header(default="")):
+    """Приём обратной связи из попапа. Отправляет админу в Telegram."""
+    stars = max(0, min(int(payload.get("stars", 0) or 0), 5))
+    text = str(payload.get("text", ""))[:1000].strip()
+    page = str(payload.get("page", ""))[:100]
+    ua = str(payload.get("ua", ""))[:200]
+
+    if stars <= 0:
+        return {"ok": False, "error": "Нужна оценка"}
+
+    # Определяем игрока
+    uid = ""
+    nick = "Гость"
+    token = (authorization or "").replace("Bearer ", "").strip()
+    if token:
+        try:
+            import core.users as users
+            user = await users.get_user_by_token(token)
+            if user:
+                uid = user["uid"]
+                nick = user["display_name"]
+        except Exception:
+            pass
+
+    # Отправляем в ТГ
+    if TG_FEEDBACK_BOT_TOKEN and TG_ADMIN_ID:
+        stars_str = "⭐" * stars + "☆" * (5 - stars)
+        msg = (
+            f"💌 <b>Обратная связь из приложения</b>\n\n"
+            f"<b>Оценка:</b> {stars_str} ({stars}/5)\n"
+            f"<b>Игрок:</b> {nick}"
+        )
+        if uid:
+            msg += f" (<code>{uid}</code>)"
+        if page:
+            msg += f"\n<b>Страница:</b> <code>{page}</code>"
+        if text:
+            safe = text.replace("<", "&lt;").replace(">", "&gt;")
+            msg += f"\n\n<b>Текст:</b>\n{safe}"
+        else:
+            msg += f"\n\n<i>Без комментария</i>"
+
+        try:
+            api_url = f"https://api.telegram.org/bot{TG_FEEDBACK_BOT_TOKEN}/sendMessage"
+            async with httpx.AsyncClient(timeout=10) as c:
+                await c.post(api_url, json={
+                    "chat_id": TG_ADMIN_ID,
+                    "text": msg,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": True,
+                })
+        except Exception as e:
+            print("feedback app send error:", e)
+
+    return {"ok": True}

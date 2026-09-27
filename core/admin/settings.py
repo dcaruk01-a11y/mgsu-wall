@@ -86,7 +86,7 @@ async def admin_schedule_set(payload: dict, token: str = Header(default="", alia
 async def admin_theme_set(payload: dict, token: str = Header(default="", alias="authorization")):
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
-    theme = str(payload.get("theme", "classic"))
-    if theme in ("classic", "retro", "notebook", "cyberpunk", "cozy"):
+    theme = str(payload.get("theme", "white"))
+    if theme in ("white", "black", "classic", "retro", "notebook", "cyberpunk", "cozy"):
         await state.save_theme(theme)
     return {"ok": True, "theme": state.theme_config["current"]}

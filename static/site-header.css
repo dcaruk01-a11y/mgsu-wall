@@ -7,18 +7,18 @@ body{
   display:flex;
   flex-direction:column;
   margin:0;
-  padding-top:60px;
+  padding-top:64px;
 }
 #siteFooter{flex-shrink:0;margin-top:auto;}
 
-/* PWA (полноэкранный режим на iPhone) — учитываем Dynamic Island */
+/* PWA — учёт Dynamic Island */
 @media (display-mode: standalone){
-  body{padding-top:calc(60px + env(safe-area-inset-top, 0px));}
+  body{padding-top:calc(64px + env(safe-area-inset-top, 0px));}
   .site-header{
     padding-top:env(safe-area-inset-top, 0px);
-    height:calc(60px + env(safe-area-inset-top, 0px));
+    height:calc(64px + env(safe-area-inset-top, 0px));
   }
-  .site-header-inner{height:60px;}
+  .site-header-inner{height:64px;}
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -26,150 +26,162 @@ body{
    ═══════════════════════════════════════════════════════════ */
 .site-header{
   position:fixed;
-  top:0;
-  left:0;
-  right:0;
+  top:0;left:0;right:0;
   z-index:1000;
-  background:var(--header-bg, rgba(10,14,28,0.85));
-  backdrop-filter:blur(18px) saturate(180%);
-  -webkit-backdrop-filter:blur(18px) saturate(180%);
-  border-bottom:1px solid var(--header-line, rgba(128,128,128,0.25));
-  color:var(--header-text, inherit);
-  height:60px;
+  background:var(--header-bg, rgba(255,255,255,0.94));
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border-bottom:1px solid var(--header-line, rgba(15,23,42,0.10));
+  color:var(--header-text, #0a0f1e);
+  height:64px;
   transition:transform .25s ease;
 }
 .site-header.hidden{transform:translateY(-100%);}
 
 .site-header-inner{
-  max-width:1240px;
+  max-width:1280px;
   margin:0 auto;
   padding:0 20px;
-  height:60px;
+  height:64px;
   display:flex;
   align-items:center;
   gap:16px;
-  /* НЕ используем justify-content:space-between — иначе nav не сможет сжаться */
 }
 
-/* ─── ЛОГОТИП ─── */
+/* ═══════════════════════════════════════════════════════════
+   ЛОГО (слева) — ведёт на главную
+   ═══════════════════════════════════════════════════════════ */
 .site-header-brand{
   display:flex;
   align-items:center;
-  gap:12px;
-  padding:4px 10px;
-  margin-left:-10px;
-  border-radius:10px;
+  gap:10px;
   text-decoration:none;
   color:inherit;
   flex-shrink:0;
-  transition:background .15s, opacity .15s;
+  padding:6px 10px;
+  border-radius:10px;
+  transition:background .15s;
 }
-.site-header-brand:hover{background:var(--header-hover, rgba(128,128,128,0.15));}
-.site-header-brand.active{background:var(--header-active, rgba(128,128,128,0.20));}
+.site-header-brand:hover{background:var(--header-hover, rgba(15,23,42,0.05));}
+
 .site-header-logo{
-  width:34px;height:34px;display:block;
-  background:var(--logo-bg, rgba(255,255,255,0.85));
-  border-radius:8px;
+  width:36px;
+  height:36px;
+  display:block;
+  background:var(--logo-bg, #fff);
+  border-radius:9px;
   padding:3px;
   object-fit:contain;
   flex-shrink:0;
 }
 .site-header-label{
-  font-size:14px;font-weight:500;
-  color:inherit;opacity:0.85;
+  font-size:15px;
+  font-weight:600;
+  color:inherit;
   white-space:nowrap;
 }
-.site-header-label b{font-weight:700;opacity:1;}
+.site-header-label b{font-weight:800;}
 
-/* ─── НАВИГАЦИЯ (скроллится по горизонтали) ─── */
+/* ═══════════════════════════════════════════════════════════
+   НАВИГАЦИЯ (центр) — единый стиль для всех
+   ═══════════════════════════════════════════════════════════ */
 .site-header-nav{
   display:flex;
   align-items:center;
   gap:4px;
-  /* Занимает ВСЁ оставшееся место, может сжиматься */
   flex:1 1 auto;
+  justify-content:center;
   min-width:0;
-  /* Горизонтальный скролл */
-  overflow-x:auto;
-  overflow-y:hidden;
-  white-space:nowrap;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior-x:contain;
-  touch-action:pan-x;
-  scrollbar-width:none;
-  -ms-overflow-style:none;
-  /* mask-image НЕ используем — он ломает скролл на iOS */
 }
-.site-header-nav::-webkit-scrollbar{display:none;}
 
-.site-header-link{
-  display:flex;align-items:center;gap:8px;
+/* ═══════════════════════════════════════════════════════════
+   ОБЩИЙ СТИЛЬ ВСЕХ КНОПОК — одинаковые
+   ═══════════════════════════════════════════════════════════ */
+.site-header-link,
+.site-header-profile{
+  display:flex;
+  align-items:center;
+  gap:8px;
   padding:8px 14px;
   border-radius:10px;
-  color:inherit;opacity:0.75;
+  color:inherit;
   text-decoration:none;
-  font-size:13px;font-weight:600;
-  transition:background .12s, opacity .12s;
+  font-size:14px;
+  font-weight:600;
   white-space:nowrap;
+  transition:background .15s, opacity .15s;
+  flex-shrink:0;
+  cursor:pointer;
   font-family:inherit;
-  flex-shrink:0; /* не сжимаем — выходят за пределы, появляется скролл */
+  border:0;
+  background:transparent;
 }
-.site-header-link:hover{background:var(--header-hover, rgba(128,128,128,0.15));opacity:1;}
-.site-header-link.active{background:var(--header-active, rgba(128,128,128,0.20));opacity:1;font-weight:800;}
-.site-header-link-icon{font-size:15px;line-height:1;}
+.site-header-link:hover,
+.site-header-profile:hover{
+  background:var(--header-hover, rgba(15,23,42,0.06));
+}
 
-.site-header-divider{
-  width:1px;height:22px;
-  background:var(--header-line, rgba(128,128,128,0.3));
-  margin:0 6px;
+/* Активная страница — просто лёгкий фон, без выделений */
+.site-header-link.active,
+.site-header-profile.active{
+  background:var(--header-active, rgba(15,23,42,0.09));
+  font-weight:700;
+}
+
+.site-header-link-icon,
+.site-header-profile-icon{
+  font-size:17px;
+  line-height:1;
   flex-shrink:0;
 }
+.site-header-link-label,
+.site-header-profile-label{
+  line-height:1;
+}
 
-/* ─── АВАТАР / ВОЙТИ ─── */
+/* ═══════════════════════════════════════════════════════════
+   ПРОФИЛЬ (справа)
+   ═══════════════════════════════════════════════════════════ */
+.site-header-profile{
+  margin-left:auto;
+}
+
+/* Аватарка (когда залогинен) */
 .site-header-avatar{
-  width:36px;height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:36px;
+  height:36px;
   border-radius:50%;
-  background:var(--header-active, rgba(128,128,128,0.20));
-  border:1.5px solid currentColor;
-  opacity:0.9;
-  display:flex;align-items:center;justify-content:center;
-  color:inherit;font-size:15px;font-weight:800;
+  background:var(--header-active, rgba(15,23,42,0.10));
+  color:inherit;
+  font-size:14px;
+  font-weight:800;
   text-decoration:none;
+  flex-shrink:0;
+  margin-left:auto;
   transition:transform .12s, opacity .12s;
-  flex-shrink:0;
+  border:1.5px solid var(--header-line, rgba(15,23,42,0.15));
+  cursor:pointer;
 }
-.site-header-avatar:hover{transform:scale(1.06);opacity:1;}
-.site-header-avatar.active{box-shadow:0 0 0 2px currentColor;opacity:1;}
-
-.site-header-login{
-  display:flex;align-items:center;gap:6px;
-  padding:8px 14px;
-  border-radius:10px;
-  background:var(--header-active, rgba(128,128,128,0.15));
-  border:1px solid currentColor;
-  color:inherit;opacity:0.9;
-  text-decoration:none;
-  font-size:13px;font-weight:700;
-  transition:background .12s, opacity .12s;
-  white-space:nowrap;
-  flex-shrink:0;
+.site-header-avatar:hover{transform:scale(1.06);}
+.site-header-avatar.active{
+  border-color:var(--accent, #ff7a2b);
+  box-shadow:0 0 0 2px var(--accent, #ff7a2b);
 }
-.site-header-login:hover{background:var(--header-hover, rgba(128,128,128,0.25));opacity:1;}
-.site-header-login.active{opacity:1;}
-.site-header-login-icon{font-size:14px;}
 
 /* ═══════════════════════════════════════════════════════════
    ФУТЕР
    ═══════════════════════════════════════════════════════════ */
 .site-footer{
-  border-top:1px solid rgba(128,128,128,0.20);
+  border-top:1px solid var(--header-line, rgba(15,23,42,0.10));
   padding:28px 0;
-  margin-top:auto;
   color:inherit;
   opacity:0.85;
 }
 .site-footer-inner{
-  max-width:1240px;
+  max-width:1280px;
   margin:0 auto;
   padding:0 20px;
   display:flex;
@@ -186,188 +198,79 @@ body{
 .site-footer-right a:hover{opacity:1;text-decoration:underline;}
 
 /* ═══════════════════════════════════════════════════════════
-   ТЕЛЕФОН — КОМПАКТНО, ЧТОБЫ ВЛЕЗАЛО
+   ТЕЛЕФОН — только иконки
+   Триггерится и по ширине, и по тач-устройству
    ═══════════════════════════════════════════════════════════ */
+@media (pointer:coarse), (max-width:720px){
+  body{padding-top:56px;}
 
-/* Тач-устройства */
-@media (pointer:coarse){
-  body{padding-top:50px;}
-  .site-header{height:50px;}
-  .site-header-inner{padding:0 6px;height:50px;gap:4px;}
-
-  .site-header-brand{gap:0;padding:4px;margin-left:0;}
-  .site-header-logo{width:30px;height:30px;border-radius:7px;}
-  .site-header-label{display:none;}
-
-  .site-header-nav{gap:2px;}
-  .site-header-link{padding:6px 8px;gap:0;font-size:12px;}
-  .site-header-link-icon{display:none;}
-  .site-header-link-label{font-size:12px;}
-
-  .site-header-login{padding:6px 10px;gap:0;font-size:12px;}
-  .site-header-login-icon{display:none;}
-  .site-header-login-label{font-size:12px;}
-
-  .site-header-divider{margin:0 2px;height:16px;}
-  .site-header-avatar{width:30px;height:30px;font-size:12px;}
-
-  @media (display-mode: standalone){
-    body{padding-top:calc(50px + env(safe-area-inset-top, 0px));}
-    .site-header{
-      padding-top:env(safe-area-inset-top, 0px);
-      height:calc(50px + env(safe-area-inset-top, 0px));
-    }
-    .site-header-inner{height:50px;}
+  .site-header{height:56px;}
+  .site-header-inner{
+    padding:0 10px;
+    height:56px;
+    gap:8px;
   }
-}
 
-/* Страховка по ширине */
-@media (max-width:720px){
-  body{padding-top:50px;}
-  .site-header{height:50px;}
-  .site-header-inner{padding:0 6px;height:50px;gap:4px;}
+  /* Лого компактнее */
+  .site-header-brand{padding:4px 6px;gap:8px;}
+  .site-header-logo{width:32px;height:32px;border-radius:8px;}
+  .site-header-label{font-size:13px;}
 
-  .site-header-brand{gap:0;padding:4px;margin-left:0;}
-  .site-header-logo{width:30px;height:30px;}
-  .site-header-label{display:none;}
+  /* Навигация — иконки по центру */
+  .site-header-nav{
+    gap:2px;
+    justify-content:center;
+    flex:1;
+  }
 
-  .site-header-nav{gap:2px;}
-  .site-header-link{padding:6px 8px;font-size:12px;gap:0;}
-  .site-header-link-icon{display:none;}
-  .site-header-link-label{font-size:12px;}
+  /* Скрываем текст, оставляем иконки */
+  .site-header-link,
+  .site-header-profile{
+    padding:9px 11px;
+    gap:0;
+  }
+  .site-header-link-label,
+  .site-header-profile-label{
+    display:none;
+  }
+  .site-header-link-icon,
+  .site-header-profile-icon{
+    font-size:22px;
+  }
 
-  .site-header-login{padding:6px 10px;font-size:12px;gap:0;}
-  .site-header-login-icon{display:none;}
-  .site-header-login-label{font-size:12px;}
+  /* Аватарка компактнее */
+  .site-header-avatar{
+    width:34px;
+    height:34px;
+    font-size:13px;
+  }
 
-  .site-header-divider{margin:0 2px;height:16px;}
-  .site-header-avatar{width:30px;height:30px;font-size:12px;}
-
+  /* Футер */
   .site-footer{padding:22px 0;}
-  .site-footer-inner{padding:0 12px;flex-direction:column;align-items:flex-start;gap:10px;font-size:12px;}
+  .site-footer-inner{
+    padding:0 14px;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+    font-size:12px;
+  }
   .site-footer-right{margin-left:0;gap:4px 8px;}
 }
 
-/* Очень узкие (< 380px) — ещё компактнее */
-@media (max-width:380px){
-  .site-header-inner{padding:0 4px;gap:2px;}
-  .site-header-link{padding:6px 6px;font-size:11px;}
-  .site-header-link-label{font-size:11px;}
-  .site-header-login{padding:6px 8px;font-size:11px;}
-  .site-header-login-label{font-size:11px;}
+/* Очень узкие (< 400px) */
+@media (max-width:400px){
+  .site-header-inner{padding:0 6px;gap:4px;}
+  .site-header-brand{padding:3px 4px;gap:6px;}
   .site-header-logo{width:28px;height:28px;}
-  .site-header-avatar{width:28px;height:28px;font-size:11px;}
-  .site-header-divider{display:none;}
-}
-/* ═══════════════════════════════════════════════════════════
-   FEEDBACK POPUP — обратная связь от игроков
-   ═══════════════════════════════════════════════════════════ */
-.mgsu-fb-overlay{
-  position:fixed;inset:0;z-index:3000;
-  background:rgba(5,14,31,0.88);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  display:none;align-items:center;justify-content:center;
-  padding:18px;
-}
-.mgsu-fb-overlay.show{display:flex;animation:mgsuFbIn .35s ease;}
-@keyframes mgsuFbIn{from{opacity:0;}to{opacity:1;}}
-
-.mgsu-fb-card{
-  max-width:420px;width:100%;
-  background:linear-gradient(180deg, rgba(30,40,64,0.98), rgba(15,22,40,0.98));
-  border:1px solid rgba(255,255,255,0.15);
-  border-radius:24px;
-  padding:28px 24px 22px;
-  text-align:center;
-  color:#fff;
-  box-shadow:0 30px 80px rgba(0,0,0,0.6);
-  animation:mgsuFbUp .4s cubic-bezier(.2,1.2,.4,1);
-  max-height:92vh;
-  overflow-y:auto;
-  box-sizing:border-box;
-}
-@keyframes mgsuFbUp{
-  from{transform:translateY(30px) scale(0.96);opacity:0;}
-  to{transform:translateY(0) scale(1);opacity:1;}
+  .site-header-label{font-size:12px;}
+  .site-header-link,
+  .site-header-profile{padding:8px 9px;}
+  .site-header-link-icon,
+  .site-header-profile-icon{font-size:20px;}
 }
 
-.mgsu-fb-emoji{
-  font-size:56px;line-height:1;
-  margin-bottom:12px;
-  filter:drop-shadow(0 8px 20px rgba(255,180,80,0.4));
-}
-.mgsu-fb-card h2{
-  font-size:22px;font-weight:900;
-  margin:0 0 10px;
-  letter-spacing:-0.02em;
-}
-.mgsu-fb-card .mgsu-fb-text{
-  font-size:14px;color:rgba(255,255,255,0.75);
-  line-height:1.55;margin:0 0 20px;
-  text-align:left;
-}
-.mgsu-fb-card .mgsu-fb-text b{color:#fff;font-weight:700;}
-
-.mgsu-fb-stars{
-  display:flex;justify-content:center;gap:8px;
-  margin-bottom:20px;
-}
-.mgsu-fb-star{
-  font-size:40px;line-height:1;cursor:pointer;
-  filter:grayscale(1) brightness(0.6);
-  transition:transform .12s, filter .15s;
-  background:transparent;border:0;padding:0;
-  -webkit-tap-highlight-color:transparent;
-}
-.mgsu-fb-star:hover{transform:scale(1.15);}
-.mgsu-fb-star.active{filter:none;transform:scale(1.1);}
-.mgsu-fb-star.pulse{animation:mgsuStarPulse .35s ease;}
-@keyframes mgsuStarPulse{
-  0%{transform:scale(1);}
-  50%{transform:scale(1.3);}
-  100%{transform:scale(1.1);}
-}
-
-.mgsu-fb-textarea{
-  width:100%;min-height:80px;padding:12px 14px;border-radius:12px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.15);
-  color:#fff;font-family:inherit;font-size:14px;line-height:1.5;
-  outline:none;resize:vertical;box-sizing:border-box;
-  margin-bottom:16px;
-}
-.mgsu-fb-textarea:focus{border-color:rgba(255,180,80,0.6);}
-.mgsu-fb-textarea::placeholder{color:rgba(255,255,255,0.4);}
-
-.mgsu-fb-actions{display:flex;flex-direction:column;gap:8px;}
-.mgsu-fb-send{
-  padding:14px;border-radius:999px;border:0;cursor:pointer;
-  background:linear-gradient(135deg,#FFB347,#FF7A2B);
-  color:#1a0e05;font-family:inherit;font-size:15px;font-weight:900;
-  box-shadow:0 10px 26px rgba(255,140,50,0.4);
-  transition:transform .12s, background .2s;
-}
-.mgsu-fb-send:active{transform:scale(0.97);}
-.mgsu-fb-send:disabled{opacity:0.6;cursor:not-allowed;}
-
-.mgsu-fb-later{
-  padding:12px;border-radius:999px;
-  background:transparent;border:1px solid rgba(255,255,255,0.15);
-  color:rgba(255,255,255,0.7);font-family:inherit;font-size:13px;font-weight:700;
-  cursor:pointer;transition:background .15s;
-}
-.mgsu-fb-later:hover{background:rgba(255,255,255,0.06);}
-
-.mgsu-fb-hint{
-  font-size:12px;color:rgba(255,255,255,0.4);
-  margin-top:12px;line-height:1.5;
-}
-
-@media(max-width:520px){
-  .mgsu-fb-card{padding:22px 18px 18px;border-radius:20px;}
-  .mgsu-fb-emoji{font-size:46px;margin-bottom:8px;}
-  .mgsu-fb-card h2{font-size:19px;}
-  .mgsu-fb-card .mgsu-fb-text{font-size:13px;}
-  .mgsu-fb-star{font-size:34px;}
-  .mgsu-fb-send{font-size:14px;padding:13px;}
+/* Совсем узкие (< 340px) — убираем название лого */
+@media (max-width:340px){
+  .site-header-label{display:none;}
+  .site-header-brand{padding:3px;}
 }

@@ -17,23 +17,25 @@ router = APIRouter()
 
 # Веса очков за единицу для каждой игры
 GAME_WEIGHTS = {
-    "wall":     0.5,
-    "clicker":  1.0,
-    "broadway": 1.0,
-    "campus":   50.0,
-    "grable":   10.0,
-    "tetris":   0.7,
-    "2048":     0.4,
+    "wall":      0.5,
+    "clicker":   1.0,
+    "broadway":  1.0,
+    "campus":    50.0,
+    "grable":    10.0,
+    "tetris":    0.7,
+    "2048":      0.4,
+    "adventure": 1.0,
 }
 
 GAME_LABELS = {
-    "wall":     "Стена",
-    "clicker":  "Кликер",
-    "broadway": "Бродвей",
-    "campus":   "Построй кампус",
-    "grable":   "Грабли",
-    "tetris":   "Тетрис",
-    "2048":     "2048 Здания",
+    "wall":      "Стена",
+    "clicker":   "Кликер",
+    "broadway":  "Бродвей",
+    "campus":    "Построй кампус",
+    "grable":    "Грабли",
+    "tetris":    "Тетрис",
+    "2048":      "2048 Здания",
+    "adventure": "Лабиринт МГСУ",
 }
 
 

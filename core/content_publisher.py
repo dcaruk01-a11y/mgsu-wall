@@ -1,6 +1,6 @@
 """
 Бот-публикатор контент-плана.
-Работает в фоне, каждые 60 секунд проверяет расписание.
+Работает в фоне, каждую минуту проверяет расписание.
 """
 import asyncio, time, httpx
 from datetime import datetime
@@ -29,13 +29,26 @@ async def tg_send(chat_id, text, parse_mode="HTML"):
         return False
 
 
+async def tg_send_photo(chat_id, path, caption=""):
+    if not API or not chat_id:
+        return False
+    try:
+        async with httpx.AsyncClient(timeout=60) as c:
+            with open(path, "rb") as f:
+                r = await c.post(
+                    f"{API}/sendPhoto",
+                    data={"chat_id": chat_id, "caption": caption, "parse_mode": "HTML"},
+                    files={"photo": f},
+                )
+                return r.status_code == 200
+    except Exception as e:
+        print("send_photo error:", e)
+        return False
+
+
 # ============ ГЕНЕРАЦИЯ АВТО-ПОСТОВ ============
 
-def _fmt_time(ts):
-    if not ts:
-        return '—'
-    d = datetime.fromtimestamp(ts, MSK)
-    return d.strftime('%d.%m в %H:%M')
+SITE_URL = "https://mgsu-wall.onrender.com"
 
 
 async def build_stats_post():
@@ -49,7 +62,7 @@ async def build_stats_post():
     total_games = sum(games.values())
 
     if visits == 0:
-        return None  # ничего не публикуем, если сегодня пусто
+        return None
 
     lines = [
         "📊 <b>Статистика дня</b>",
@@ -68,7 +81,7 @@ async def build_stats_post():
                 lines.append(f"• {k}: {v}")
 
     lines.append("")
-    lines.append("🔗 mgsu-wall.onrender.com/glavnaya")
+    lines.append(f'🔗 <a href="{SITE_URL}/glavnaya">mgsu-wall.onrender.com</a>')
     return "\n".join(lines)
 
 
@@ -99,28 +112,11 @@ async def build_rating_post():
         lines.append(f"{medal} <b>{nick}</b> — {score} очков")
 
     lines.append("")
-    lines.append("🔗 mgsu.ru/ratings — полный рейтинг")
+    lines.append(f'🔗 <a href="{SITE_URL}/ratings">Полный рейтинг</a>')
     return "\n".join(lines)
 
 
 # ============ ПУБЛИКАЦИЯ ============
-
-async def tg_send_photo(chat_id, path, caption=""):
-    if not API or not chat_id:
-        return False
-    try:
-        async with httpx.AsyncClient(timeout=60) as c:
-            with open(path, "rb") as f:
-                r = await c.post(
-                    f"{API}/sendPhoto",
-                    data={"chat_id": chat_id, "caption": caption, "parse_mode": "HTML"},
-                    files={"photo": f},
-                )
-                return r.status_code == 200
-    except Exception as e:
-        print("send_photo error:", e)
-        return False
-
 
 async def publish_slot(item):
     """Публикует один слот в канал."""
@@ -162,7 +158,7 @@ async def publish_slot(item):
     # === РУЧНЫЕ слоты ===
     text = (item.get("text") or "").strip()
     if not text:
-        # Нет текста — сообщаем админу, но в канал не публикуем
+        # Единичный алерт админу + сразу помечаем skipped, чтобы больше не пытаться
         await tg_send(TG_ADMIN_ID, f"⚠️ Слот «{label}» на {day} пуст. Пост не опубликован.")
         await cplan.mark_skipped(day, slot)
         return False
@@ -170,6 +166,8 @@ async def publish_slot(item):
     ok = await tg_send(TG_CHAT_ID, text)
     if ok:
         await cplan.mark_published(day, slot)
+    else:
+        await cplan.mark_skipped(day, slot)
     return ok
 
 
@@ -187,7 +185,7 @@ async def send_morning_checklist():
         f"Опубликовано: <b>{stats['published']}</b>\n"
         f"Пропущено: <b>{stats['skipped']}</b>\n"
         f"Пусто: <b>{stats['empty']}</b>\n\n"
-        f"🔗 mgsu-wall.onrender.com/admin/content"
+        f'🔗 <a href="{SITE_URL}/admin/content">Открыть контент-план</a>'
     )
     await tg_send(TG_ADMIN_ID, text)
 
@@ -214,7 +212,6 @@ async def content_publisher_loop():
             if minute_key != last_check_minute:
                 last_check_minute = minute_key
 
-                # Публикация слотов
                 pending = await cplan.get_pending_for_now()
                 for item in pending:
                     try:

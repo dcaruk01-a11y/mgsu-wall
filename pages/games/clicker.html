@@ -14,8 +14,12 @@ body.clicker-page{
   touch-action:manipulation;user-select:none;-webkit-user-select:none;
   -webkit-tap-highlight-color:transparent;overflow:hidden;
 }
+
+/* ═══════ ГЛОБАЛЬНОЕ ПРАВИЛО СКРЫТИЯ ═══════ */
+.hide{display:none !important;}
+
 .status-banner{position:fixed;top:0;left:0;right:0;z-index:99;background:#AC1422;color:#fff;padding:12px 20px;text-align:center;font-size:13px;font-weight:600;display:none;}
-.status-banner.show{display:block;}
+.status-banner.show{display:block !important;}
 .status-banner small{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:2px;}
 
 .clicker-stage{
@@ -31,7 +35,7 @@ body.clicker-page{
   background:rgba(255,180,80,0.15);border:1px solid rgba(255,180,80,0.4);
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
 }
-.duel-bar.show{display:flex;}
+.duel-bar.show{display:flex !important;}
 .duel-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;}
 .duel-nick{font-size:11px;font-weight:800;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
 .duel-nick.you{color:#6BFF8E;}
@@ -100,14 +104,16 @@ body.clicker-page{
 .float-num.bad{color:#FF6B6B;}
 @keyframes floatUp{0%{transform:translate(-50%, 0) scale(0.6); opacity:0;}15%{transform:translate(-50%, -14px) scale(1.15); opacity:1;}100%{transform:translate(-50%, -90px) scale(1); opacity:0;}}
 
+/* ═══════════ ОВЕРЛЕИ ═══════════ */
 .overlay{
   position:absolute;inset:0;background:rgba(5,14,31,0.94);
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   display:flex;align-items:center;justify-content:center;
   flex-direction:column;gap:18px;padding:24px;text-align:center;
-  z-index:200;overflow-y:auto;-webkit-overflow-scrolling:touch;transition:opacity .3s;
+  z-index:200;overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
-.overlay.hide{opacity:0;pointer-events:none;}
+.overlay.hide{display:none !important;}
+
 .start-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.15;}
 .start-sub{font-size:14px;color:rgba(255,255,255,0.7);max-width:360px;line-height:1.6;}
 .btn-big{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:16px 34px;border-radius:999px;background:#fff;color:#0F3C73;font-family:inherit;font-size:16px;font-weight:700;text-decoration:none;border:0;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,0.3);transition:transform .15s;min-width:260px;}
@@ -115,6 +121,7 @@ body.clicker-page{
 .btn-big:active{transform:translateY(0) scale(0.98);}
 .btn-big.duel{background:linear-gradient(135deg,#FFB347,#FF7A2B);color:#1a0e05;font-weight:900;}
 .btn-big.ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);box-shadow:none;}
+.btn-big.small{min-width:auto;padding:12px 24px;font-size:14px;}
 
 .finish-emoji{font-size:72px;line-height:1;filter:drop-shadow(0 12px 40px rgba(255,255,255,0.15));}
 .finish-rank{font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
@@ -138,26 +145,35 @@ body.clicker-page{
 .progress-guest{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;}
 .progress-guest a{color:#4ADE80;font-weight:700;text-decoration:none;}
 .progress-link{color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;font-weight:600;}
+
 .finish-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
 
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(60px);background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 12px 32px rgba(0,0,0,0.3);z-index:300;opacity:0;transition:all .3s;pointer-events:none;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast.err{background:#FF4D5E;color:#fff;}
 
+/* ═══════════ ПАНЕЛЬ ДУЭЛИ ═══════════ */
 .duel-panel{
   position:absolute;inset:0;
-  background:rgba(5,14,31,0.96);
+  background:rgba(5,14,31,0.97);
   backdrop-filter:blur(12px);
   display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-start;
-  gap:12px;padding:20px 16px;
-  z-index:250;transition:opacity .3s;
+  align-items:center;justify-content:center;
+  gap:8px;padding:20px 16px;
+  z-index:250;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
-.duel-panel.hide{opacity:0;pointer-events:none;}
-.duel-panel h2{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;text-align:center;}
-.duel-panel p{font-size:13px;color:rgba(255,255,255,0.7);max-width:380px;line-height:1.55;text-align:center;}
-.duel-btns{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;margin-top:12px;}
+.duel-panel.hide{display:none !important;}
+
+.duel-screen{
+  display:flex;flex-direction:column;align-items:center;
+  gap:14px;width:100%;max-width:400px;
+}
+.duel-screen.hide{display:none !important;}
+
+.duel-panel h2{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;text-align:center;margin:0;}
+.duel-panel p{font-size:13px;color:rgba(255,255,255,0.7);max-width:380px;line-height:1.55;text-align:center;margin:0;}
+.duel-btns{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:6px;}
 
 .duel-code-box{background:rgba(255,180,80,0.12);border:2px dashed rgba(255,180,80,0.5);border-radius:16px;padding:16px 24px;display:flex;flex-direction:column;align-items:center;gap:6px;}
 .duel-code-label{font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,180,80,0.9);}
@@ -173,14 +189,11 @@ body.clicker-page{
   background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);
   color:#fff;font-family:monospace;font-size:32px;font-weight:900;
   letter-spacing:0.4em;text-align:center;text-transform:uppercase;outline:none;
-  padding-left:calc(14px + 0.4em);
+  padding-left:calc(14px + 0.4em);box-sizing:border-box;
 }
 .duel-input:focus{border-color:rgba(255,180,80,0.7);}
 .duel-input.err{border-color:#FF4D5E;}
-.duel-input-hint{
-  font-size:12px;color:rgba(255,255,255,0.55);
-  text-align:center;max-width:280px;line-height:1.5;
-}
+.duel-input-hint{font-size:12px;color:rgba(255,255,255,0.55);text-align:center;max-width:280px;line-height:1.5;}
 
 .duel-players{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;flex-wrap:wrap;justify-content:center;}
 .duel-player{padding:10px 16px;border-radius:999px;background:rgba(128,128,128,0.15);border:1px solid rgba(128,128,128,0.3);display:flex;align-items:center;gap:8px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -189,8 +202,8 @@ body.clicker-page{
 .duel-player.empty{color:rgba(255,255,255,0.4);font-style:italic;}
 .duel-vs-pill{font-size:14px;font-weight:900;color:rgba(255,255,255,0.4);}
 
-.countdown-overlay{position:absolute;inset:0;background:rgba(5,14,31,0.96);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:260;transition:opacity .3s;}
-.countdown-overlay.hide{opacity:0;pointer-events:none;}
+.countdown-overlay{position:absolute;inset:0;background:rgba(5,14,31,0.96);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:260;}
+.countdown-overlay.hide{display:none !important;}
 .countdown-num{font-size:180px;font-weight:900;color:#FFB347;line-height:1;animation:cdPulse .5s ease-out;text-shadow:0 0 60px rgba(255,180,80,0.8);}
 .countdown-num.go{color:#6BFF8E;font-size:120px;text-shadow:0 0 60px rgba(107,255,142,0.9);}
 @keyframes cdPulse{0%{transform:scale(0.4);opacity:0;}50%{transform:scale(1.15);opacity:1;}100%{transform:scale(1);opacity:1;}}
@@ -225,7 +238,7 @@ body.clicker-page{
   .duel-result-score{font-size:26px;}
   .duel-live-score{font-size:18px;}
   .duel-nick{font-size:10px;}
-  .btn-big{min-width:220px;padding:14px 28px;}
+  .btn-big{min-width:220px;padding:14px 28px;font-size:15px;}
 }
 @media(max-height:700px){
   .click-btn{width:200px;height:200px;font-size:84px;}
@@ -250,7 +263,7 @@ body.clicker-page{
 
 <div id="siteHeader"></div>
 
-<div class="duel-bar" id="duelBar">
+<div class="duel-bar hide" id="duelBar">
   <div class="duel-side">
     <div class="duel-nick you" id="duelNickYou">Ты</div>
     <div class="duel-live-score" id="duelScoreYou">0</div>
@@ -310,6 +323,7 @@ body.clicker-page{
       <button class="btn-big" id="shareBtn" type="button">Показать другу</button>
       <button class="btn-big ghost" id="againBtn" type="button">Ещё раз</button>
     </div>
+    <button class="btn-big ghost small" id="soloHomeBtn" type="button" style="margin-top:8px;">🏠 В меню</button>
   </div>
 
   <!-- ══════════ ОТСЧЁТ ══════════ -->
@@ -321,18 +335,18 @@ body.clicker-page{
   <div class="duel-panel hide" id="duelPanel">
 
     <!-- ЭКРАН 1: ВЫБОР -->
-    <div id="duelChoice">
+    <div class="duel-screen" id="duelChoice">
       <h2>⚔️ Дуэль с другом</h2>
       <p>Играйте одновременно. У кого больше кликов за 30 сек — тот победил.</p>
       <div class="duel-btns">
         <button class="btn-big duel" id="btnShowCreate" type="button">🎮 Создать дуэль</button>
         <button class="btn-big ghost" id="btnShowJoin" type="button">🔗 Присоединиться</button>
-        <button class="btn-big ghost" id="btnBackFromChoice" type="button" style="background:transparent;border:none;box-shadow:none;font-size:14px;min-height:44px;padding:12px;">← Назад</button>
+        <button class="btn-big ghost small" id="btnBackFromChoice" type="button" style="background:transparent;border:none;box-shadow:none;">← В меню</button>
       </div>
     </div>
 
     <!-- ЭКРАН 2: СОЗДАНИЕ -->
-    <div id="duelCreate" class="hide" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <div class="duel-screen hide" id="duelCreate">
       <h2>🎮 Создать дуэль</h2>
       <p>Придумай код — друг введёт его, чтобы присоединиться</p>
       <input type="text" class="duel-input" id="createCodeInput" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="XXXX">
@@ -344,7 +358,7 @@ body.clicker-page{
     </div>
 
     <!-- ЭКРАН 3: ПРИСОЕДИНЕНИЕ -->
-    <div id="duelJoin" class="hide" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <div class="duel-screen hide" id="duelJoin">
       <h2>🔗 Присоединиться</h2>
       <p>Введи код, который тебе дал друг</p>
       <input type="text" class="duel-input" id="joinCodeInput" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="XXXX">
@@ -355,14 +369,14 @@ body.clicker-page{
     </div>
 
     <!-- ЭКРАН 4: ЛОББИ -->
-    <div id="duelLobby" class="hide" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <div class="duel-screen hide" id="duelLobby">
       <h2 id="duelLobbyTitle">Ждём соперника…</h2>
       <div class="duel-code-box">
         <div class="duel-code-label">Код игры</div>
         <div class="duel-code" id="duelCodeShow">----</div>
         <div class="duel-code-hint">Нажми — скопируется</div>
       </div>
-      <button class="btn-big ghost" id="duelShareBtn" type="button" style="min-width:auto;font-size:13px;padding:12px 22px;">📤 Пригласить друга</button>
+      <button class="btn-big ghost small" id="duelShareBtn" type="button">📤 Пригласить друга</button>
 
       <div class="duel-players" style="margin-top:8px;">
         <div class="duel-player you" id="duelPYou">🧑 Ты</div>
@@ -400,8 +414,8 @@ body.clicker-page{
     </div>
     <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px;text-align:center;">💡 Награда начислена как за обычную партию</div>
     <div class="finish-actions">
-      <button class="btn-big" id="duelAgainBtn" type="button">Сыграть ещё</button>
-      <button class="btn-big ghost" id="duelExitBtn" type="button">Выйти</button>
+      <button class="btn-big" id="duelAgainBtn" type="button">⚔️ Сыграть ещё</button>
+      <button class="btn-big ghost" id="duelExitBtn" type="button">🏠 В меню</button>
     </div>
   </div>
 
@@ -770,12 +784,43 @@ function tick(){
   if (timeLeft <= 0) stopGame();
 }
 
+// Сбрасываем всё в исходное состояние
+function goHome(){
+  stopDuelPolling();
+  clearInterval(timerId);
+  clearInterval(comboDecayTimer);
+  clearTimeout(coinSpawnTimer);
+  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
+
+  running = false;
+  duelMode = false;
+  duelCode = '';
+  duelRole = '';
+  duelSubmitted = false;
+
+  // Скрываем все оверлеи
+  finishOv.classList.add('hide');
+  duelResultOverlay.classList.add('hide');
+  duelPanel.classList.add('hide');
+  duelBar.classList.add('hide');
+  countdownOverlay.classList.add('hide');
+
+  // Показываем старт
+  startOv.classList.remove('hide');
+
+  // Сброс счётчика
+  badge.textContent = 'Студент';
+  btn.textContent = '🎓';
+  updateScore(0);
+  updateMultiplier();
+}
+
 function startSolo(){
   if (!scheduleOpen){ checkScheduleStatus(); return; }
   initAudio();
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
   duelMode = false;
-  duelBar.classList.remove('show');
+  duelBar.classList.add('hide');
   resetGameState();
   startOv.classList.add('hide');
   finishOv.classList.add('hide');
@@ -867,7 +912,7 @@ function renderProgress(data){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ДУЭЛЬ — навигация по экранам
+   ДУЭЛЬ — навигация
    ═══════════════════════════════════════════════════════════ */
 function duelHeaders(){
   const t = localStorage.getItem('mgsu_token') || '';
@@ -875,10 +920,12 @@ function duelHeaders(){
 }
 
 function showScreen(name){
+  // Скрываем ВСЕ экраны дуэли
   duelChoice.classList.add('hide');
   duelCreateEl.classList.add('hide');
   duelJoinEl.classList.add('hide');
   duelLobby.classList.add('hide');
+  // Показываем нужный
   if (name === 'choice') duelChoice.classList.remove('hide');
   if (name === 'create') duelCreateEl.classList.remove('hide');
   if (name === 'join')   duelJoinEl.classList.remove('hide');
@@ -896,11 +943,6 @@ function openDuelPanel(){
   finishOv.classList.add('hide');
   duelResultOverlay.classList.add('hide');
   showScreen('choice');
-}
-function closeDuelPanel(){
-  duelPanel.classList.add('hide');
-  stopDuelPolling();
-  if (!duelCode) startOv.classList.remove('hide');
 }
 
 /* ─── СОЗДАНИЕ ─── */
@@ -980,7 +1022,6 @@ function goToLobby(){
   startPolling();
 }
 
-/* ─── ВЫХОД ─── */
 async function leaveRoom(){
   stopDuelPolling();
   if (duelCode){
@@ -1135,7 +1176,7 @@ function beginDuelPlay(){
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
   duelSubmitted = false;
   resetGameState();
-  duelBar.classList.add('show');
+  duelBar.classList.remove('hide');
   duelScoreYou.textContent = 0;
   duelScoreThem.textContent = 0;
   runGameLoop();
@@ -1159,7 +1200,7 @@ async function duelSubmitScore(finalScore){
   if (duelSubmitted) return;
   duelSubmitted = true;
   clearInterval(duelProgressTimer);
-  duelBar.classList.remove('show');
+  duelBar.classList.add('hide');
 
   try{
     const r = await fetch('/api/duel/submit', {
@@ -1191,7 +1232,7 @@ async function duelSubmitScore(finalScore){
 function showDuelResult(room){
   stopDuelPolling();
   duelSubmitted = true;
-  duelBar.classList.remove('show');
+  duelBar.classList.add('hide');
 
   const youScore = duelRole === 'host' ? room.host.score : room.guest.score;
   const themScore = duelRole === 'host' ? room.guest.score : room.host.score;
@@ -1261,7 +1302,10 @@ document.getElementById('btnShowJoin').addEventListener('click', () => {
   showScreen('join');
   setTimeout(() => joinCodeInput.focus(), 100);
 });
-document.getElementById('btnBackFromChoice').addEventListener('click', closeDuelPanel);
+document.getElementById('btnBackFromChoice').addEventListener('click', () => {
+  duelPanel.classList.add('hide');
+  startOv.classList.remove('hide');
+});
 
 // Экран создания
 document.getElementById('btnCreateRoom').addEventListener('click', createRoom);
@@ -1275,7 +1319,7 @@ document.getElementById('btnBackFromJoin').addEventListener('click', () => showS
 document.getElementById('duelLeaveBtn').addEventListener('click', leaveRoom);
 duelStartBtn.addEventListener('click', duelStart);
 
-// Выход из плашки
+// Выход из плашки во время игры
 duelLeaveBarBtn.addEventListener('click', async () => {
   if (running){
     if (!confirm('Выйти из дуэли? Результат не отправится.')) return;
@@ -1293,14 +1337,7 @@ duelLeaveBarBtn.addEventListener('click', async () => {
       }catch(e){}
     }
   }
-  duelMode = false;
-  duelCode = '';
-  duelRole = '';
-  duelSubmitted = false;
-  duelBar.classList.remove('show');
-  duelResultOverlay.classList.add('hide');
-  duelPanel.classList.add('hide');
-  startOv.classList.remove('hide');
+  goHome();
 });
 
 // Копирование кода
@@ -1318,7 +1355,7 @@ document.getElementById('duelShareBtn').addEventListener('click', async () => {
   }catch(e){}
 });
 
-// Ограничение ввода — только буквы/цифры
+// Только буквы/цифры в полях кода
 [createCodeInput, joinCodeInput].forEach(inp => {
   inp.addEventListener('input', (e) => {
     e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
@@ -1332,17 +1369,13 @@ document.getElementById('duelShareBtn').addEventListener('click', async () => {
   });
 });
 
-// Кнопка Ещё раз (соло)
+// Соло-финал
 againBtn.addEventListener('click', startSolo);
+document.getElementById('soloHomeBtn').addEventListener('click', goHome);
 
-// Ещё раз после дуэли
+// Дуэль-финал
 document.getElementById('duelAgainBtn').addEventListener('click', async () => {
-  stopDuelPolling();
-  clearInterval(timerId);
-  clearInterval(comboDecayTimer);
-  clearTimeout(coinSpawnTimer);
-  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
-
+  // Выходим из текущей комнаты
   if (duelCode){
     try{
       await fetch('/api/duel/leave', {
@@ -1351,6 +1384,11 @@ document.getElementById('duelAgainBtn').addEventListener('click', async () => {
       });
     }catch(e){}
   }
+  stopDuelPolling();
+  clearInterval(timerId);
+  clearInterval(comboDecayTimer);
+  clearTimeout(coinSpawnTimer);
+  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
 
   duelMode = false;
   duelCode = '';
@@ -1359,53 +1397,18 @@ document.getElementById('duelAgainBtn').addEventListener('click', async () => {
   running = false;
 
   duelResultOverlay.classList.add('hide');
-  duelBar.classList.remove('show');
-  finishOv.classList.add('hide');
+  duelBar.classList.add('hide');
   countdownOverlay.classList.add('hide');
+  finishOv.classList.add('hide');
 
-  // Открываем панель дуэли заново
+  // Открываем панель дуэли → экран выбора
   duelPanel.classList.remove('hide');
   showScreen('choice');
 });
 
-// Выход после дуэли
-document.getElementById('duelExitBtn').addEventListener('click', async () => {
-  stopDuelPolling();
-  clearInterval(timerId);
-  clearInterval(comboDecayTimer);
-  clearTimeout(coinSpawnTimer);
-  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
+document.getElementById('duelExitBtn').addEventListener('click', goHome);
 
-  if (duelCode){
-    try{
-      await fetch('/api/duel/leave', {
-        method:'POST', headers: duelHeaders(),
-        body: JSON.stringify({code: duelCode})
-      });
-    }catch(e){}
-  }
-
-  duelMode = false;
-  duelCode = '';
-  duelRole = '';
-  duelSubmitted = false;
-  running = false;
-
-  duelResultOverlay.classList.add('hide');
-  duelBar.classList.remove('show');
-  duelPanel.classList.add('hide');
-  finishOv.classList.add('hide');
-  countdownOverlay.classList.add('hide');
-
-  startOv.classList.remove('hide');
-
-  badge.textContent = 'Студент';
-  btn.textContent = '🎓';
-  updateScore(0);
-  updateMultiplier();
-});
-
-// Поделиться результатом соло
+// Соло-шаринг
 shareBtn.addEventListener('click', async () => {
   const r = rankFor(score);
   const text = `Я ${r.name} ${r.emoji} — ${score} очков за 30 секунд в «Кликере МГСУ». А ты?\nhttps://mgsu-wall.onrender.com/games/clicker`;

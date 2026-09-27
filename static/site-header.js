@@ -156,6 +156,7 @@ function setupScrollSpy(){
   var gamesLink = document.querySelector('.site-header-link[data-key="games"]');
   if (!gamesSection || !brand || !gamesLink) return;
 
+  // Сразу делаем активным бренд (главную)
   brand.classList.add('active');
   gamesLink.classList.remove('active');
 
@@ -163,18 +164,25 @@ function setupScrollSpy(){
 
   var observer = new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
+      // Если секция игр видна на экране
       if (entry.isIntersecting){
+        // Переключаем активный класс на "Игры"
         brand.classList.remove('active');
         gamesLink.classList.add('active');
       } else {
+        // Как только секция игр уходит с экрана (вверх или вниз),
+        // возвращаем активный класс на "Главную"
         brand.classList.add('active');
         gamesLink.classList.remove('active');
       }
     });
   }, {
-    rootMargin: '-80px 0px -40% 0px',
+    // Эта настройка важна: она срабатывает, когда секция появляется
+    // в центральной части экрана, а не только на самом верху.
+    rootMargin: '-50% 0px -50% 0px',
     threshold: 0
   });
+
   observer.observe(gamesSection);
 }
 

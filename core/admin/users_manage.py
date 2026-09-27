@@ -56,7 +56,7 @@ async def admin_user_detail(uid: str, token: str = Header(default="", alias="aut
 
     uid = uid.strip().upper()
     async with aiosqlite.connect(DB_PATH) as db:
-              cur = await db.execute("""
+        cur = await db.execute("""
             SELECT uid, display_name, created_at, last_seen,
                    streak, best_streak, coins, total_score, games_played,
                    COALESCE(owned_chars, '["student"]'),
@@ -87,7 +87,6 @@ async def admin_user_detail(uid: str, token: str = Header(default="", alias="aut
     except Exception:
         owned = ["student"]
 
-    # Убеждаемся что student всегда в списке
     if "student" not in owned:
         owned.insert(0, "student")
 
@@ -105,6 +104,8 @@ async def admin_user_detail(uid: str, token: str = Header(default="", alias="aut
         "active_char": row[10] or "student",
         "banned": bool(row[11]),
         "ban_reason": row[12] or "",
+        "feedback_request_at": row[13] or 0,
+        "feedback_seen_at": row[14] or 0,
         "last_ip": last_ip,
     }
 
@@ -164,7 +165,6 @@ async def _get_user_chars(db, uid: str):
 
 @router.post("/admin/api/user/give-char")
 async def admin_user_give_char(payload: dict, token: str = Header(default="", alias="authorization")):
-    """Выдать персонажа. Если make_active — сразу сделать активным."""
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -201,7 +201,6 @@ async def admin_user_give_char(payload: dict, token: str = Header(default="", al
 
 @router.post("/admin/api/user/revoke-char")
 async def admin_user_revoke_char(payload: dict, token: str = Header(default="", alias="authorization")):
-    """Забрать персонажа у игрока. Если он был активным — сбросит на student."""
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -225,7 +224,6 @@ async def admin_user_revoke_char(payload: dict, token: str = Header(default="", 
             raise HTTPException(status_code=400, detail="У игрока нет этого персонажа")
 
         owned.remove(char)
-        # Если забирали активного — сбрасываем на student
         if active == char:
             active = "student"
 
@@ -241,7 +239,6 @@ async def admin_user_revoke_char(payload: dict, token: str = Header(default="", 
 
 @router.post("/admin/api/user/set-active-char")
 async def admin_user_set_active_char(payload: dict, token: str = Header(default="", alias="authorization")):
-    """Сделать персонажа активным. Если не куплен — сначала выдаст."""
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -258,7 +255,6 @@ async def admin_user_set_active_char(payload: dict, token: str = Header(default=
 
         owned = data["owned"]
 
-        # Автоматически выдаём, если не куплен
         if char not in owned:
             owned.append(char)
 
@@ -274,7 +270,6 @@ async def admin_user_set_active_char(payload: dict, token: str = Header(default=
 
 @router.post("/admin/api/user/reset-char")
 async def admin_user_reset_char(payload: dict, token: str = Header(default="", alias="authorization")):
-    """Сбросить активного на Студента. Купленные персонажи остаются."""
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -294,7 +289,6 @@ async def admin_user_reset_char(payload: dict, token: str = Header(default="", a
 
 @router.post("/admin/api/user/clear-chars")
 async def admin_user_clear_chars(payload: dict, token: str = Header(default="", alias="authorization")):
-    """Забрать ВСЕХ персонажей кроме Студента."""
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -407,4 +401,44 @@ async def admin_user_delete(payload: dict, token: str = Header(default="", alias
         await db.commit()
 
     await log_action("delete_user", uid, "удалён навсегда")
+    return {"ok": True}
+
+
+@router.post("/admin/api/user/request-feedback")
+async def admin_user_request_feedback(payload: dict, token: str = Header(default="", alias="authorization")):
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    uid = str(payload.get("uid", "")).strip().upper()
+    if not uid:
+        raise HTTPException(status_code=400, detail="uid required")
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("SELECT 1 FROM users WHERE uid=?", (uid,))
+        if not await cur.fetchone():
+            raise HTTPException(status_code=404, detail="Игрок не найден")
+
+        await db.execute("""
+            UPDATE users SET feedback_request_at=?, feedback_seen_at=0 WHERE uid=?
+        """, (time.time(), uid))
+        await db.commit()
+
+    await log_action("request_feedback", uid, "запрошен отзыв")
+    return {"ok": True}
+
+
+@router.post("/admin/api/user/cancel-feedback")
+async def admin_user_cancel_feedback(payload: dict, token: str = Header(default="", alias="authorization")):
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    uid = str(payload.get("uid", "")).strip().upper()
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            UPDATE users SET feedback_request_at=0, feedback_seen_at=0 WHERE uid=?
+        """, (uid,))
+        await db.commit()
+
+    await log_action("cancel_feedback", uid, "запрос отзыва отменён")
     return {"ok": True}

@@ -44,6 +44,7 @@ games_config = {
     "campus":   {"enabled": True,  "title": "Построй кампус", "url": "/games/campus",   "status": "available"},
     "grable":   {"enabled": True,  "title": "Грабли",         "url": "/games/grable",   "status": "available"},
     "tetris":   {"enabled": True,  "title": "Тетрис",         "url": "/games/tetris",   "status": "available"},
+    "2048":     {"enabled": True,  "title": "2048 Здания",    "url": "/games/2048",     "status": "available"},
     "snake":    {"enabled": False, "title": "Змейка",         "url": "",                "status": "soon"},
     "poll":     {"enabled": False, "title": "Опрос дня",      "url": "",                "status": "soon"},
     "click":    {"enabled": False, "title": "Гонка кликов",   "url": "",                "status": "soon"},

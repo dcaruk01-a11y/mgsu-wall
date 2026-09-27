@@ -149,7 +149,9 @@ async def check_game_completion(uid: str, game: str, raw_score: int, extra: dict
                 new_val = max(cur_val, raw_score)
             elif key == "campus_vote":
                 new_val = cur_val + 1
-            elif key in ("grable_win", "adventure_win"):
+                       elif key in ("grable_500", "grable_1500"):
+                new_val = max(cur_val, raw_score)
+            elif key == "adventure_win":
                 if extra.get("win"):
                     new_val = 1
             elif key in ("wall_50", "ventilation_1"):

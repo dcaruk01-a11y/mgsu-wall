@@ -1,102 +1,236 @@
-"""
-Магазин персонажей. Все покупки списывают монеты с аккаунта.
-Каталог в памяти — легко расширить.
-"""
-import json, aiosqlite
-from fastapi import APIRouter, Header, HTTPException
-from config import DB_PATH
-import core.users as users
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Магазин · Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
+<style>
+.shop-wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px;}
+.shop-head{text-align:center;padding:20px 0 24px;}
+.shop-title{font-size:clamp(32px,6vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:12px;color:inherit;}
+.shop-coins{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:12px 22px;border-radius:999px;
+  background:rgba(128,128,128,0.10);
+  border:1px solid rgba(128,128,128,0.25);
+  font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;
+  color:inherit;
+}
+.shop-coins small{font-size:12px;font-weight:600;opacity:0.6;letter-spacing:0.1em;text-transform:uppercase;}
+.items{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+.item{
+  display:flex;align-items:center;gap:16px;
+  padding:18px 20px;border-radius:16px;
+  background:rgba(128,128,128,0.10);
+  border:1px solid rgba(128,128,128,0.18);
+  transition:background .2s, border-color .2s;
+}
+.item.owned{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08);}
+.item.active{border-color:rgba(128,128,128,0.6);background:rgba(128,128,128,0.22);}
+.item.locked{opacity:0.75;}
+.item-emoji{
+  font-size:44px;line-height:1;flex-shrink:0;
+  width:60px;height:60px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(128,128,128,0.15);border-radius:14px;
+}
+.item-info{flex:1;min-width:0;}
+.item-name{font-size:17px;font-weight:800;margin-bottom:4px;color:inherit;}
+.item-desc{font-size:13px;opacity:0.7;line-height:1.4;}
+.item-price{font-size:12px;font-weight:700;margin-top:6px;color:#FFD700;font-variant-numeric:tabular-nums;}
+.item-price.no-money{color:#FF8B8B;}
+.item-price.owned{color:#4ADE80;}
+.item-actions{flex-shrink:0;}
+.item-btn{
+  padding:10px 18px;border-radius:10px;
+  border:1px solid rgba(128,128,128,0.35);
+  background:rgba(128,128,128,0.12);
+  color:inherit;font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.item-btn:hover:not(:disabled){background:rgba(128,128,128,0.24);}
+.item-btn.primary{background:rgba(128,128,128,0.25);}
+.item-btn:disabled{cursor:not-allowed;opacity:0.75;filter:grayscale(0.3);}
+.item-btn.equipped{background:rgba(74,222,128,0.15);color:#4ADE80;border-color:rgba(74,222,128,0.5);}
+.item-btn.cant-afford{
+  background:rgba(255,77,94,0.08);
+  color:#FF8B8B;
+  border-color:rgba(255,77,94,0.3);
+  font-size:12px;
+  cursor:not-allowed;
+}
+.guest-hint{
+  padding:24px;border-radius:16px;
+  background:rgba(128,128,128,0.10);
+  border:1px dashed rgba(128,128,128,0.35);
+  text-align:center;font-size:14px;line-height:1.6;margin-top:16px;
+}
+.guest-hint a{color:#4ADE80;font-weight:700;text-decoration:none;}
+.guest-hint a:hover{text-decoration:underline;}
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;
+  font-size:14px;font-weight:700;box-shadow:0 12px 32px rgba(0,0,0,0.3);
+  z-index:100;opacity:0;transition:all .3s;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.err{background:#FF4D5E;color:#fff;}
+</style>
+</head><body>
 
-router = APIRouter()
+<div id="siteHeader"></div>
 
+<div class="shop-wrap">
+  <div class="shop-head">
+    <div class="shop-title">🛍 Магазин</div>
+    <div class="shop-coins">💰 <span id="coinsValue">0</span><small>монет</small></div>
+  </div>
+  <div class="items" id="itemsBox">
+    <div style="text-align:center;padding:40px;opacity:0.5;">Загрузка…</div>
+  </div>
+</div>
 
-CATALOG = [
-    {"key": "student", "name": "Студент",       "emoji": "🎓", "price": 0,     "desc": "Обычный студент МГСУ. Начало пути."},
-    {"key": "sso",     "name": "ССОшник",        "emoji": "👷", "price": 800,   "desc": "Стройотрядовская куртка и боевой дух."},
-    {"key": "prorab",  "name": "Прораб",         "emoji": "📋", "price": 2500,  "desc": "Уже управляет стройкой."},
-    {"key": "builder", "name": "Строитель",      "emoji": "🏗️", "price": 6000,  "desc": "Руки в деле, каска на месте."},
-    {"key": "prof",    "name": "Преподаватель",  "emoji": "🧑‍🏫", "price": 12000, "desc": "Ставит зачёты и раздаёт мудрость."},
-    {"key": "dean",    "name": "Декан",          "emoji": "🧑‍💼", "price": 25000, "desc": "Костюм, папка, полномочия."},
-    {"key": "legend",  "name": "Легенда МГСУ",   "emoji": "👑", "price": 60000, "desc": "Ты в истории университета."},
-]
+<div id="siteFooter"></div>
 
+<div class="toast" id="toast"></div>
 
-def _token(authorization: str) -> str:
-    return authorization.replace("Bearer ", "").strip()
+<script src="/static/site-header.js"></script>
+<script>
+renderSiteHeader('shop');
+renderSiteFooter();
 
+const LS_TOKEN = 'mgsu_token';
+const token = localStorage.getItem(LS_TOKEN) || '';
+const toast = document.getElementById('toast');
 
-def get_catalog_item(key: str):
-    for c in CATALOG:
-        if c["key"] == key:
-            return c
-    return None
+function showToast(text, isError){
+  toast.textContent = text;
+  toast.className = 'toast show' + (isError ? ' err' : '');
+  setTimeout(function(){ toast.className = 'toast'; }, 2200);
+}
 
+async function api(path, opts){
+  opts = opts || {};
+  const headers = Object.assign({'Content-Type':'application/json'}, opts.headers || {});
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(path, Object.assign({}, opts, {headers: headers}));
+  return { status: res.status, data: await res.json() };
+}
 
-@router.get("/api/shop/catalog")
-async def shop_catalog(authorization: str = Header(default="")):
-    user = await users.get_user_by_token(_token(authorization))
-    owned = user.get("owned_chars", ["student"]) if user else []
-    active = user.get("active_char", "student") if user else None
-    coins = user.get("coins", 0) if user else 0
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
 
-    items = []
-    for c in CATALOG:
-        items.append({
-            **c,
-            "owned": c["key"] in owned or c["key"] == "student",
-            "active": c["key"] == active,
-            "can_afford": coins >= c["price"],
-        })
+let currentCoins = 0;
 
-    return {"ok": True, "logged_in": bool(user), "coins": coins, "items": items}
+async function loadShop(){
+  try{
+    const res = await api('/api/shop/catalog');
+    const data = res.data;
+    if (!data.logged_in){
+      document.getElementById('itemsBox').innerHTML =
+        '<div class="guest-hint">💡 Чтобы покупать персонажей, <a href="/auth">войди в аккаунт</a>.<br>Монеты копятся за игры и выполненные задания.</div>';
+      document.getElementById('coinsValue').textContent = '0';
+      return;
+    }
+    currentCoins = data.coins || 0;
+    document.getElementById('coinsValue').textContent = currentCoins;
+    renderItems(data.items || []);
+  }catch(e){
+    document.getElementById('itemsBox').innerHTML = '<div style="text-align:center;padding:40px;opacity:0.5;">Ошибка загрузки</div>';
+  }
+}
 
+function renderItems(items){
+  const box = document.getElementById('itemsBox');
+  box.innerHTML = '';
 
-@router.post("/api/shop/buy")
-async def shop_buy(payload: dict, authorization: str = Header(default="")):
-    user = await users.get_user_by_token(_token(authorization))
-    if not user:
-        raise HTTPException(status_code=401, detail="Не авторизован")
+  items.forEach(function(it){
+    const el = document.createElement('div');
+    let cls = 'item';
+    if (it.active) cls += ' active';
+    else if (it.owned) cls += ' owned';
+    else if (!it.can_afford) cls += ' locked';
+    el.className = cls;
 
-    key = str(payload.get("key", ""))
-    item = get_catalog_item(key)
-    if not item:
-        raise HTTPException(status_code=400, detail="Такого персонажа нет")
-    if key == "student":
-        raise HTTPException(status_code=400, detail="Студент и так твой")
-    if key in user.get("owned_chars", []):
-        raise HTTPException(status_code=400, detail="Уже куплен")
-    if user["coins"] < item["price"]:
-        need = item["price"] - user["coins"]
-        raise HTTPException(status_code=400, detail=f"Не хватает {need} монет")
+    // Цена
+    let priceHtml = '';
+    if (it.key !== 'student'){
+      if (it.owned){
+        priceHtml = '<div class="item-price owned">✓ Уже куплен</div>';
+      } else if (it.can_afford){
+        priceHtml = '<div class="item-price">💰 ' + it.price + '</div>';
+      } else {
+        const need = it.price - currentCoins;
+        priceHtml = '<div class="item-price no-money">💰 ' + it.price + ' · не хватает ' + need + '</div>';
+      }
+    }
 
-    new_owned = list(user.get("owned_chars", ["student"]))
-    new_owned.append(key)
+    el.innerHTML =
+      '<div class="item-emoji">' + it.emoji + '</div>' +
+      '<div class="item-info">' +
+        '<div class="item-name">' + escapeHtml(it.name) + '</div>' +
+        '<div class="item-desc">' + escapeHtml(it.desc) + '</div>' +
+        priceHtml +
+      '</div>' +
+      '<div class="item-actions"></div>';
 
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
-            UPDATE users
-            SET coins = coins - ?,
-                owned_chars = ?,
-                active_char = ?
-            WHERE uid = ?
-        """, (item["price"], json.dumps(new_owned), key, user["uid"]))
-        await db.commit()
+    const actions = el.querySelector('.item-actions');
+    const btn = document.createElement('button');
 
-    return {"ok": True, "coins": user["coins"] - item["price"], "active_char": key, "owned": new_owned}
+    if (it.active){
+      btn.textContent = '✓ Активен';
+      btn.className = 'item-btn equipped';
+      btn.disabled = true;
+    } else if (it.owned){
+      btn.textContent = 'Выбрать';
+      btn.className = 'item-btn primary';
+      btn.onclick = function(){ equip(it.key); };
+    } else if (!it.can_afford){
+      // Явно НЕ кликабельно
+      btn.textContent = 'Не хватает 💰';
+      btn.className = 'item-btn cant-afford';
+      btn.disabled = true;
+      btn.title = 'Недостаточно монет';
+    } else {
+      btn.textContent = 'Купить';
+      btn.className = 'item-btn';
+      btn.onclick = function(){ buy(it.key); };
+    }
 
+    actions.appendChild(btn);
+    box.appendChild(el);
+  });
+}
 
-@router.post("/api/shop/equip")
-async def shop_equip(payload: dict, authorization: str = Header(default="")):
-    user = await users.get_user_by_token(_token(authorization))
-    if not user:
-        raise HTTPException(status_code=401, detail="Не авторизован")
+async function buy(key){
+  try{
+    const res = await api('/api/shop/buy', {method:'POST', body: JSON.stringify({key: key})});
+    if (res.status !== 200){
+      showToast(res.data.detail || 'Ошибка', true);
+      // Обновим каталог — вдруг баланс не совпадает
+      setTimeout(loadShop, 500);
+      return;
+    }
+    showToast('Куплено! Персонаж активирован');
+    loadShop();
+  }catch(e){ showToast('Ошибка соединения', true); }
+}
 
-    key = str(payload.get("key", ""))
-    if key not in user.get("owned_chars", []):
-        raise HTTPException(status_code=400, detail="Персонаж не куплен")
+async function equip(key){
+  try{
+    const res = await api('/api/shop/equip', {method:'POST', body: JSON.stringify({key: key})});
+    if (res.status !== 200){ showToast(res.data.detail || 'Ошибка', true); return; }
+    showToast('Персонаж выбран');
+    loadShop();
+  }catch(e){ showToast('Ошибка соединения', true); }
+}
 
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("UPDATE users SET active_char = ? WHERE uid = ?", (key, user["uid"]))
-        await db.commit()
+loadShop();
+</script>
 
-    return {"ok": True, "active_char": key}
+</body></html>

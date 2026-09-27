@@ -20,6 +20,8 @@ body.g2048-page{
   -webkit-user-select:none;
   -webkit-tap-highlight-color:transparent;
   touch-action:manipulation;
+  background:var(--bg, #f5f7fa);
+  color:var(--text, #0a0f1e);
 }
 
 .status-banner{
@@ -52,14 +54,14 @@ body.g2048-page{
   max-width:180px;
   padding:8px 14px;
   border-radius:12px;
-  background:rgba(128,128,128,0.12);
+  background:rgba(128,128,128,0.10);
   border:1px solid rgba(128,128,128,0.22);
   text-align:center;
 }
 .g-score-label{
   font-size:10px;font-weight:800;
   letter-spacing:0.14em;text-transform:uppercase;
-  opacity:0.55;margin-bottom:2px;
+  opacity:0.6;margin-bottom:2px;
 }
 .g-score-value{
   font-size:22px;font-weight:900;
@@ -69,7 +71,7 @@ body.g2048-page{
 .g-score-value.bump{animation:gScoreBump .3s ease-out;}
 @keyframes gScoreBump{
   0%{transform:scale(1);}
-  50%{transform:scale(1.18);color:#4ADE80;}
+  50%{transform:scale(1.18);color:#f59e0b;}
   100%{transform:scale(1);}
 }
 
@@ -86,10 +88,11 @@ body.g2048-page{
   width:min(100%, 460px);
   aspect-ratio:1 / 1;
   position:relative;
-  background:rgba(128,128,128,0.12);
+  /* ★ Каноничное бежевое поле 2048 */
+  background:#bbada0;
   border-radius:14px;
   border:1px solid rgba(128,128,128,0.25);
-  box-shadow:0 12px 32px rgba(0,0,0,0.35);
+  box-shadow:0 8px 24px rgba(0,0,0,0.10);
   touch-action:none;
   overflow:hidden;
 }
@@ -104,8 +107,9 @@ body.g2048-page{
   padding:var(--gap);
   box-sizing:border-box;
 }
+/* ★ Пустые клетки — светло-бежевые (канон 2048) */
 .g-bg-cell{
-  background:rgba(128,128,128,0.10);
+  background:rgba(238,228,218,0.35);
   border-radius:8px;
 }
 
@@ -115,7 +119,7 @@ body.g2048-page{
   pointer-events:none;
 }
 
-/* ═══════════ ПЛИТКА — ДОМИК ═══════════ */
+/* ═══════════ ПЛИТКА ═══════════ */
 .g-tile{
   position:absolute;
   top:0; left:0;
@@ -134,11 +138,9 @@ body.g2048-page{
   color:#f9f6f2;
   user-select:none;
   overflow:hidden;
-  /* лёгкая внутренняя тень для объёма */
-  box-shadow:inset 0 -4px 0 rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow:inset 0 -4px 0 rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.10);
 }
 
-/* «Крыша» — полоска сверху, как в тетрисе */
 .g-tile::before{
   content:'';
   position:absolute;
@@ -149,7 +151,6 @@ body.g2048-page{
   pointer-events:none;
 }
 
-/* Окошки снизу */
 .g-tile::after{
   content:'';
   position:absolute;
@@ -175,7 +176,6 @@ body.g2048-page{
   100%{transform:translate(var(--tx), var(--ty)) scale(1);}
 }
 
-/* Эмодзи-иконка в углу */
 .g-tile-emoji{
   position:absolute;
   top:calc(var(--cell) * 0.19);
@@ -187,7 +187,6 @@ body.g2048-page{
   pointer-events:none;
 }
 
-/* Число по центру */
 .g-tile-num{
   font-size:calc(var(--cell) * 0.42);
   line-height:1;
@@ -198,18 +197,18 @@ body.g2048-page{
 .g-tile[data-len="3"] .g-tile-num{font-size:calc(var(--cell) * 0.30);}
 .g-tile[data-len="4"] .g-tile-num{font-size:calc(var(--cell) * 0.24);}
 
-/* Цвета — как в классике 2048 */
+/* Цвета плиток — канон 2048 */
 .g-tile-2     { background:#eee4da; color:#776e65; }
 .g-tile-4     { background:#ede0c8; color:#776e65; }
 .g-tile-8     { background:#f2b179; }
 .g-tile-16    { background:#f59563; }
 .g-tile-32    { background:#f67c5f; }
 .g-tile-64    { background:#f65e3b; }
-.g-tile-128   { background:#edcf72; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.12), 0 0 12px rgba(237,207,114,0.4); }
-.g-tile-256   { background:#edcc61; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.12), 0 0 16px rgba(237,204,97,0.5); }
-.g-tile-512   { background:#edc850; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.12), 0 0 20px rgba(237,200,80,0.6); }
-.g-tile-1024  { background:#edc53f; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.12), 0 0 26px rgba(237,197,63,0.7); }
-.g-tile-2048  { background:#edc22e; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.12), 0 0 32px rgba(237,194,46,0.9); }
+.g-tile-128   { background:#edcf72; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.10), 0 0 12px rgba(237,207,114,0.4); }
+.g-tile-256   { background:#edcc61; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.10), 0 0 16px rgba(237,204,97,0.5); }
+.g-tile-512   { background:#edc850; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.10), 0 0 20px rgba(237,200,80,0.6); }
+.g-tile-1024  { background:#edc53f; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.10), 0 0 26px rgba(237,197,63,0.7); }
+.g-tile-2048  { background:#edc22e; box-shadow:inset 0 -4px 0 rgba(0,0,0,0.10), 0 0 32px rgba(237,194,46,0.9); }
 .g-tile-4096  { background:#3c3a32; box-shadow:0 0 32px rgba(120,80,255,0.7); }
 .g-tile-8192  { background:#2a2822; box-shadow:0 0 40px rgba(180,60,255,0.7); }
 
@@ -223,8 +222,8 @@ body.g2048-page{
 .g-ctrl-btn{
   padding:12px 22px;
   border-radius:12px;
-  border:1px solid rgba(128,128,128,0.3);
-  background:rgba(128,128,128,0.12);
+  border:1px solid rgba(128,128,128,0.30);
+  background:rgba(128,128,128,0.10);
   color:inherit;
   font-family:inherit;
   font-size:14px;
@@ -237,55 +236,71 @@ body.g2048-page{
   align-items:center;
   gap:6px;
 }
-.g-ctrl-btn:active{transform:scale(0.96);background:rgba(128,128,128,0.25);}
+.g-ctrl-btn:active{transform:scale(0.96);background:rgba(128,128,128,0.22);}
 .g-ctrl-btn.primary{
-  background:rgba(111,168,255,0.22);
+  background:rgba(111,168,255,0.20);
   border-color:rgba(111,168,255,0.5);
-  color:#fff;
+  color:inherit;
 }
 
-/* ─── Оверлеи ─── */
+/* ═══════════ ОВЕРЛЕИ — СВЕТЛЫЕ ПОД ТЕМУ ═══════════ */
 .g-overlay{
   position:absolute;inset:0;
-  background:rgba(5,14,31,0.94);
+  background:rgba(255,255,255,0.94);
   backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   gap:14px;padding:22px;text-align:center;
   z-index:20;transition:opacity .3s;
+  color:#0a0f1e;
 }
 .g-overlay.hide{opacity:0;pointer-events:none;}
+
+/* Авто-подстройка под чёрную тему */
+@media (prefers-color-scheme: dark){
+  .g-overlay{
+    background:rgba(20,20,20,0.94);
+    color:#f5f7fa;
+  }
+}
+
 .g-overlay-emoji{font-size:64px;margin-bottom:2px;filter:drop-shadow(0 8px 24px rgba(255,180,80,0.4));}
-.g-overlay h2{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
-.g-overlay p{font-size:13px;color:rgba(255,255,255,0.7);max-width:340px;line-height:1.55;}
-.g-overlay p b{color:#FFD700;}
+.g-overlay h2{font-size:22px;font-weight:800;color:inherit;letter-spacing:-0.02em;margin:0;}
+.g-overlay p{font-size:13px;color:inherit;opacity:0.7;max-width:340px;line-height:1.55;margin:0;}
+.g-overlay p b{color:#f59e0b;opacity:1;}
 
 .g-btn{
   display:inline-flex;align-items:center;gap:8px;
   padding:13px 28px;border-radius:999px;
-  background:#fff;color:#0F3C73;
+  background:#0F3C73;color:#fff;
   font-family:inherit;font-size:14px;font-weight:700;
   border:0;cursor:pointer;
-  box-shadow:0 12px 30px rgba(0,0,0,0.3);
+  box-shadow:0 8px 20px rgba(15,60,115,0.25);
   transition:transform .1s;
 }
 .g-btn:active{transform:scale(0.97);}
-.g-btn-ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);box-shadow:none;}
+.g-btn-ghost{
+  background:rgba(128,128,128,0.10);
+  color:inherit;
+  border:1px solid rgba(128,128,128,0.30);
+  box-shadow:none;
+}
 
-.g-finish-score{font-size:52px;font-weight:900;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;color:#fff;}
-.g-finish-label{font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
-.g-finish-rank{font-size:20px;font-weight:800;color:#fff;}
+.g-finish-score{font-size:52px;font-weight:900;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;color:inherit;line-height:1;}
+.g-finish-label{font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;opacity:0.55;margin-bottom:6px;}
+.g-finish-rank{font-size:20px;font-weight:800;color:inherit;}
 .g-finish-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 
 #progressBlock{
   display:none;width:100%;max-width:380px;
   padding:12px 16px;border-radius:12px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(128,128,128,0.08);
+  border:1px solid rgba(128,128,128,0.20);
   font-size:13px;text-align:left;line-height:1.5;
-  color:#fff;
+  color:inherit;
 }
-#progressBlock a{color:#4ADE80;text-decoration:none;font-weight:700;}
+#progressBlock a{color:#16a34a;text-decoration:none;font-weight:700;}
 
 .g-achieve-toast{
   position:fixed;top:80px;left:50%;
@@ -405,9 +420,6 @@ const TILE_DATA = {
   8192: { emoji: '✨' },
 };
 
-/* ═══════════════════════════════════════════════════════════
-   СОСТОЯНИЕ
-   ═══════════════════════════════════════════════════════════ */
 let board = [];
 let score = 0;
 let best = parseInt(localStorage.getItem('mgsu_2048_best') || '0', 10);
@@ -419,9 +431,6 @@ let busy = false;
 let CELL = 80;
 let GAP = 10;
 
-/* ═══════════════════════════════════════════════════════════
-   DOM
-   ═══════════════════════════════════════════════════════════ */
 const boardEl   = document.getElementById('board');
 const tilesLayer = document.getElementById('tilesLayer');
 const scoreEl   = document.getElementById('scoreVal');
@@ -505,7 +514,6 @@ function resize(){
   CELL = (size - 5 * GAP) / 4;
   boardEl.style.setProperty('--gap', GAP + 'px');
   boardEl.style.setProperty('--cell', CELL + 'px');
-  // Перепозиционируем все плитки
   for (let r = 0; r < SIZE; r++){
     for (let c = 0; c < SIZE; c++){
       const t = board[r] && board[r][c];
@@ -788,16 +796,16 @@ function renderProgress(data){
   }
   let html = '<div>🎯 Очков: <b>+' + data.points + '</b></div>';
   if (data.daily_plays && data.daily_multiplier !== undefined && data.daily_multiplier < 1){
-    html += '<div style="color:#FFB347;">📉 ' + data.daily_plays + '-я партия — награда ×' + data.daily_multiplier + '</div>';
+    html += '<div style="color:#f59e0b;">📉 ' + data.daily_plays + '-я партия — награда ×' + data.daily_multiplier + '</div>';
   }
   if (data.progress){
     html += '<div>💰 Монет: <b>' + data.progress.coins + '</b></div>';
     html += '<div>🔥 Серия: <b>' + data.progress.streak + '</b> дней';
-    if (data.progress.streak_changed) html += ' <span style="color:#4ADE80;">+1</span>';
+    if (data.progress.streak_changed) html += ' <span style="color:#16a34a;">+1</span>';
     html += '</div>';
   }
   if (data.tasks_completed && data.tasks_completed.length){
-    data.tasks_completed.forEach(t => { html += '<div style="color:#4ADE80;">✓ ' + t.text + ' (+' + t.reward + ')</div>'; });
+    data.tasks_completed.forEach(t => { html += '<div style="color:#16a34a;">✓ ' + t.text + ' (+' + t.reward + ')</div>'; });
   }
   html += '<div style="margin-top:8px;"><a href="/profile">Открыть профиль →</a></div>';
   progressBlock.innerHTML = html;
@@ -883,9 +891,6 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
   }catch(e){}
 });
 
-/* ═══════════════════════════════════════════════════════════
-   ИНИЦИАЛИЗАЦИЯ
-   ═══════════════════════════════════════════════════════════ */
 board = [];
 for (let r = 0; r < SIZE; r++) board.push(new Array(SIZE).fill(null));
 

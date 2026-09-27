@@ -32,7 +32,7 @@ body.clicker-page{
 .status-banner.show{display:block;}
 .status-banner small{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:2px;}
 
-/* ═══════════ СЦЕНА ═══════════ */
+/* ═══════════ СЦЕНА (3 зоны: центр-верх, кнопка, таймер) ═══════════ */
 .clicker-stage{
   flex:1;
   position:relative;
@@ -43,37 +43,44 @@ body.clicker-page{
   padding:12px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 }
 
-/* ═══════════ ВЕРХНИЙ СЧЁТЧИК ═══════════ */
+/* ─── ЗОНА 1: СЧЁТЧИК — занимает ВСЁ свободное место, счётчик в центре ─── */
 .top-hud{
-  flex-shrink:0;
+  flex:1 1 auto;
+  min-height:0;
   display:flex;
-  align-items:flex-end;
+  align-items:center;
   justify-content:center;
-  gap:14px;
-  min-height:70px;
-  padding-bottom:6px;
+  padding-bottom:12px;
+  pointer-events:none;
 }
-.score-wrap{display:flex;align-items:baseline;gap:10px;}
+.top-hud > *{pointer-events:auto;}
+
+.score-wrap{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+}
+
 .score-display{
-  font-size:60px;
+  font-size:72px;
   font-weight:900;
   line-height:0.9;
   letter-spacing:-0.03em;
   font-variant-numeric:tabular-nums;
   color:inherit;
-  transition:color .2s;
+  transition:color .25s;
   text-shadow:0 4px 20px rgba(0,0,0,0.25);
 }
 .multiplier{
-  font-size:22px;
+  font-size:24px;
   font-weight:900;
-  padding:6px 12px;
+  padding:7px 14px;
   border-radius:999px;
   background:rgba(128,128,128,0.15);
   border:1px solid rgba(128,128,128,0.25);
   font-variant-numeric:tabular-nums;
-  transition:all .2s;
-  min-width:64px;
+  transition:background .2s, color .2s, transform .15s, border-color .2s, box-shadow .3s;
+  min-width:72px;
   text-align:center;
 }
 .multiplier.hot{
@@ -94,18 +101,16 @@ body.clicker-page{
   to  {box-shadow:0 0 20px 4px rgba(255,80,80,0.5);}
 }
 
-/* ═══════════ ЗОНА КНОПКИ ═══════════ */
+/* ─── ЗОНА 2: КНОПКА — прижата вниз ─── */
 .button-zone{
-  flex:1;
+  flex:0 0 auto;
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:flex-end;
+  gap:12px;
   padding-bottom:4px;
   position:relative;
   z-index:5;
-  min-height:0;
-  gap:10px;
 }
 
 .rank-badge{
@@ -119,7 +124,6 @@ body.clicker-page{
   border-radius:999px;
   background:rgba(128,128,128,0.1);
   transition:all .2s;
-  flex-shrink:0;
 }
 .rank-badge.up{
   background:rgba(128,128,128,0.3);
@@ -144,18 +148,19 @@ body.clicker-page{
   display:flex;
   align-items:center;
   justify-content:center;
-  transition:box-shadow .15s, background .2s;
+  transition:box-shadow .2s, background .3s;
   padding:0;
   color:#fff;
   position:relative;
-  touch-action:manipulation;
+  /* ВАЖНО: отключаем все браузерные жесты на кнопке (зум, скролл, свайпы) */
+  touch-action:none;
   -webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none;
+  user-select:none;
   flex-shrink:0;
+  will-change:transform;
 }
-.click-btn:disabled{
-  opacity:0.4;
-  cursor:not-allowed;
-}
+.click-btn:disabled{opacity:0.4;cursor:not-allowed;}
 .click-btn.hot{
   background:
     radial-gradient(circle at 35% 30%, rgba(255,255,255,0.30) 0%, transparent 60%),
@@ -180,15 +185,14 @@ body.clicker-page{
   to  {box-shadow:0 24px 90px rgba(255,60,60,0.9), inset 0 -8px 24px rgba(0,0,0,0.4);}
 }
 
-/* ═══════════ НИЖНИЙ ТАЙМЕР ═══════════ */
+/* ─── ЗОНА 3: ТАЙМЕР — внизу ─── */
 .bottom-hud{
-  flex-shrink:0;
+  flex:0 0 auto;
   margin-top:10px;
   display:flex;
   flex-direction:column;
   align-items:center;
   gap:4px;
-  z-index:5;
 }
 .timer-row{
   display:flex;
@@ -359,28 +363,25 @@ body.clicker-page{
 
 /* ═══════════ АДАПТИВ ═══════════ */
 @media(max-width:520px){
-  .score-display{font-size:46px;}
-  .multiplier{font-size:18px;padding:4px 10px;min-width:56px;}
+  .score-display{font-size:56px;}
+  .multiplier{font-size:20px;padding:5px 12px;min-width:64px;}
   .click-btn{width:240px;height:240px;font-size:100px;}
   .timer-num{font-size:26px;min-width:48px;}
-  .top-hud{min-height:56px;padding-bottom:2px;}
   .rank-badge{font-size:11px;padding:5px 12px;}
   .start-title{font-size:24px;}
 }
 
-/* Очень низкие экраны — уменьшаем кнопку */
 @media(max-height:700px){
   .click-btn{width:200px;height:200px;font-size:84px;}
-  .score-display{font-size:40px;}
+  .score-display{font-size:48px;}
   .timer-num{font-size:22px;}
-  .top-hud{min-height:48px;}
   .rank-badge{font-size:10px;padding:4px 10px;}
+  .multiplier{font-size:18px;padding:4px 10px;min-width:56px;}
 }
 @media(max-height:580px){
   .click-btn{width:160px;height:160px;font-size:68px;}
-  .score-display{font-size:34px;}
+  .score-display{font-size:38px;}
   .timer-num{font-size:20px;}
-  .top-hud{min-height:40px;}
   .bottom-hud{margin-top:4px;}
 }
 </style>
@@ -395,7 +396,7 @@ body.clicker-page{
 
 <div class="clicker-stage">
 
-  <!-- ВЕРХ: счётчик + множитель -->
+  <!-- ЗОНА 1: СЧЁТЧИК (по центру верхней свободной области) -->
   <div class="top-hud">
     <div class="score-wrap">
       <div class="score-display" id="scoreDisplay">0</div>
@@ -403,13 +404,13 @@ body.clicker-page{
     </div>
   </div>
 
-  <!-- ЦЕНТР-НИЗ: бейдж + кнопка -->
+  <!-- ЗОНА 2: КНОПКА (прижата вниз) -->
   <div class="button-zone">
     <div class="rank-badge" id="rankBadge">Студент</div>
     <button class="click-btn" id="clickBtn" type="button" aria-label="Кликать">🎓</button>
   </div>
 
-  <!-- НИЗ: таймер + полоса -->
+  <!-- ЗОНА 3: ТАЙМЕР (внизу) -->
   <div class="bottom-hud">
     <div class="timer-row">
       <span>Осталось:</span>
@@ -461,11 +462,10 @@ body.clicker-page{
 renderSiteHeader('games');
 
 /* ═══════════════════════════════════════════════════════════
-   НАСТРОЙКИ — можно менять
+   НАСТРОЙКИ
    ═══════════════════════════════════════════════════════════ */
 const DURATION = 30;
 
-// Множитель / комбо
 const MULT_MIN = 1.0;
 const MULT_MAX = 5.0;
 const FAST_CLICK_MS = 350;
@@ -475,7 +475,6 @@ const MULT_STEP_DOWN = 0.35;
 const COMBO_DECAY_INTERVAL = 300;
 const COMBO_IDLE_THRESHOLD = 800;
 
-// Падающие бонусы
 const COIN_BONUS = 15;
 const COIN_PENALTY = 5;
 const COIN_TYPES = ['🪙', '💎', '⭐', '🔮', '🍀'];
@@ -484,11 +483,9 @@ const COIN_SPAWN_MAX = 2400;
 const COIN_FALL_MIN_MS = 2600;
 const COIN_FALL_MAX_MS = 4200;
 
-// Эффекты
-const SOUND_ENABLED = true;      // звук клика
-const VIBRATION_ENABLED = true;  // вибрация на телефоне (Android)
+const SOUND_ENABLED = true;
+const VIBRATION_ENABLED = true;
 
-// Ранги
 const RANKS = [
   {max:50,    name:'Студент',        emoji:'🎓'},
   {max:120,   name:'ССОшник',        emoji:'👷'},
@@ -541,10 +538,11 @@ const progressBlock = document.getElementById('progressBlock');
 const toast       = document.getElementById('toast');
 
 /* ═══════════════════════════════════════════════════════════
-   ЗВУК — Web Audio API, без файлов
+   ЗВУК
    ═══════════════════════════════════════════════════════════ */
 let audioCtx = null;
 let lastSoundTime = 0;
+const SOUND_THROTTLE = 15; /* 66 звуков/сек максимум */
 
 function initAudio(){
   if (audioCtx) return;
@@ -557,10 +555,8 @@ function initAudio(){
 function playClickSound(){
   if (!SOUND_ENABLED || !audioCtx) return;
   const now = performance.now();
-  // Не даём звукам накладываться слишком плотно
-  if (now - lastSoundTime < 25) return;
+  if (now - lastSoundTime < SOUND_THROTTLE) return;
   lastSoundTime = now;
-
   try{
     const t = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
@@ -578,9 +574,6 @@ function playClickSound(){
   }catch(e){}
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ВИБРАЦИЯ
-   ═══════════════════════════════════════════════════════════ */
 function vibrate(ms){
   if (!VIBRATION_ENABLED) return;
   if (navigator.vibrate){
@@ -631,7 +624,6 @@ function updateScore(newScore){
   score = Math.max(0, Math.round(newScore));
   scoreEl.textContent = score;
 
-  // Цвет по диапазонам
   let color = '';
   if      (score >= 500) color = '#FF6B6B';
   else if (score >= 350) color = '#FF8A3C';
@@ -640,19 +632,20 @@ function updateScore(newScore){
   else if (score >= 50)  color = '#A6E22E';
   scoreEl.style.color = color || '';
 
-  // Рубеж каждые 50
   const milestone = Math.floor(score / 50) * 50;
   if (milestone > lastMilestone && milestone > 0){
     lastMilestone = milestone;
-    scoreEl.animate([
-      {transform: 'scale(1)'},
-      {transform: 'scale(1.35)'},
-      {transform: 'scale(1)'}
-    ], {duration: 400, easing: 'ease-out'});
+    /* Отменяем старые анимации счётчика, чтобы не копились */
+    try{
+      scoreEl.getAnimations().forEach(a => a.cancel());
+      scoreEl.animate([
+        {transform: 'scale(1)'},
+        {transform: 'scale(1.35)'},
+        {transform: 'scale(1)'}
+      ], {duration: 400, easing: 'ease-out'});
+    }catch(e){}
   }
-  if (milestone < lastMilestone){
-    lastMilestone = milestone;
-  }
+  if (milestone < lastMilestone){ lastMilestone = milestone; }
 }
 
 function updateMultiplier(){
@@ -679,25 +672,26 @@ function updateRank(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   АНИМАЦИЯ КНОПКИ — через Web Animations API
-   Работает одинаково от пальца, мыши и пробела
+   АНИМАЦИЯ КНОПКИ — ОДНА, ПЕРЕИСПОЛЬЗУЕМАЯ
+   Отменяем предыдущую перед новой — нет накопления
    ═══════════════════════════════════════════════════════════ */
 function punchButton(){
   try{
+    /* Отменяем все предыдущие анимации кнопки */
+    btn.getAnimations().forEach(a => a.cancel());
     btn.animate([
       {transform: 'scale(1)'},
-      {transform: 'scale(0.86)'},
+      {transform: 'scale(0.88)'},
       {transform: 'scale(1)'}
-    ], {duration: 160, easing: 'cubic-bezier(.2,1.4,.5,1)'});
+    ], {duration: 140, easing: 'cubic-bezier(.2,1.4,.5,1)'});
   }catch(e){
-    // fallback для очень старых браузеров
     btn.style.transform = 'scale(0.9)';
-    setTimeout(() => { btn.style.transform = ''; }, 100);
+    setTimeout(() => { btn.style.transform = ''; }, 90);
   }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   КЛИК
+   КЛИК (обработка одного нажатия)
    ═══════════════════════════════════════════════════════════ */
 function handleClick(){
   if (!running || !scheduleOpen) return;
@@ -721,7 +715,6 @@ function handleClick(){
   playClickSound();
   vibrate(8);
 
-  // Всплывающее +N
   const rect = btn.getBoundingClientRect();
   spawnFloat(
     rect.left + rect.width / 2 + (Math.random() - 0.5) * 50,
@@ -731,14 +724,32 @@ function handleClick(){
   );
 }
 
-// Нажатие на кнопку
-btn.addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-  if (!running) return;
-  handleClick();
-});
+/* ═══════════════════════════════════════════════════════════
+   ОБРАБОТЧИКИ КНОПКИ
+   touchstart — для мультитача (главное на телефоне)
+   mousedown — для мыши (с защитой от дублирования)
+   ═══════════════════════════════════════════════════════════ */
+let lastTouchAt = 0;
 
-// Пробел на компе — с авто-повтором при удержании
+function onTouchStart(e){
+  e.preventDefault();
+  lastTouchAt = Date.now();
+  handleClick();
+}
+
+function onMouseDown(e){
+  /* Если только что был touch — игнорируем mouse (защита от двойного) */
+  if (Date.now() - lastTouchAt < 700) return;
+  e.preventDefault();
+  handleClick();
+}
+
+/* touchstart срабатывает на КАЖДОЕ касание (даже мультитач) */
+btn.addEventListener('touchstart', onTouchStart, {passive: false});
+/* mousedown — для десктопа */
+btn.addEventListener('mousedown', onMouseDown);
+
+/* Пробел на компе */
 let spaceHeld = false;
 let spaceRepeatTimer = null;
 document.addEventListener('keydown', (e) => {
@@ -748,13 +759,12 @@ document.addEventListener('keydown', (e) => {
     if (spaceHeld) return;
     spaceHeld = true;
     handleClick();
-    // Авто-повтор через 400мс (как на телефоне при зажатии)
     setTimeout(() => {
       if (!spaceHeld) return;
       spaceRepeatTimer = setInterval(() => {
         if (!spaceHeld || !running) { clearInterval(spaceRepeatTimer); return; }
         handleClick();
-      }, 100);
+      }, 90);
     }, 400);
   }
 });
@@ -767,7 +777,7 @@ document.addEventListener('keyup', (e) => {
 });
 
 /* ═══════════════════════════════════════════════════════════
-   ПАДАЮЩИЕ МОНЕТКИ — в document.body (не в контейнере)
+   ПАДАЮЩИЕ МОНЕТКИ
    ═══════════════════════════════════════════════════════════ */
 function spawnCoin(){
   if (!running) return;
@@ -783,7 +793,6 @@ function spawnCoin(){
   const duration = COIN_FALL_MIN_MS + Math.random() * (COIN_FALL_MAX_MS - COIN_FALL_MIN_MS);
   coin.style.animationDuration = duration + 'ms';
 
-  // Защита от двойного срабатывания
   let handled = false;
 
   function onHit(e){
@@ -799,12 +808,9 @@ function spawnCoin(){
     setTimeout(() => coin.remove(), 240);
   }
 
-  // Слушаем всё подряд — что сработает первым, то и работает
-  coin.addEventListener('pointerdown', onHit, {passive: false});
   coin.addEventListener('touchstart', onHit, {passive: false});
   coin.addEventListener('mousedown', onHit);
 
-  // Пропустил
   coin.addEventListener('animationend', () => {
     if (handled) return;
     if (!running){ coin.remove(); return; }
@@ -815,7 +821,6 @@ function spawnCoin(){
     coin.remove();
   });
 
-  // На случай если animationend не сработает
   setTimeout(() => {
     if (coin.parentNode && !handled) coin.remove();
   }, duration + 500);
@@ -850,7 +855,6 @@ function spawnFloat(x, y, text, isBad){
 function startGame(){
   if (!scheduleOpen){ checkScheduleStatus(); return; }
 
-  // Инициализация звука (требует user gesture)
   initAudio();
   if (audioCtx && audioCtx.state === 'suspended'){
     audioCtx.resume().catch(()=>{});
@@ -869,7 +873,6 @@ function startGame(){
   btn.textContent = '🎓';
   updateMultiplier();
 
-  // Убрать старые монетки
   document.querySelectorAll('.falling-coin').forEach(c => c.remove());
 
   running = true;
@@ -917,7 +920,6 @@ async function stopGame(){
   spaceRepeatTimer = null;
   spaceHeld = false;
 
-  // Убрать монетки
   document.querySelectorAll('.falling-coin').forEach(c => c.remove());
 
   const r = rankFor(score);
@@ -1037,7 +1039,8 @@ function showToast(text){
 updateMultiplier();
 updateRank();
 
-// Инициализируем аудио при первом касании чего угодно
-document.addEventListener('pointerdown', initAudio, {once: true});
+/* Инициализация звука при первом касании */
+document.addEventListener('touchstart', initAudio, {once: true, passive: true});
+document.addEventListener('mousedown', initAudio, {once: true});
 </script>
 </body></html>

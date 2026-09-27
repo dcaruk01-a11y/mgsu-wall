@@ -81,7 +81,12 @@
 }
 .btn:hover{background:rgba(128,128,128,0.20);}
 .btn-primary{background:rgba(128,128,128,0.28);}
-.btn-danger{color:#FF4D5E;border-color:rgba(255,77,94,0.4);}
+.btn-danger{
+  color:#FF4D5E;
+  border-color:rgba(255,77,94,0.4);
+  padding:14px 28px;
+  font-size:15px;
+}
 
 .hide{display:none;}
 .err{color:#FF4D5E;font-size:13px;margin-top:8px;min-height:18px;}
@@ -230,12 +235,8 @@
       </div>
     </div>
 
-    <div class="section">
-      <div class="row">
-        <a class="btn" href="/shop">🛍 Магазин</a>
-        <a class="btn" href="/ratings">🏆 Рейтинги</a>
-        <button class="btn btn-danger" id="btnLogout">🚪 Выйти</button>
-      </div>
+        <div class="section" style="text-align:center;padding-top:24px;padding-bottom:8px;">
+      <button class="btn btn-danger" id="btnLogout" style="min-width:200px;">🚪 Выйти</button>
     </div>
 
   </div>

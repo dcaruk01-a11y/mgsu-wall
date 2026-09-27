@@ -1,7 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
    АВТОСКРЫТИЕ ШАПКИ ПРИ СКРОЛЛЕ
-   Фикс отскока: у самого низа страницы не реагируем,
-   после скрытия — пауза 350мс перед показом
    ═══════════════════════════════════════════════════════════ */
 (function(){
   var lastY = 0;
@@ -14,7 +12,6 @@
     var header = document.getElementById('siteHeader');
     if (!header){ ticking = false; return; }
 
-    // Самый верх — всегда показываем
     if (y < 60){
       header.classList.remove('hidden');
       lastY = y;
@@ -22,7 +19,6 @@
       return;
     }
 
-    // У самого низа страницы — ИГНОРИРУЕМ (iOS отскок)
     var maxScroll = (document.documentElement.scrollHeight || document.body.scrollHeight) - window.innerHeight;
     if (y >= maxScroll - 80){
       lastY = y;
@@ -34,13 +30,11 @@
     lastY = y;
 
     if (diff > 5){
-      // Уверенный скролл вниз — прячем
       if (!header.classList.contains('hidden')){
         header.classList.add('hidden');
         hideAt = Date.now();
       }
     } else if (diff < -5){
-      // Уверенный скролл вверх — показываем, но не сразу после скрытия
       if (Date.now() - hideAt > COOLDOWN){
         header.classList.remove('hidden');
       }
@@ -59,10 +53,20 @@
 
 
 /* ═══════════════════════════════════════════════════════════
+   ОПРЕДЕЛЯЕМ — МЫ РЕАЛЬНО НА ГЛАВНОЙ?
+   Только если URL = /glavnaya или / (корень)
+   ═══════════════════════════════════════════════════════════ */
+function isOnHomePage(){
+  var p = location.pathname;
+  return p === '/glavnaya' || p === '/' || p === '' || p === '/index.html';
+}
+
+
+/* ═══════════════════════════════════════════════════════════
    РЕНДЕР ШАПКИ
    ═══════════════════════════════════════════════════════════ */
 function renderSiteHeader(active, opts){
-  active = active || 'home';
+  active = active || '';
   opts = opts || {};
   var container = document.getElementById('siteHeader');
   if (!container) return;
@@ -72,15 +76,17 @@ function renderSiteHeader(active, opts){
   var nick = localStorage.getItem('mgsu_nick') || '';
   var initial = nick ? nick.charAt(0).toUpperCase() : '👤';
 
-  // На главной — не перезагружаем страницу, скроллим
-  var isHome = (active === 'home' || active === 'games');
+  // ★ ГЛАВНОЕ ИСПРАВЛЕНИЕ:
+  // isHome теперь зависит от РЕАЛЬНОГО URL, а не от параметра 'games'
+  var onHome = isOnHomePage();
 
   var navHtml = '';
 
   // ── Игры ──
-  var gamesHref = isHome ? '#games' : '/glavnaya#games';
-  var gamesClick = isHome ? ' onclick="scrollToGames(event)"' : '';
-  var gamesActive = (active === 'games' && !isHome) ? ' active' : '';
+  // На главной — скроллим к секции. На других страницах — ведём на главную.
+  var gamesHref = onHome ? '#games' : '/glavnaya#games';
+  var gamesClick = onHome ? ' onclick="scrollToGames(event)"' : '';
+  var gamesActive = (active === 'games' && !onHome) ? ' active' : '';
   navHtml += '<a href="' + gamesHref + '" data-key="games" class="site-header-link' + gamesActive + '" title="Игры"' + gamesClick + '>'
           +  '<span class="site-header-link-icon">🎮</span>'
           +  '<span class="site-header-link-label">Игры</span>'
@@ -113,10 +119,16 @@ function renderSiteHeader(active, opts){
              +  '</a>';
   }
 
+  // ★ Логотип:
+  // На главной — плавный скролл вверх
+  // На других страницах — переход на /glavnaya
+  var brandHref = onHome ? '#' : '/glavnaya';
+  var brandClick = onHome ? ' onclick="scrollToTop(event)"' : '';
+
   container.className = 'site-header';
   container.innerHTML =
     '<div class="site-header-inner">'
-    + '<a href="' + (isHome ? '#' : '/glavnaya') + '" class="site-header-brand" id="siteBrand"' + (isHome ? ' onclick="scrollToTop(event)"' : '') + '>'
+    + '<a href="' + brandHref + '" class="site-header-brand" id="siteBrand"' + brandClick + '>'
     +   '<img src="/assets/icons/logo-square.svg" alt="Лого" class="site-header-logo">'
     +   '<span class="site-header-label"><b>НИУ МГСУ</b> · Игры</span>'
     + '</a>'
@@ -127,8 +139,8 @@ function renderSiteHeader(active, opts){
     + '</nav>'
     + '</div>';
 
-  // На главной — включить scroll-spy (лого ↔ Игры)
-  if (isHome){
+  // Scroll-spy только на главной
+  if (onHome){
     setupScrollSpy();
   }
 
@@ -149,8 +161,7 @@ function renderSiteHeader(active, opts){
 
 
 /* ═══════════════════════════════════════════════════════════
-   СКРОЛЛ-СПАЙ: шильдик ↔ игры
-   Работает при прокрутке в обе стороны
+   СКРОЛЛ-СПАЙ: шильдик ↔ Игры (только на главной)
    ═══════════════════════════════════════════════════════════ */
 function setupScrollSpy(){
   var gamesSection = document.getElementById('games');
@@ -158,7 +169,6 @@ function setupScrollSpy(){
   var gamesLink = document.querySelector('.site-header-link[data-key="games"]');
   if (!gamesSection || !brand || !gamesLink) return;
 
-  // Сразу делаем активным бренд
   brand.classList.add('active');
   gamesLink.classList.remove('active');
 
@@ -167,27 +177,23 @@ function setupScrollSpy(){
   var observer = new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
       if (entry.isIntersecting){
-        // Секция игр видна — активна "Игры"
         brand.classList.remove('active');
         gamesLink.classList.add('active');
       } else {
-        // Секция игр ушла с экрана — активен бренд
         brand.classList.add('active');
         gamesLink.classList.remove('active');
       }
     });
   }, {
-    // Срабатывает, когда секция игр появилась в центральной части экрана
     rootMargin: '-40% 0px -40% 0px',
     threshold: 0
   });
-
   observer.observe(gamesSection);
 }
 
 
 /* ═══════════════════════════════════════════════════════════
-   ВСПОМОГАТЕЛЬНОЕ
+   ВСПОМОГАТЕЛЬНЫЕ
    ═══════════════════════════════════════════════════════════ */
 function scrollToGames(e){
   var el = document.getElementById('games');
@@ -205,7 +211,7 @@ function scrollToTop(e){
 
 
 /* ═══════════════════════════════════════════════════════════
-   ФУТЕР (О проекте здесь)
+   ФУТЕР
    ═══════════════════════════════════════════════════════════ */
 function renderSiteFooter(){
   var container = document.getElementById('siteFooter');
@@ -231,7 +237,6 @@ function renderSiteFooter(){
    PWA — манифест + мета-теги
    ═══════════════════════════════════════════════════════════ */
 (function(){
-  // 1. Манифест
   if (!document.querySelector('link[rel="manifest"]')){
     var link = document.createElement('link');
     link.rel = 'manifest';
@@ -239,7 +244,6 @@ function renderSiteFooter(){
     document.head.appendChild(link);
   }
 
-  // 2. Мета-теги для iOS
   var metas = [
     {name:'apple-mobile-web-app-capable',           content:'yes'},
     {name:'apple-mobile-web-app-status-bar-style',  content:'black-translucent'},
@@ -260,7 +264,6 @@ function renderSiteFooter(){
     }
   });
 
-  // 3. Apple touch icon
   if (!document.querySelector('link[rel="apple-touch-icon"]')){
     var ati = document.createElement('link');
     ati.rel = 'apple-touch-icon';
@@ -289,17 +292,18 @@ function renderSiteFooter(){
     document.head.appendChild(link);
   });
 })();
+
+
 /* ═══════════════════════════════════════════════════════════
-   FEEDBACK POPUP — показывается после 3-х игр
+   FEEDBACK POPUP — после 3-х игр ИЛИ по запросу админа
    ═══════════════════════════════════════════════════════════ */
 (function(){
   if (window.__mgsuFeedbackInit) return;
   window.__mgsuFeedbackInit = true;
 
   var isGamePage = location.pathname.indexOf('/games/') === 0;
-  var isHome = location.pathname === '/glavnaya' || location.pathname === '/' || location.pathname === '';
+  var isHome = isOnHomePage();
 
-  // ─── На странице игры — считаем +1 (раз за сессию на каждую игру) ───
   if (isGamePage){
     try{
       var key = 'mgsu_games_seen_' + location.pathname;
@@ -312,23 +316,22 @@ function renderSiteFooter(){
     return;
   }
 
-  // ─── На других страницах — не показываем ───
-  if (!isHome) return;
+  var token = '';
+  try{ token = localStorage.getItem('mgsu_token') || ''; }catch(e){}
 
-  // ─── Проверки ───
-  var count = 0;
-  try{ count = parseInt(localStorage.getItem('mgsu_games_count') || '0', 10); }catch(e){}
-  if (count < 3) return;
+  function shouldShowByGames(){
+    var count = 0;
+    try{ count = parseInt(localStorage.getItem('mgsu_games_count') || '0', 10); }catch(e){}
+    if (count < 3) return false;
+    try{ if (localStorage.getItem('mgsu_feedback_submitted') === '1') return false; }catch(e){}
+    var DISMISS_COOLDOWN = 30 * 24 * 60 * 60 * 1000;
+    var lastDismiss = 0;
+    try{ lastDismiss = parseInt(localStorage.getItem('mgsu_feedback_dismissed_at') || '0', 10); }catch(e){}
+    if (lastDismiss && Date.now() - lastDismiss < DISMISS_COOLDOWN) return false;
+    return true;
+  }
 
-  try{ if (localStorage.getItem('mgsu_feedback_submitted') === '1') return; }catch(e){}
-
-  var DISMISS_COOLDOWN = 30 * 24 * 60 * 60 * 1000; // 30 дней
-  var lastDismiss = 0;
-  try{ lastDismiss = parseInt(localStorage.getItem('mgsu_feedback_dismissed_at') || '0', 10); }catch(e){}
-  if (lastDismiss && Date.now() - lastDismiss < DISMISS_COOLDOWN) return;
-
-  // ─── Показываем через 4 секунды ───
-  setTimeout(function(){
+  function showFeedbackPopup(fromAdmin){
     if (document.getElementById('mgsuFbOverlay')) return;
 
     var overlay = document.createElement('div');
@@ -337,7 +340,7 @@ function renderSiteFooter(){
     overlay.innerHTML =
       '<div class="mgsu-fb-card" role="dialog" aria-modal="true">' +
         '<div class="mgsu-fb-emoji">💌</div>' +
-        '<h2>Как тебе игры?</h2>' +
+        '<h2>' + (fromAdmin ? 'Разработчик просит отзыв' : 'Как тебе игры?') + '</h2>' +
         '<p class="mgsu-fb-text">' +
           'Привет! Я разработчик этого проекта. ' +
           'Хочу, чтобы в него играли с удовольствием, а для этого мне нужна <b>твоя обратная связь</b>.<br><br>' +
@@ -360,6 +363,13 @@ function renderSiteFooter(){
 
     document.body.appendChild(overlay);
     requestAnimationFrame(function(){ overlay.classList.add('show'); });
+
+    if (fromAdmin && token){
+      fetch('/api/feedback/seen', {
+        method:'POST',
+        headers:{'Authorization':'Bearer ' + token}
+      }).catch(function(){});
+    }
 
     var selectedStars = 0;
     var starBtns = overlay.querySelectorAll('.mgsu-fb-star');
@@ -392,7 +402,6 @@ function renderSiteFooter(){
 
     document.getElementById('mgsuFbSend').addEventListener('click', async function(){
       if (!selectedStars){
-        // Мигаем звёздочками — просим поставить оценку
         starBtns.forEach(function(x){
           x.classList.remove('pulse');
           void x.offsetWidth;
@@ -405,7 +414,6 @@ function renderSiteFooter(){
       sendBtn.disabled = true;
       sendBtn.textContent = 'Отправляю…';
       try{
-        var token = localStorage.getItem('mgsu_token') || '';
         var headers = {'Content-Type': 'application/json'};
         if (token) headers['Authorization'] = 'Bearer ' + token;
         var r = await fetch('/api/feedback/app', {
@@ -439,5 +447,31 @@ function renderSiteFooter(){
         closeFeedback();
       }
     });
-  }, 4000);
+  }
+
+  async function checkAdminRequest(){
+    if (!token) return false;
+    try{
+      var r = await fetch('/api/feedback/check', {
+        headers:{'Authorization':'Bearer ' + token}
+      });
+      var data = await r.json();
+      return !!data.pending;
+    }catch(e){ return false; }
+  }
+
+  async function init(){
+    var adminPending = await checkAdminRequest();
+
+    if (adminPending){
+      setTimeout(function(){ showFeedbackPopup(true); }, 2000);
+      return;
+    }
+
+    if (!isHome) return;
+    if (!shouldShowByGames()) return;
+    setTimeout(function(){ showFeedbackPopup(false); }, 4000);
+  }
+
+  init();
 })();

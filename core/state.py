@@ -42,7 +42,7 @@ games_config = {
     "clicker":    {"enabled": True,  "title": "Кликер",          "url": "/games/clicker",    "status": "available"},
     "broadway":   {"enabled": True,  "title": "Бродвей",         "url": "/games/broadway",   "status": "available"},
     "campus":     {"enabled": True,  "title": "Построй кампус",  "url": "/games/campus",     "status": "available"},
-    "grable":     {"enabled": True,  "title": "Грабли",          "url": "/games/grable",     "status": "available"},
+    "grable":    {"enabled": True,  "title": "Столовая МГСУ",  "url": "/games/grable",    "status": "available"},
     "tetris":     {"enabled": True,  "title": "Тетрис",          "url": "/games/tetris",     "status": "available"},
     "2048":       {"enabled": True,  "title": "2048 Здания",     "url": "/games/2048",       "status": "available"},
     "adventure":  {"enabled": True,  "title": "Лабиринт МГСУ",   "url": "/games/adventure",  "status": "available"},

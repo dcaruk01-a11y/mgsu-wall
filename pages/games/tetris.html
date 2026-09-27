@@ -30,7 +30,6 @@ body.tetris-page{
 .status-banner.show{display:block;}
 .status-banner small{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:2px;}
 
-/* ═══════════ СТЕЙДЖ ═══════════ */
 .tetris-stage{
   flex:1 1 auto;
   display:flex;
@@ -40,7 +39,6 @@ body.tetris-page{
   gap:8px;
 }
 
-/* ─── HUD сверху ─── */
 .hud{
   flex:0 0 auto;
   display:flex;
@@ -76,7 +74,6 @@ body.tetris-page{
   to{opacity:1;box-shadow:0 0 12px rgba(255,180,80,0.5);}
 }
 
-/* ─── Canvas по центру ─── */
 .canvas-wrap{
   flex:1 1 auto;
   min-height:0;
@@ -95,7 +92,6 @@ canvas{
   max-height:100%;
 }
 
-/* ─── Управление ─── */
 .controls{
   flex:0 0 auto;
   display:grid;
@@ -130,7 +126,6 @@ canvas{
   font-weight:800;
 }
 
-/* ─── Оверлеи ─── */
 .overlay{
   position:absolute;inset:0;
   background:rgba(5,14,31,0.94);
@@ -145,6 +140,7 @@ canvas{
 .overlay-emoji{font-size:56px;margin-bottom:2px;}
 .overlay h2{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
 .overlay p{font-size:13px;color:rgba(255,255,255,0.7);max-width:320px;line-height:1.5;}
+.overlay p b{color:#FFB347;}
 .btn{
   display:inline-flex;align-items:center;gap:8px;
   padding:12px 26px;border-radius:999px;
@@ -171,7 +167,6 @@ canvas{
 }
 #progressBlock a{color:#4ADE80;text-decoration:none;font-weight:700;}
 
-/* ─── Адаптив ─── */
 @media(max-width:520px){
   .hud-value{font-size:15px;}
   .hud-box{padding:5px 6px;max-width:100px;}
@@ -211,7 +206,7 @@ canvas{
       <div class="hud-label">Очки</div>
       <div class="hud-value" id="hudScore">0</div>
     </div>
-    <div class="hud-box">
+    <div class="hud-box" id="levelBox">
       <div class="hud-label">Уровень</div>
       <div class="hud-value" id="hudLevel">1</div>
     </div>
@@ -260,19 +255,15 @@ const COLS = 10;
 const ROWS = 20;
 const EMPTY = 0;
 
-// Базовое время падения (мс) на первом уровне
 const BASE_DROP_MS = 800;
-// Множитель ускорения по уровню
 const DROP_FACTOR = 0.85;
-// Минимум (мс)
 const MIN_DROP_MS = 60;
 
-// Боковые фигуры
-const SIDE_CHANCE = 0.15;       // 15% шанс
-const SIDE_START_AFTER = 5;      // начинаем с 5-й фигуры
-const SIDE_MOVE_MIN_MS = 120;    // медленнее нельзя
-const SIDE_MOVE_BASE_MS = 260;   // базовая скорость движения вбок
-const SIDE_MOVE_STEP = 12;       // ускорение с уровнем
+const SIDE_CHANCE = 0.18;
+const SIDE_START_AFTER = 4;
+const SIDE_MOVE_MIN_MS = 90;
+const SIDE_MOVE_BASE_MS = 240;
+const SIDE_MOVE_STEP = 10;
 
 const SHAPES = {
   I: { matrix: [[1,1,1,1]], color: '#6FA8FF', type: 'tower' },
@@ -329,7 +320,7 @@ checkScheduleStatus();
 setInterval(checkScheduleStatus, 60000);
 
 /* ═══════════════════════════════════════════════════════════
-   ЗВУК — Web Audio API, без файлов
+   ЗВУК
    ═══════════════════════════════════════════════════════════ */
 let audioCtx = null;
 
@@ -349,9 +340,7 @@ function beep(freq, duration, type, volume, slideTo){
     const gain = audioCtx.createGain();
     osc.type = type || 'square';
     osc.frequency.setValueAtTime(freq, t);
-    if (slideTo){
-      osc.frequency.exponentialRampToValueAtTime(slideTo, t + duration);
-    }
+    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + duration);
     gain.gain.setValueAtTime(volume || 0.08, t);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
     osc.connect(gain);
@@ -368,32 +357,26 @@ const SFX = {
   drop:      () => beep(260, 0.15, 'sawtooth', 0.09, 80),
   line1:     () => { beep(700, 0.08, 'square', 0.09); setTimeout(() => beep(950, 0.12, 'square', 0.09), 70); },
   line2:     () => { beep(700, 0.08, 'square', 0.09); setTimeout(() => beep(950, 0.08, 'square', 0.09), 70); setTimeout(() => beep(1200, 0.12, 'square', 0.09), 140); },
-  line4:     () => { // тетрис!
-    [660, 880, 1100, 1500].forEach((f, i) => setTimeout(() => beep(f, 0.12, 'square', 0.10), i * 80));
-  },
+  line4:     () => { [660, 880, 1100, 1500].forEach((f, i) => setTimeout(() => beep(f, 0.12, 'square', 0.10), i * 80)); },
   levelup:   () => { beep(500, 0.1, 'triangle', 0.09, 900); setTimeout(() => beep(900, 0.15, 'triangle', 0.09, 1300), 100); },
   gameover:  () => { [500, 400, 300, 200, 100].forEach((f, i) => setTimeout(() => beep(f, 0.2, 'triangle', 0.10), i * 130)); },
-  side:      () => beep(700, 0.08, 'triangle', 0.05, 1000), // звук появления боковой фигуры
+  side:      () => beep(700, 0.08, 'triangle', 0.05, 1000),
 };
 
 /* ═══════════════════════════════════════════════════════════
-   РАЗМЕР CANVAS
+   РАЗМЕР
    ═══════════════════════════════════════════════════════════ */
 function resize(){
   const wrap = document.getElementById('canvasWrap');
   if (!wrap) return;
   const rect = wrap.getBoundingClientRect();
-
   const availW = rect.width - 4;
   const availH = rect.height - 4;
-
   const cellW = Math.floor(availW / COLS);
   const cellH = Math.floor(availH / ROWS);
   CELL = Math.max(11, Math.min(cellW, cellH, 36));
-
   CW = COLS * CELL;
   CH = ROWS * CELL;
-
   canvas.width = CW;
   canvas.height = CH;
   canvas.style.width = CW + 'px';
@@ -403,7 +386,7 @@ window.addEventListener('resize', resize);
 window.addEventListener('orientationchange', () => setTimeout(resize, 200));
 
 /* ═══════════════════════════════════════════════════════════
-   ИГРОВАЯ ЛОГИКА
+   ЛОГИКА
    ═══════════════════════════════════════════════════════════ */
 function createBoard(){
   board = [];
@@ -426,13 +409,10 @@ function makePiece(key, fromSide, sideDir){
   if (fromSide){
     dir = sideDir || (Math.random() < 0.5 ? 1 : -1);
     if (dir > 0){
-      // появляется слева, едет вправо
       x = -matrix[0].length;
     } else {
-      // появляется справа, едет влево
       x = COLS;
     }
-    // Случайный ряд: верхняя половина поля
     y = 2 + Math.floor(Math.random() * Math.floor(ROWS * 0.45));
   } else {
     x = Math.floor((COLS - matrix[0].length) / 2);
@@ -440,8 +420,7 @@ function makePiece(key, fromSide, sideDir){
   }
 
   return {
-    key,
-    matrix,
+    key, matrix,
     color: s.color,
     type: s.type,
     x, y,
@@ -463,6 +442,7 @@ function rotateMatrix(m){
   return out;
 }
 
+// Обычная коллизия (для фигур сверху)
 function collides(piece, offX, offY, matrix){
   const m = matrix || piece.matrix;
   for (let r = 0; r < m.length; r++){
@@ -473,6 +453,65 @@ function collides(piece, offX, offY, matrix){
       if (x < 0 || x >= COLS || y >= ROWS) return true;
       if (y >= 0 && board[y][x] !== EMPTY) return true;
     }
+  }
+  return false;
+}
+
+/* ── Коллизия для боковой фигуры ──
+   Проверяет только клетки на поле. Игнорирует клетки за пределами
+   (те, что ещё не вошли или уже вышли). */
+function sideCollides(piece, offX){
+  const m = piece.matrix;
+  const off = offX || 0;
+  for (let r = 0; r < m.length; r++){
+    for (let c = 0; c < m[r].length; c++){
+      if (!m[r][c]) continue;
+      const x = piece.x + c + off;
+      const y = piece.y + r;
+      if (y < 0 || y >= ROWS) return true;
+      if (x >= 0 && x < COLS && board[y][x] !== EMPTY) return true;
+    }
+  }
+  return false;
+}
+
+/* Проверка: боковая фигура полностью прошла поле? */
+function sideFullyPassed(piece){
+  const m = piece.matrix;
+  const dir = piece.sideDir;
+  for (let r = 0; r < m.length; r++){
+    for (let c = 0; c < m[r].length; c++){
+      if (!m[r][c]) continue;
+      const x = piece.x + c;
+      if (dir > 0 && x < COLS) return false;
+      if (dir < 0 && x >= 0) return false;
+    }
+  }
+  return true;
+}
+
+/* Проверка: может ли боковая фигура ВООБЩЕ попасть на поле?
+   Возвращаем true, если хотя бы при одной позиции x нет коллизии. */
+function canSidePieceEnter(piece){
+  const m = piece.matrix;
+  const dir = piece.sideDir;
+  const startX = piece.x;
+  // Пробуем все возможные позиции
+  for (let step = 0; step < COLS + m[0].length + 2; step++){
+    const testX = startX + dir * step;
+    let ok = true;
+    for (let r = 0; r < m.length; r++){
+      for (let c = 0; c < m[r].length; c++){
+        if (!m[r][c]) continue;
+        const x = testX + c;
+        const y = piece.y + r;
+        if (x >= 0 && x < COLS && y >= 0 && y < ROWS){
+          if (board[y][x] !== EMPTY){ ok = false; break; }
+        }
+      }
+      if (!ok) break;
+    }
+    if (ok) return true;
   }
   return false;
 }
@@ -511,12 +550,10 @@ function clearLines(){
     const points = [0, 100, 300, 500, 800][cleared] || 800;
     score += points * level;
 
-    // Звук
     if (cleared === 4) SFX.line4();
     else if (cleared === 2) SFX.line2();
     else SFX.line1();
 
-    // Уровень каждые 5 линий
     const newLevel = Math.floor(lines / 5) + 1;
     if (newLevel > level){
       level = newLevel;
@@ -533,41 +570,56 @@ function updateHud(){
   document.getElementById('hudScore').textContent = score;
   document.getElementById('hudLevel').textContent = level;
 
-  // Индикация боковой фигуры
-  const hudLevel = document.querySelector('.hud-box:nth-child(3)');
+  const levelBox = document.getElementById('levelBox');
   if (current && current.fromSide){
-    hudLevel.classList.add('side');
+    levelBox.classList.add('side');
   } else {
-    hudLevel.classList.remove('side');
+    levelBox.classList.remove('side');
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ★ ИСПРАВЛЕННЫЙ spawnPiece ★
+   Больше НЕ вызываем endGame() для боковых фигур.
+   Если боковая не может войти — спавним обычную сверху.
+   ═══════════════════════════════════════════════════════════ */
 function spawnPiece(){
   const key = nextShape || randomShapeKey();
   nextShape = randomShapeKey();
-
   piecesSpawned++;
 
-  // Решаем: обычная или боковая?
   let fromSide = false;
   let sideDir = 0;
+
   if (piecesSpawned >= SIDE_START_AFTER && Math.random() < SIDE_CHANCE){
-    fromSide = true;
     sideDir = Math.random() < 0.5 ? 1 : -1;
-    SFX.side();
+    // Пробная фигура — проверим, сможет ли она войти
+    const testPiece = makePiece(key, true, sideDir);
+    if (canSidePieceEnter(testPiece)){
+      fromSide = true;
+    }
   }
 
   current = makePiece(key, fromSide, sideDir);
 
-  if (collides(current, 0, 0)){
-    endGame();
+  // ★ ГЛАВНЫЙ ФИКС: проверяем коллизию ТОЛЬКО для обычных фигур
+  if (!fromSide){
+    if (collides(current, 0, 0)){
+      endGame();
+      return;
+    }
+  } else {
+    SFX.side();
   }
+
   updateHud();
+  draw();
 }
 
+/* ── Управление ── */
 function move(dir){
   if (!running || !current) return;
-  if (current.fromSide) return; // боковые не двигаем вручную
+  if (current.fromSide) return;
   if (!collides(current, dir, 0)){
     current.x += dir;
     draw();
@@ -584,7 +636,6 @@ function rotate(){
     SFX.rotate();
     return;
   }
-  // Сдвиг для поворота у края
   if (!collides(current, -1, 0, rotated)){
     current.matrix = rotated;
     current.x -= 1;
@@ -600,7 +651,7 @@ function rotate(){
 
 function drop(){
   if (!running || !current) return;
-  if (current.fromSide) return; // боковые не ускоряем вниз
+  if (current.fromSide) return;
   if (!collides(current, 0, 1)){
     current.y += 1;
   } else {
@@ -613,14 +664,19 @@ function hardDrop(){
   if (!running || !current) return;
 
   if (current.fromSide){
-    // Для боковой — ускоренное движение вбок
     SFX.drop();
     let safety = COLS + 2;
-    while (!collides(current, current.sideDir, 0) && safety-- > 0){
+    while (safety-- > 0){
+      if (sideCollides(current, current.sideDir)) break;
       current.x += current.sideDir;
       score += 2;
     }
-    lockPiece();
+    if (sideFullyPassed(current)){
+      current = null;
+      spawnPiece();
+    } else {
+      lockPiece();
+    }
   } else {
     SFX.drop();
     while (!collides(current, 0, 1)){
@@ -639,17 +695,13 @@ function hardDrop(){
 function drawBuilding(x, y, color){
   const px = x * CELL;
   const py = y * CELL;
-
   ctx.fillStyle = color;
   ctx.fillRect(px + 1, py + 1, CELL - 2, CELL - 2);
-
   ctx.strokeStyle = 'rgba(0,0,0,0.35)';
   ctx.lineWidth = 1;
   ctx.strokeRect(px + 1.5, py + 1.5, CELL - 3, CELL - 3);
-
   ctx.fillStyle = 'rgba(255,255,255,0.25)';
   ctx.fillRect(px + 3, py + 2, CELL - 6, Math.max(2, CELL * 0.12));
-
   if (CELL >= 18){
     const winSize = Math.max(3, CELL * 0.18);
     const gap = Math.max(2, CELL * 0.10);
@@ -669,7 +721,6 @@ function drawBuilding(x, y, color){
 function drawGrid(){
   ctx.fillStyle = '#0a0f1e';
   ctx.fillRect(0, 0, CW, CH);
-
   ctx.strokeStyle = 'rgba(128,128,128,0.06)';
   ctx.lineWidth = 1;
   for (let c = 0; c <= COLS; c++){
@@ -689,7 +740,6 @@ function drawGrid(){
 function draw(){
   drawGrid();
 
-  // Занятые клетки
   for (let r = 0; r < ROWS; r++){
     for (let c = 0; c < COLS; c++){
       if (board[r][c] !== EMPTY){
@@ -699,9 +749,8 @@ function draw(){
   }
 
   if (current && running){
-    // Ghost (тень)
+    // Ghost — только для обычных
     if (!current.fromSide){
-      // Обычная — тень вниз
       let ghostY = 0;
       while (!collides(current, 0, ghostY + 1)) ghostY++;
       ctx.globalAlpha = 0.18;
@@ -718,25 +767,28 @@ function draw(){
       ctx.globalAlpha = 1;
     }
 
-    // Сама фигура
+    // Фигура (рисуем только клетки внутри поля)
     for (let r = 0; r < current.matrix.length; r++){
       for (let c = 0; c < current.matrix[r].length; c++){
         if (current.matrix[r][c]){
-          drawBuilding(current.x + c, current.y + r, current.color);
+          const x = current.x + c;
+          if (x >= 0 && x < COLS){
+            drawBuilding(x, current.y + r, current.color);
+          }
         }
       }
     }
 
-    // Стрелка-подсказка направления для боковой фигуры
+    // Стрелка-подсказка для боковой
     if (current.fromSide){
       ctx.save();
-      ctx.globalAlpha = 0.6;
+      ctx.globalAlpha = 0.7;
       ctx.fillStyle = '#FFB347';
       ctx.font = 'bold ' + Math.max(20, CELL * 1.4) + 'px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       const arrow = current.sideDir > 0 ? '▶' : '◀';
-      const arrowX = current.sideDir > 0 ? CW - CELL * 1.5 : CELL * 1.5;
+      const arrowX = current.sideDir > 0 ? CW - CELL * 1.3 : CELL * 1.3;
       const arrowY = CH / 2;
       ctx.fillText(arrow, arrowX, arrowY);
       ctx.restore();
@@ -754,19 +806,27 @@ function loop(now){
   lastFrame = now;
 
   if (current && current.fromSide){
-    // Движение вбок
     sideMoveTimer += dt;
     if (sideMoveTimer > sideMoveInterval){
       sideMoveTimer = 0;
-      if (!collides(current, current.sideDir, 0)){
+
+      // ★ Если фигура полностью прошла поле — удаляем
+      if (sideFullyPassed(current)){
+        current = null;
+        spawnPiece();
+        return;
+      }
+
+      // ★ Проверяем следующий шаг
+      if (sideCollides(current, current.sideDir)){
+        // Упёрлась — фиксируем
+        lockPiece();
+      } else {
         current.x += current.sideDir;
         draw();
-      } else {
-        lockPiece();
       }
     }
   } else {
-    // Обычное падение
     dropTimer += dt;
     if (dropTimer > dropInterval){
       dropTimer = 0;
@@ -782,9 +842,7 @@ function startGame(){
   if (!scheduleOpen){ checkScheduleStatus(); return; }
 
   initAudio();
-  if (audioCtx && audioCtx.state === 'suspended'){
-    audioCtx.resume().catch(()=>{});
-  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
   createBoard();
   lines = 0;
@@ -853,7 +911,7 @@ function renderProgress(data){
   }
   let html = '<div>🎯 Очков: <b>+' + data.points + '</b></div>';
   if (data.daily_plays && data.daily_multiplier !== undefined && data.daily_multiplier < 1){
-    html += '<div style="color:#FFB347;">📉 ' + data.daily_plays + '-я партия сегодня — награда ×' + data.daily_multiplier + '</div>';
+    html += '<div style="color:#FFB347;">📉 ' + data.daily_plays + '-я партия — награда ×' + data.daily_multiplier + '</div>';
   }
   if (data.progress){
     html += '<div>💰 Монет: <b>' + data.progress.coins + '</b></div>';
@@ -885,7 +943,6 @@ document.addEventListener('keydown', function(e){
   else if (e.code === 'Space'){ e.preventDefault(); hardDrop(); }
 });
 
-// Свайпы по canvas
 let touchX = 0, touchY = 0, touchTime = 0;
 canvas.addEventListener('touchstart', function(e){
   if (!running) return;
@@ -900,24 +957,17 @@ canvas.addEventListener('touchend', function(e){
   const dy = t.clientY - touchY;
   const dt = Date.now() - touchTime;
 
-  // Быстрый тап — поворот
   if (dt < 200 && Math.abs(dx) < 20 && Math.abs(dy) < 20){
     rotate();
     return;
   }
-  // Свайп вбок — движение
   if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)){
     move(dx > 0 ? 1 : -1);
-  }
-  // Свайп вниз — ускорение/падение
-  else if (dy > 40 && Math.abs(dx) < 40){
+  } else if (dy > 40 && Math.abs(dx) < 40){
     hardDrop();
   }
 }, {passive: true});
 
-/* ═══════════════════════════════════════════════════════════
-   СТАРТ
-   ═══════════════════════════════════════════════════════════ */
 document.getElementById('startBtn').onclick = startGame;
 document.getElementById('againBtn').onclick = startGame;
 document.getElementById('shareBtn').onclick = async () => {
@@ -928,10 +978,8 @@ document.getElementById('shareBtn').onclick = async () => {
   }catch(e){}
 };
 
-// Инициализация
 window.addEventListener('load', () => setTimeout(resize, 100));
 setTimeout(resize, 200);
-
 resize();
 createBoard();
 draw();

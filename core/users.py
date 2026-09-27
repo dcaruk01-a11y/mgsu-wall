@@ -300,12 +300,49 @@ async def apply_streak(uid: str) -> dict:
     return {"ok": True, "streak": streak, "changed": True, "is_record": streak == best}
 
 
-async def apply_score_and_coins(uid: str, score: int, game: str, is_record: bool = False) -> dict:
+async def apply_score_and_coins(uid: str, score: int, game: str, is_record: bool = False, daily_mult: float = 1.0) -> dict:
+    """
+    daily_mult — дневной множитель (1.0 / 0.7 / 0.4 / 0.2).
+    Применяется и к очкам, и к монетам за партию.
+    Рекорд-бонус (200 монет) не режется.
+    """
     score = max(0, min(int(score), 100000))
-    coins = COINS_PER_GAME
+    daily_mult = max(0.1, min(float(daily_mult or 1.0), 1.0))
+
+    coins = int(round(COINS_PER_GAME * daily_mult))
     if is_record:
         coins += COINS_PER_RECORD
 
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            UPDATE users
+            SET total_score = total_score + ?,
+                coins = coins + ?,
+                games_played = games_played + 1,
+                last_seen = ?
+            WHERE uid = ?
+        """, (score, coins, time.time(), uid))
+        await db.commit()
+
+        cur = await db.execute("""
+            SELECT display_name, streak, best_streak, coins, total_score, games_played
+            FROM users WHERE uid = ?
+        """, (uid,))
+        row = await cur.fetchone()
+
+    if not row:
+        return {"ok": False}
+
+    return {
+        "ok": True,
+        "display_name": row[0],
+        "streak": row[1] or 0,
+        "best_streak": row[2] or 0,
+        "coins": row[3] or 0,
+        "total_score": row[4] or 0,
+        "games_played": row[5] or 0,
+        "coins_added": coins,
+    }
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
             UPDATE users
@@ -351,3 +388,56 @@ async def add_coins(uid: str, amount: int, reason: str = "") -> dict:
         cur = await db.execute("SELECT coins FROM users WHERE uid = ?", (uid,))
         row = await cur.fetchone()
     return {"ok": True, "coins": row[0] if row else 0, "added": amount}
+# ═══════════════════════════════════════════════════════════
+# РАНГ АККАУНТА (общий уровень игрока)
+# ═══════════════════════════════════════════════════════════
+
+ACCOUNT_RANKS = [
+    {"key":"freshman",  "name":"Первокурсник", "emoji":"🎓", "min_score":0,      "min_games":0},
+    {"key":"student",   "name":"Студент",      "emoji":"📚", "min_score":3000,   "min_games":10},
+    {"key":"expert",    "name":"Знаток",       "emoji":"✏️", "min_score":10000,  "min_games":30},
+    {"key":"activist",  "name":"Активист",     "emoji":"🎯", "min_score":25000,  "min_games":60},
+    {"key":"headman",   "name":"Староста",     "emoji":"🏅", "min_score":50000,  "min_games":100},
+    {"key":"commander", "name":"Командир",     "emoji":"🎖",  "min_score":100000, "min_games":200},
+    {"key":"legend",    "name":"Легенда МГСУ", "emoji":"👑", "min_score":200000, "min_games":400},
+]
+
+
+def get_account_rank(total_score: int, games_played: int) -> dict:
+    """
+    Возвращает текущий ранг, следующий ранг и прогресс (0..1).
+    Прогресс считается по «узкому месту» — где отстаём сильнее.
+    """
+    total_score = int(total_score or 0)
+    games_played = int(games_played or 0)
+
+    current = ACCOUNT_RANKS[0]
+    current_idx = 0
+    for i, r in enumerate(ACCOUNT_RANKS):
+        if total_score >= r["min_score"] and games_played >= r["min_games"]:
+            current = r
+            current_idx = i
+
+    next_rank = ACCOUNT_RANKS[current_idx + 1] if current_idx + 1 < len(ACCOUNT_RANKS) else None
+
+    progress = 1.0
+    if next_rank:
+        score_pct = total_score / next_rank["min_score"] if next_rank["min_score"] else 1.0
+        games_pct = games_played / next_rank["min_games"] if next_rank["min_games"] else 1.0
+        progress = min(1.0, min(score_pct, games_pct))
+
+    return {
+        "key": current["key"],
+        "name": current["name"],
+        "emoji": current["emoji"],
+        "next": {
+            "key": next_rank["key"],
+            "name": next_rank["name"],
+            "emoji": next_rank["emoji"],
+            "min_score": next_rank["min_score"],
+            "min_games": next_rank["min_games"],
+        } if next_rank else None,
+        "progress": round(progress, 3),
+        "total_score": total_score,
+        "games_played": games_played,
+    }

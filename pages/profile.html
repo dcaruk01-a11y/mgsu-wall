@@ -338,8 +338,39 @@ function setUser(u){
   document.getElementById('pCoins').textContent = u.coins || 0;
   document.getElementById('pScore').textContent = u.total_score || 0;
   document.getElementById('pGames').textContent = u.games_played || 0;
+
+  // Аватар — из активного персонажа
   const av = document.getElementById('pAvatar');
   if (av && u.active_char) av.textContent = CHAR_EMOJI[u.active_char] || '🎓';
+
+  // === РАНГ ===
+  if (u.rank){
+    const r = u.rank;
+    document.getElementById('rankEmoji').textContent = r.emoji;
+    document.getElementById('rankName').textContent = r.name;
+
+    const nextEl = document.getElementById('rankNext');
+    const fill = document.getElementById('rankProgressFill');
+    const txt = document.getElementById('rankProgressText');
+
+    if (r.next){
+      nextEl.textContent = 'До «' + r.next.name + '» ' + r.next.emoji;
+      fill.style.width = Math.round(r.progress * 100) + '%';
+
+      // Что именно нужно
+      const needScore = Math.max(0, r.next.min_score - r.total_score);
+      const needGames = Math.max(0, r.next.min_games - r.games_played);
+      const parts = [];
+      if (needScore > 0) parts.push(needScore + ' очков');
+      if (needGames > 0) parts.push(needGames + ' партий');
+      txt.textContent = 'Осталось: ' + (parts.join(' · ') || '—');
+    } else {
+      nextEl.textContent = 'Максимальный ранг достигнут';
+      fill.style.width = '100%';
+      txt.textContent = '👑 Ты — легенда';
+    }
+  }
+
   localStorage.setItem('mgsu_nick', u.display_name);
   const headerAvatar = document.querySelector('.site-header-avatar span');
   if (headerAvatar) headerAvatar.textContent = u.display_name.charAt(0).toUpperCase();

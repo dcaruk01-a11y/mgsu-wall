@@ -72,6 +72,10 @@ async def tetris():
 @router.get("/games/2048")
 async def game_2048():
     return FileResponse("pages/games/2048.html")
+
+@router.get("/games/adventure")
+async def adventure():
+    return FileResponse("pages/games/adventure.html")
     
 # ═══════════ ПРОТОТИПЫ (скрытые, нигде не слинкованы) ═══════════
 @router.get("/proto/home")

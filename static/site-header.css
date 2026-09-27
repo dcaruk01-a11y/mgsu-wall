@@ -13,16 +13,12 @@ body{
 
 /* PWA (полноэкранный режим на iPhone) — учитываем Dynamic Island */
 @media (display-mode: standalone){
-  body{
-    padding-top:calc(60px + env(safe-area-inset-top, 0px));
-  }
+  body{padding-top:calc(60px + env(safe-area-inset-top, 0px));}
   .site-header{
     padding-top:env(safe-area-inset-top, 0px);
     height:calc(60px + env(safe-area-inset-top, 0px));
   }
-  .site-header-inner{
-    height:60px;
-  }
+  .site-header-inner{height:60px;}
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -51,8 +47,8 @@ body{
   height:60px;
   display:flex;
   align-items:center;
-  justify-content:space-between;
   gap:16px;
+  /* НЕ используем justify-content:space-between — иначе nav не сможет сжаться */
 }
 
 /* ─── ЛОГОТИП ─── */
@@ -85,22 +81,24 @@ body{
 }
 .site-header-label b{font-weight:700;opacity:1;}
 
-/* ─── НАВИГАЦИЯ (со скроллом) ─── */
+/* ─── НАВИГАЦИЯ (скроллится по горизонтали) ─── */
 .site-header-nav{
   display:flex;
   align-items:center;
   gap:4px;
-  flex-shrink:1;
+  /* Занимает ВСЁ оставшееся место, может сжиматься */
+  flex:1 1 auto;
   min-width:0;
+  /* Горизонтальный скролл */
   overflow-x:auto;
   overflow-y:hidden;
   white-space:nowrap;
   -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  touch-action:pan-x;
   scrollbar-width:none;
   -ms-overflow-style:none;
-  /* мягкий fade по краям — чтобы было видно, что можно скроллить */
-  mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
-  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+  /* mask-image НЕ используем — он ломает скролл на iOS */
 }
 .site-header-nav::-webkit-scrollbar{display:none;}
 
@@ -114,7 +112,7 @@ body{
   transition:background .12s, opacity .12s;
   white-space:nowrap;
   font-family:inherit;
-  flex-shrink:0;
+  flex-shrink:0; /* не сжимаем — выходят за пределы, появляется скролл */
 }
 .site-header-link:hover{background:var(--header-hover, rgba(128,128,128,0.15));opacity:1;}
 .site-header-link.active{background:var(--header-active, rgba(128,128,128,0.20));opacity:1;font-weight:800;}
@@ -188,79 +186,76 @@ body{
 .site-footer-right a:hover{opacity:1;text-decoration:underline;}
 
 /* ═══════════════════════════════════════════════════════════
-   МОБИЛЬНАЯ / ТАЧ
+   ТЕЛЕФОН — КОМПАКТНО, ЧТОБЫ ВЛЕЗАЛО
    ═══════════════════════════════════════════════════════════ */
 
 /* Тач-устройства */
 @media (pointer:coarse){
-  body{padding-top:52px;}
-  .site-header{height:52px;}
-  .site-header-inner{padding:0 8px;height:52px;gap:6px;}
+  body{padding-top:50px;}
+  .site-header{height:50px;}
+  .site-header-inner{padding:0 6px;height:50px;gap:4px;}
 
   .site-header-brand{gap:0;padding:4px;margin-left:0;}
-  .site-header-logo{width:32px;height:32px;border-radius:7px;}
+  .site-header-logo{width:30px;height:30px;border-radius:7px;}
   .site-header-label{display:none;}
 
-  .site-header-link{padding:7px 10px;gap:0;font-size:13px;}
+  .site-header-nav{gap:2px;}
+  .site-header-link{padding:6px 8px;gap:0;font-size:12px;}
   .site-header-link-icon{display:none;}
-  .site-header-link-label{font-size:13px;}
+  .site-header-link-label{font-size:12px;}
 
-  .site-header-login{padding:7px 12px;gap:0;font-size:13px;}
+  .site-header-login{padding:6px 10px;gap:0;font-size:12px;}
   .site-header-login-icon{display:none;}
-  .site-header-login-label{font-size:13px;}
+  .site-header-login-label{font-size:12px;}
 
-  .site-header-divider{margin:0 2px;height:18px;}
-  .site-header-avatar{width:32px;height:32px;font-size:13px;}
+  .site-header-divider{margin:0 2px;height:16px;}
+  .site-header-avatar{width:30px;height:30px;font-size:12px;}
 
-  /* в PWA на телефоне — тоже с учётом safe-area */
   @media (display-mode: standalone){
-    body{
-      padding-top:calc(52px + env(safe-area-inset-top, 0px));
-    }
+    body{padding-top:calc(50px + env(safe-area-inset-top, 0px));}
     .site-header{
       padding-top:env(safe-area-inset-top, 0px);
-      height:calc(52px + env(safe-area-inset-top, 0px));
+      height:calc(50px + env(safe-area-inset-top, 0px));
     }
-    .site-header-inner{
-      height:52px;
-    }
+    .site-header-inner{height:50px;}
   }
 }
 
 /* Страховка по ширине */
 @media (max-width:720px){
-  body{padding-top:52px;}
-  .site-header{height:52px;}
-  .site-header-inner{padding:0 8px;height:52px;gap:6px;}
+  body{padding-top:50px;}
+  .site-header{height:50px;}
+  .site-header-inner{padding:0 6px;height:50px;gap:4px;}
 
   .site-header-brand{gap:0;padding:4px;margin-left:0;}
-  .site-header-logo{width:32px;height:32px;}
+  .site-header-logo{width:30px;height:30px;}
   .site-header-label{display:none;}
 
-  .site-header-link{padding:7px 10px;font-size:13px;gap:0;}
+  .site-header-nav{gap:2px;}
+  .site-header-link{padding:6px 8px;font-size:12px;gap:0;}
   .site-header-link-icon{display:none;}
-  .site-header-link-label{font-size:13px;}
+  .site-header-link-label{font-size:12px;}
 
-  .site-header-login{padding:7px 12px;font-size:13px;gap:0;}
+  .site-header-login{padding:6px 10px;font-size:12px;gap:0;}
   .site-header-login-icon{display:none;}
-  .site-header-login-label{font-size:13px;}
+  .site-header-login-label{font-size:12px;}
 
-  .site-header-divider{margin:0 2px;height:18px;}
-  .site-header-avatar{width:32px;height:32px;font-size:13px;}
+  .site-header-divider{margin:0 2px;height:16px;}
+  .site-header-avatar{width:30px;height:30px;font-size:12px;}
 
   .site-footer{padding:22px 0;}
   .site-footer-inner{padding:0 12px;flex-direction:column;align-items:flex-start;gap:10px;font-size:12px;}
   .site-footer-right{margin-left:0;gap:4px 8px;}
 }
 
-/* Очень узкие (iPhone SE и подобные) */
-@media (max-width:360px){
-  .site-header-inner{padding:0 6px;gap:2px;}
-  .site-header-link{padding:6px 7px;font-size:12px;}
-  .site-header-link-label{font-size:12px;}
-  .site-header-login{padding:6px 9px;font-size:12px;}
-  .site-header-login-label{font-size:12px;}
+/* Очень узкие (< 380px) — ещё компактнее */
+@media (max-width:380px){
+  .site-header-inner{padding:0 4px;gap:2px;}
+  .site-header-link{padding:6px 6px;font-size:11px;}
+  .site-header-link-label{font-size:11px;}
+  .site-header-login{padding:6px 8px;font-size:11px;}
+  .site-header-login-label{font-size:11px;}
   .site-header-logo{width:28px;height:28px;}
-  .site-header-avatar{width:28px;height:28px;font-size:12px;}
+  .site-header-avatar{width:28px;height:28px;font-size:11px;}
   .site-header-divider{display:none;}
 }

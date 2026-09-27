@@ -54,7 +54,7 @@ games_config = {
 
 
 # ============ ТЕМА ============
-theme_config = {"current": "classic"}
+theme_config = {"current": "white"}
 
 
 # ============ АКТИВ РАЗРАБОТЧИКОВ ============
@@ -102,7 +102,7 @@ def sanitize_nick(nick: str) -> str:
 
 async def load_all_settings():
     theme = await settings.get_setting("theme")
-    if theme and theme in ("classic", "retro", "notebook", "cyberpunk", "cozy"):
+    if theme and theme in ("white", "black", "classic", "retro", "notebook", "cyberpunk", "cozy"):
         theme_config["current"] = theme
 
     sch_raw = await settings.get_setting("schedule")

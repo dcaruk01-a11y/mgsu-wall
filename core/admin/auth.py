@@ -18,6 +18,19 @@ async def admin_page():
 async def admin_login_page():
     return FileResponse("pages/admin/login.html")
 
+
+# ⚠️ ВАЖНО: /admin/users регистрируется ДО /admin/player/{uid}
+# Иначе FastAPI может сматчить /admin/users как {uid}="users"
+@router.get("/admin/users")
+async def admin_users_page():
+    return FileResponse("pages/admin/users.html")
+
+
+@router.get("/admin/player/{uid}")
+async def admin_player_page(uid: str):
+    return FileResponse("pages/admin/user.html")
+
+
 @router.get("/admin/games")
 async def admin_games_page():
     return FileResponse("pages/admin/games.html")
@@ -46,15 +59,6 @@ async def admin_team_page():
 @router.get("/admin/links")
 async def admin_links_page():
     return FileResponse("pages/admin/links.html")
-
-
-@router.get("/admin/users")
-async def admin_users_page():
-    return FileResponse("pages/admin/users.html")
-
-@router.get("/admin/user/{uid}")
-async def admin_user_page(uid: str):
-    return FileResponse("pages/admin/user.html")
 
 
 @router.get("/admin/logs")

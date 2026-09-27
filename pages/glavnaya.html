@@ -14,9 +14,8 @@
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   display:none;align-items:center;justify-content:center;
   padding:20px;
-  animation:fadeIn .35s ease;
 }
-.welcome-overlay.show{display:flex;}
+.welcome-overlay.show{display:flex;animation:fadeIn .35s ease;}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 
 .welcome-card{
@@ -36,41 +35,21 @@
 .welcome-card h2{font-size:26px;font-weight:800;margin-bottom:10px;letter-spacing:-0.02em;}
 .welcome-card p{font-size:15px;color:rgba(255,255,255,0.75);line-height:1.55;margin-bottom:24px;}
 
-.welcome-steps{
-  display:flex;flex-direction:column;gap:10px;
-  margin-bottom:26px;text-align:left;
-}
-.welcome-step{
-  display:flex;align-items:center;gap:14px;
-  padding:12px 16px;border-radius:14px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.10);
-}
-.welcome-step-num{
-  width:32px;height:32px;border-radius:50%;
-  background:linear-gradient(135deg,#FFB347,#FF7A2B);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:900;font-size:15px;color:#1a0e05;
-  flex-shrink:0;
-}
+.welcome-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:26px;text-align:left;}
+.welcome-step{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);}
+.welcome-step-num{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FFB347,#FF7A2B);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#1a0e05;flex-shrink:0;}
 .welcome-step-text{font-size:14px;font-weight:600;line-height:1.4;}
 .welcome-step-text b{color:#fff;font-weight:800;}
 .welcome-step-text span{opacity:0.65;font-weight:500;font-size:12px;display:block;margin-top:2px;}
 
 .welcome-btn{
-  width:100%;padding:16px;border-radius:999px;
-  border:0;cursor:pointer;
-  background:linear-gradient(135deg,#FFB347,#FF7A2B);
-  color:#1a0e05;font-family:inherit;font-size:16px;font-weight:900;
-  box-shadow:0 12px 30px rgba(255,140,50,0.5);
-  transition:transform .12s;
-  letter-spacing:0.02em;
+  width:100%;padding:16px;border-radius:999px;border:0;cursor:pointer;
+  background:linear-gradient(135deg,#FFB347,#FF7A2B);color:#1a0e05;
+  font-family:inherit;font-size:16px;font-weight:900;
+  box-shadow:0 12px 30px rgba(255,140,50,0.5);transition:transform .12s;letter-spacing:0.02em;
 }
 .welcome-btn:active{transform:scale(0.97);}
-.welcome-hint{
-  font-size:12px;color:rgba(255,255,255,0.4);
-  margin-top:14px;line-height:1.5;
-}
+.welcome-hint{font-size:12px;color:rgba(255,255,255,0.4);margin-top:14px;line-height:1.5;}
 
 /* ═══════════ MINI HERO ═══════════ */
 .mini-hero{
@@ -80,14 +59,25 @@
   text-align:center;
 }
 .mini-hero-kicker{
-  display:inline-block;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
   font-size:11px;font-weight:800;
   letter-spacing:0.16em;text-transform:uppercase;
-  padding:6px 16px;border-radius:999px;
+  padding:8px 18px;border-radius:999px;
   background:rgba(128,128,128,0.15);
   border:1px solid rgba(128,128,128,0.28);
   color:inherit;opacity:0.85;
   margin-bottom:18px;
+  text-decoration:none;
+  transition:all .15s;
+  cursor:pointer;
+}
+.mini-hero-kicker:hover{
+  opacity:1;
+  background:rgba(255,180,80,0.15);
+  border-color:rgba(255,180,80,0.5);
+  transform:translateY(-1px);
 }
 .mini-hero h1{
   font-size:clamp(28px,5.5vw,48px);
@@ -111,16 +101,12 @@
   margin:0 auto 26px;
   line-height:1.55;
 }
-.mini-hero-buttons{
-  display:flex;gap:12px;justify-content:center;
-  flex-wrap:wrap;
-}
+.mini-hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
 .btn-hero{
   display:inline-flex;align-items:center;justify-content:center;gap:10px;
   padding:15px 32px;border-radius:999px;
   font-family:inherit;font-size:15px;font-weight:800;
-  text-decoration:none;cursor:pointer;
-  border:0;
+  text-decoration:none;cursor:pointer;border:0;
   transition:transform .12s, box-shadow .2s;
   min-width:180px;
 }
@@ -143,7 +129,7 @@
 }
 .btn-hero.secondary:hover{background:rgba(128,128,128,0.22);transform:translateY(-2px);}
 
-/* ═══════════ КАК ЭТО РАБОТАЕТ ═══════════ */
+/* ═══════════ КАК ЭТО РАБОТАЕТ (НЕ КЛИКАБЕЛЬНО) ═══════════ */
 .how-it-works{
   max-width:900px;
   margin:0 auto 32px;
@@ -160,22 +146,13 @@
   background:rgba(128,128,128,0.10);
   border:1px solid rgba(128,128,128,0.20);
   text-align:center;
-  transition:transform .15s, background .15s;
+  /* НЕ кликабельно — просто информационный блок */
+  cursor:default;
+  user-select:none;
 }
-.how-step:hover{transform:translateY(-3px);background:rgba(128,128,128,0.18);}
-.how-emoji{
-  font-size:36px;line-height:1;
-  margin-bottom:10px;
-}
-.how-title{
-  font-size:14px;font-weight:800;
-  color:inherit;margin-bottom:4px;
-}
-.how-desc{
-  font-size:12px;
-  opacity:0.65;
-  line-height:1.4;
-}
+.how-emoji{font-size:36px;line-height:1;margin-bottom:10px;}
+.how-title{font-size:14px;font-weight:800;color:inherit;margin-bottom:4px;}
+.how-desc{font-size:12px;opacity:0.65;line-height:1.4;}
 
 /* ═══════════ ЗАДАНИЯ ═══════════ */
 .daily-tasks-widget{
@@ -210,27 +187,16 @@
 .top-day-score{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;opacity:0.85;}
 .top-day-empty{text-align:center;padding:20px;opacity:0.6;font-size:13px;}
 
-/* ═══════════ СЕТКА ИГР ═══════════ */
+/* ═══════════ ЗАГОЛОВОК СЕКЦИИ ИГР ═══════════ */
 .games-section-head{
   max-width:1100px;
   margin:0 auto 20px;
   padding:0 20px;
-  display:flex;justify-content:space-between;align-items:center;
-  gap:12px;flex-wrap:wrap;
 }
 .games-section-title{
   font-size:26px;font-weight:900;
   letter-spacing:-0.02em;
   color:inherit;
-}
-.games-count{
-  font-size:13px;
-  font-weight:700;
-  opacity:0.6;
-  padding:6px 14px;
-  border-radius:999px;
-  background:rgba(128,128,128,0.12);
-  border:1px solid rgba(128,128,128,0.20);
 }
 .games-grid-wrap{max-width:1100px;margin:0 auto;padding:0 20px;}
 .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
@@ -263,18 +229,15 @@
 .dev-credits__title{font-size:22px;font-weight:700;letter-spacing:0.5px;color:inherit;margin-bottom:6px;}
 .dev-credits__subtitle{font-size:14px;opacity:0.7;margin-bottom:24px;}
 .dev-credits__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px;}
-.dev-card{background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.18);border-radius:14px;padding:16px 14px;transition:transform .15s, border-color .15s;}
-.dev-card:hover{transform:translateY(-2px);border-color:rgba(128,128,128,0.4);}
+.dev-card{background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.18);border-radius:14px;padding:16px 14px;}
 .dev-card__role{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#FF4D5E;margin-bottom:6px;font-weight:700;}
 .dev-card__name{font-size:16px;font-weight:700;color:inherit;margin-bottom:4px;}
 .dev-card__note{font-size:12px;opacity:0.7;}
 .dev-credits__footer{font-size:13px;opacity:0.7;border-top:1px dashed rgba(128,128,128,0.25);padding-top:16px;margin-top:4px;}
 
-/* ═══════════ МОДАЛКИ (игра, приватность) ═══════════ */
 #gameActions{display:flex;justify-content:center;}
 #gameActions .btn-play{margin:0;min-width:240px;max-width:320px;width:100%;}
 
-/* ═══════════ АДАПТИВ ═══════════ */
 @media(max-width:640px){
   .mini-hero{padding:24px 16px 20px;}
   .mini-hero h1{margin-bottom:10px;}
@@ -306,7 +269,7 @@
 }
 @media(max-width:520px){
   #gameActions{justify-content:stretch;}
-  #gameActions .btn-play{max-width:none;}
+  #gameActions .play{max-width:none;}
 }
 </style>
 </head><body>
@@ -316,7 +279,7 @@
   <div class="welcome-card">
     <div class="welcome-emoji">🎮</div>
     <h2>Это Игры МГСУ</h2>
-    <p>7 игр прямо в телефоне. Играй, зарабатывай монеты, качай персонажа.</p>
+    <p>Игры прямо в телефоне. Играй, зарабатывай монеты, открывай скины.</p>
     <div class="welcome-steps">
       <div class="welcome-step">
         <div class="welcome-step-num">1</div>
@@ -336,7 +299,7 @@
         <div class="welcome-step-num">3</div>
         <div class="welcome-step-text">
           <b>Прокачай персонажа</b>
-          <span>Меняй скины и открывай ачивки</span>
+          <span>Открывай скины и поднимайся в рейтинге</span>
         </div>
       </div>
     </div>
@@ -349,9 +312,9 @@
 
 <!-- ══════════ КОМПАКТНЫЙ HERO ══════════ -->
 <section class="mini-hero">
-  <div class="mini-hero-kicker">🎓 Студенческий проект · 2026</div>
+  <a href="/privacy" class="mini-hero-kicker">🎓 Студенческий проект · 2026 →</a>
   <h1>Играй. Копи монеты.<br><em>Качай персонажа.</em></h1>
-  <p>Семь игр для студентов МГСУ. Без установки, без регистрации. Работает на телефоне.</p>
+  <p>Игры для студентов МГСУ. Без установки, без регистрации. Работает на телефоне.</p>
   <div class="mini-hero-buttons">
     <button class="btn-hero primary" id="startPlayingBtn" type="button">🎮 Начать играть ↓</button>
     <a class="btn-hero secondary" href="/profile" id="profileCta">👤 Мой профиль</a>
@@ -365,7 +328,7 @@
       <div class="how-emoji">🎯</div>
       <div>
         <div class="how-title">Выбери игру</div>
-        <div class="how-desc">7 игр на любой вкус — от кликера до лабиринта</div>
+        <div class="how-desc">Разные жанры — от кликера до лабиринта</div>
       </div>
     </div>
     <div class="how-step">
@@ -379,7 +342,7 @@
       <div class="how-emoji">🏆</div>
       <div>
         <div class="how-title">Прокачай персонажа</div>
-        <div class="how-desc">Открой 7 скинов: от Студента до Легенды МГСУ</div>
+        <div class="how-desc">Открой скины: от Студента до Легенды МГСУ</div>
       </div>
     </div>
   </div>
@@ -389,7 +352,6 @@
 <section id="games" style="padding:12px 0 32px;">
   <div class="games-section-head">
     <div class="games-section-title">🎮 Все игры</div>
-    <div class="games-count" id="gamesCount">—</div>
   </div>
   <div class="games-grid-wrap">
     <div class="games-grid" id="gamesGrid"></div>
@@ -477,7 +439,6 @@ renderSiteFooter();
 
 /* ═══════════════════════════════════════════════════════════
    ПРИВЕТСТВЕННАЯ МОДАЛКА
-   Показывается один раз (localStorage флаг)
    ═══════════════════════════════════════════════════════════ */
 (function(){
   var LS_KEY = 'mgsu_welcomed_v1';
@@ -489,7 +450,6 @@ renderSiteFooter();
   var okBtn = document.getElementById('welcomeOk');
   if (!overlay || !okBtn) return;
 
-  // Задержка 400мс чтобы страница успела отрисоваться
   setTimeout(function(){
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
@@ -499,7 +459,6 @@ renderSiteFooter();
     overlay.classList.remove('show');
     document.body.style.overflow = '';
     try{ localStorage.setItem(LS_KEY, '1'); }catch(e){}
-    // Автоматически плавно скроллим к играм
     setTimeout(function(){
       var gamesSection = document.getElementById('games');
       if (gamesSection){
@@ -511,15 +470,13 @@ renderSiteFooter();
   }
 
   okBtn.addEventListener('click', closeWelcome);
-
-  // Закрытие по клику на фон
   overlay.addEventListener('click', function(e){
     if (e.target === overlay) closeWelcome();
   });
 })();
 
 /* ═══════════════════════════════════════════════════════════
-   КНОПКА "НАЧАТЬ ИГРАТЬ" — скроллит к играм
+   КНОПКА "НАЧАТЬ ИГРАТЬ"
    ═══════════════════════════════════════════════════════════ */
 document.getElementById('startPlayingBtn').addEventListener('click', function(){
   var gamesSection = document.getElementById('games');
@@ -531,7 +488,6 @@ document.getElementById('startPlayingBtn').addEventListener('click', function(){
 
 /* ═══════════════════════════════════════════════════════════
    ПОДМЕНА КНОПКИ ПРОФИЛЯ
-   Если залогинен — "Мой профиль", иначе "Создать аккаунт"
    ═══════════════════════════════════════════════════════════ */
 (function(){
   var btn = document.getElementById('profileCta');
@@ -554,7 +510,7 @@ const GAMES_INFO = {
   campus: { title: 'Построй кампус', rules: `<p class="rule-text">Голосуй за улучшения МГСУ.</p>`, playUrl: '/games/campus', playLabel: 'Играть' },
   grable: { title: 'Грабли', rules: `<p class="rule-text">Открой все безопасные клетки.</p>`, playUrl: '/games/grable', playLabel: 'Играть' },
   wall: { title: 'Стена', rules: `<p class="rule-text">Рисуй с телефона — твой штрих мгновенно появляется на большом экране.</p>`, playUrl: '/games/wall', playLabel: 'Играть' },
-  clicker: { title: 'Кликер', rules: `<p class="rule-text">30 секунд, 7 рангов от Студента до Легенды МГСУ.</p>`, playUrl: '/games/clicker', playLabel: 'Играть' },
+  clicker: { title: 'Кликер', rules: `<p class="rule-text">30 секунд, 7 рангов от Студента до Легенды МГСУ. Одна партия в день.</p>`, playUrl: '/games/clicker', playLabel: 'Играть' },
   tetris: { title: 'Тетрис · Здания', rules: `<p class="rule-text">Складывай дома и башни МГСУ. Полные линии сгорают, скорость растёт.</p>`, playUrl: '/games/tetris', playLabel: 'Играть' },
   "2048": { title: '2048 Здания', rules: `<p class="rule-text">Свайпай плитки-домики. Одинаковые сливаются. Собери 2048!</p>`, playUrl: '/games/2048', playLabel: 'Играть' },
   adventure: { title: 'Лабиринт МГСУ', rules: `<p class="rule-text">Собери 3 ключа, найди шпаргалку ⚔️ и отбейся от злых преподов 👺. Дойди до выхода 🚪.</p>`, playUrl: '/games/adventure', playLabel: 'Играть' },
@@ -578,23 +534,17 @@ async function loadGames(){
 
 function renderTiles(games){
   const box = document.getElementById('gamesGrid');
-  const countEl = document.getElementById('gamesCount');
   box.innerHTML = '';
 
   if (!games.length){
     box.innerHTML = '<div style="grid-column:1/-1;color:rgba(128,128,128,0.7);padding:60px 20px;text-align:center;">Пока нет доступных игр.</div>';
-    if (countEl) countEl.textContent = '0 игр';
     return;
   }
-
-  // Считаем только реально доступные игры (с playUrl и status=available)
-  let availableCount = 0;
 
   games.forEach(g => {
     const info = GAMES_INFO[g.key];
     if (!info) return;
     const isAvailable = g.status === 'available' || !!info.playUrl;
-    if (isAvailable) availableCount++;
 
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -607,16 +557,6 @@ function renderTiles(games){
     if (isAvailable) btn.onclick = () => openGame(g.key);
     box.appendChild(btn);
   });
-
-  if (countEl) countEl.textContent = availableCount + ' ' + pluralize(availableCount, 'игра', 'игры', 'игр');
-}
-
-function pluralize(n, one, few, many){
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
-  return many;
 }
 
 function openGame(key){
@@ -634,7 +574,6 @@ function openGame(key){
   document.getElementById('gameModal').classList.add('open');
 }
 function closeGame(){ document.getElementById('gameModal').classList.remove('open'); unlockScroll(); }
-function openPrivacy(e){ if(e) e.preventDefault(); lockScroll(); document.getElementById('privacyModal').classList.add('open'); }
 function closePrivacy(){ document.getElementById('privacyModal').classList.remove('open'); unlockScroll(); }
 
 function lockScroll(){
@@ -648,11 +587,11 @@ function unlockScroll(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ЗАДАНИЯ
+   ЗАДАНИЯ (только для авторизованных)
    ═══════════════════════════════════════════════════════════ */
 async function loadDailyTasks(){
   const token = localStorage.getItem('mgsu_token') || '';
-  if (!token) return;
+  if (!token) return;   // без аккаунта — блок не показываем
   try{
     const r = await fetch('/api/tasks', {headers:{'Authorization': 'Bearer ' + token}});
     const data = await r.json();

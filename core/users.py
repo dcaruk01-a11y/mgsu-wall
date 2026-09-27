@@ -63,6 +63,8 @@ async def db_init_users():
             ("notify_enabled", "ALTER TABLE users ADD COLUMN notify_enabled INTEGER DEFAULT 0"),
             ("banned", "ALTER TABLE users ADD COLUMN banned INTEGER DEFAULT 0"),
             ("ban_reason", "ALTER TABLE users ADD COLUMN ban_reason TEXT DEFAULT ''"),
+            ("feedback_request_at", "ALTER TABLE users ADD COLUMN feedback_request_at REAL DEFAULT 0"),
+            ("feedback_seen_at", "ALTER TABLE users ADD COLUMN feedback_seen_at REAL DEFAULT 0"),
         ]
         for col, ddl in migrations:
             if col not in existing:

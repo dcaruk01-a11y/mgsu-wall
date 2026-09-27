@@ -68,6 +68,11 @@ async def grable():
 @router.get("/games/tetris")
 async def tetris():
     return FileResponse("pages/games/tetris.html")
+
+@router.get("/games/2048")
+async def game_2048():
+    return FileResponse("pages/games/2048.html")
+    
 # ═══════════ ПРОТОТИПЫ (скрытые, нигде не слинкованы) ═══════════
 @router.get("/proto/home")
 async def proto_home():

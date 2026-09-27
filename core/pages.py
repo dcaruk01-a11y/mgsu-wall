@@ -76,6 +76,10 @@ async def game_2048():
 @router.get("/games/adventure")
 async def adventure():
     return FileResponse("pages/games/adventure.html")
+
+@router.get("/games/ventilation")
+async def ventilation():
+    return FileResponse("pages/games/ventilation.html")
     
 # ═══════════ ПРОТОТИПЫ (скрытые, нигде не слинкованы) ═══════════
 @router.get("/proto/home")

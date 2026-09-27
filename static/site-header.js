@@ -53,12 +53,15 @@
 
 
 /* ═══════════════════════════════════════════════════════════
-   ОПРЕДЕЛЯЕМ — МЫ РЕАЛЬНО НА ГЛАВНОЙ?
-   Только если URL = /glavnaya или / (корень)
+   ГДЕ МЫ СЕЙЧАС
    ═══════════════════════════════════════════════════════════ */
 function isOnHomePage(){
   var p = location.pathname;
   return p === '/glavnaya' || p === '/' || p === '' || p === '/index.html';
+}
+
+function isGamePage(){
+  return location.pathname.indexOf('/games/') === 0;
 }
 
 
@@ -76,75 +79,85 @@ function renderSiteHeader(active, opts){
   var nick = localStorage.getItem('mgsu_nick') || '';
   var initial = nick ? nick.charAt(0).toUpperCase() : '👤';
 
-  // ★ ГЛАВНОЕ ИСПРАВЛЕНИЕ:
-  // isHome теперь зависит от РЕАЛЬНОГО URL, а не от параметра 'games'
   var onHome = isOnHomePage();
 
-  var navHtml = '';
-
-  // ── Игры ──
-  // На главной — скроллим к секции. На других страницах — ведём на главную.
-  var gamesHref = onHome ? '#games' : '/glavnaya#games';
-  var gamesClick = onHome ? ' onclick="scrollToGames(event)"' : '';
-  var gamesActive = (active === 'games' && !onHome) ? ' active' : '';
-  navHtml += '<a href="' + gamesHref + '" data-key="games" class="site-header-link' + gamesActive + '" title="Игры"' + gamesClick + '>'
-          +  '<span class="site-header-link-icon">🎮</span>'
-          +  '<span class="site-header-link-label">Игры</span>'
-          +  '</a>';
-
-  // ── Рейтинг ──
-  var rActive = (active === 'ratings') ? ' active' : '';
-  navHtml += '<a href="/ratings" data-key="ratings" class="site-header-link' + rActive + '" title="Рейтинг">'
-          +  '<span class="site-header-link-icon">🏆</span>'
-          +  '<span class="site-header-link-label">Рейтинг</span>'
-          +  '</a>';
-
-  // ── Магазин ──
-  var sActive = (active === 'shop') ? ' active' : '';
-  navHtml += '<a href="/shop" data-key="shop" class="site-header-link' + sActive + '" title="Магазин">'
-          +  '<span class="site-header-link-icon">🛍</span>'
-          +  '<span class="site-header-link-label">Магазин</span>'
-          +  '</a>';
-
-  // ── Войти / профиль ──
-  var authHtml = '';
-  if (isLoggedIn){
-    authHtml = '<a href="/profile" class="site-header-avatar' + (active==='profile'?' active':'') + '" title="' + (nick || 'Профиль') + '">'
-             +  '<span>' + initial + '</span>'
-             +  '</a>';
-  } else {
-    authHtml = '<a href="/auth" class="site-header-login' + (active==='auth'?' active':'') + '" title="Войти">'
-             +  '<span class="site-header-login-icon">👤</span>'
-             +  '<span class="site-header-login-label">Войти</span>'
-             +  '</a>';
-  }
-
-  // ★ Логотип:
-  // На главной — плавный скролл вверх
-  // На других страницах — переход на /glavnaya
+  // Лого — на главную
   var brandHref = onHome ? '#' : '/glavnaya';
   var brandClick = onHome ? ' onclick="scrollToTop(event)"' : '';
 
+  /* ═══ НАВИГАЦИЯ ═══ */
+
+  // 🎮 Игры
+  var gamesHref = onHome ? '#games' : '/glavnaya#games';
+  var gamesClick = onHome ? ' onclick="scrollToGames(event)"' : '';
+  var gamesActive = (onHome && active === 'games') ? ' active' : '';
+  var gamesLink =
+    '<a href="' + gamesHref + '" data-key="games" class="site-header-link' + gamesActive + '" title="Игры"' + gamesClick + '>' +
+      '<span class="site-header-link-icon">🎮</span>' +
+      '<span class="site-header-link-label">Игры</span>' +
+    '</a>';
+
+  // 🏆 Рейтинг
+  var rActive = (active === 'ratings') ? ' active' : '';
+  var ratingsLink =
+    '<a href="/ratings" data-key="ratings" class="site-header-link' + rActive + '" title="Рейтинг">' +
+      '<span class="site-header-link-icon">🏆</span>' +
+      '<span class="site-header-link-label">Рейтинг</span>' +
+    '</a>';
+
+  // 🛍 Магазин
+  var sActive = (active === 'shop') ? ' active' : '';
+  var shopLink =
+    '<a href="/shop" data-key="shop" class="site-header-link' + sActive + '" title="Магазин">' +
+      '<span class="site-header-link-icon">🛍</span>' +
+      '<span class="site-header-link-label">Магазин</span>' +
+    '</a>';
+
+  /* ═══ ПРАВАЯ ЧАСТЬ — профиль ═══ */
+  var profileHtml = '';
+  if (isLoggedIn){
+    // Аватарка
+    profileHtml =
+      '<a href="/profile" class="site-header-avatar' + (active==='profile'?' active':'') + '" title="' + (nick || 'Профиль') + '">' +
+        '<span>' + initial + '</span>' +
+      '</a>';
+  } else {
+    // Кнопка "Войти" — в том же стиле что и навигация
+    profileHtml =
+      '<a href="/auth" class="site-header-profile' + (active==='auth'?' active':'') + '" title="Войти">' +
+        '<span class="site-header-profile-icon">👤</span>' +
+        '<span class="site-header-profile-label">Войти</span>' +
+      '</a>';
+  }
+
   container.className = 'site-header';
   container.innerHTML =
-    '<div class="site-header-inner">'
-    + '<a href="' + brandHref + '" class="site-header-brand" id="siteBrand"' + brandClick + '>'
-    +   '<img src="/assets/icons/logo-square.svg" alt="Лого" class="site-header-logo">'
-    +   '<span class="site-header-label"><b>НИУ МГСУ</b> · Игры</span>'
-    + '</a>'
-    + '<nav class="site-header-nav">'
-    +   navHtml
-    +   '<div class="site-header-divider"></div>'
-    +   authHtml
-    + '</nav>'
-    + '</div>';
+    '<div class="site-header-inner">' +
 
-  // Scroll-spy только на главной
+      // ЛОГО (слева)
+      '<a href="' + brandHref + '" class="site-header-brand" id="siteBrand"' + brandClick + '>' +
+        '<img src="/assets/icons/logo-square.svg" alt="Лого" class="site-header-logo">' +
+        '<span class="site-header-label"><b>НИУ МГСУ</b> · Игры</span>' +
+      '</a>' +
+
+      // НАВИГАЦИЯ (центр)
+      '<nav class="site-header-nav">' +
+        gamesLink +
+        ratingsLink +
+        shopLink +
+      '</nav>' +
+
+      // ПРОФИЛЬ (справа)
+      profileHtml +
+
+    '</div>';
+
+  // Скролл-спай только на главной
   if (onHome){
     setupScrollSpy();
   }
 
-  // Подтянуть ник если залогинен
+  // Подтянуть ник если залогинен но не сохранён
   if (isLoggedIn && !nick){
     fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + token}})
       .then(function(r){ return r.ok ? r.json() : null; })
@@ -161,26 +174,21 @@ function renderSiteHeader(active, opts){
 
 
 /* ═══════════════════════════════════════════════════════════
-   СКРОЛЛ-СПАЙ: шильдик ↔ Игры (только на главной)
+   СКРОЛЛ-СПАЙ (только на главной)
+   Когда докрутил до игр — «Игры» становится активной
    ═══════════════════════════════════════════════════════════ */
 function setupScrollSpy(){
   var gamesSection = document.getElementById('games');
-  var brand = document.getElementById('siteBrand');
   var gamesLink = document.querySelector('.site-header-link[data-key="games"]');
-  if (!gamesSection || !brand || !gamesLink) return;
-
-  brand.classList.add('active');
-  gamesLink.classList.remove('active');
+  if (!gamesSection || !gamesLink) return;
 
   if (!('IntersectionObserver' in window)) return;
 
   var observer = new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
       if (entry.isIntersecting){
-        brand.classList.remove('active');
         gamesLink.classList.add('active');
       } else {
-        brand.classList.add('active');
         gamesLink.classList.remove('active');
       }
     });
@@ -199,7 +207,7 @@ function scrollToGames(e){
   var el = document.getElementById('games');
   if (!el) return;
   if (e) e.preventDefault();
-  var headerH = 60;
+  var headerH = 64;
   var top = el.getBoundingClientRect().top + window.pageYOffset - headerH - 20;
   window.scrollTo({top: top, behavior: 'smooth'});
 }
@@ -218,23 +226,23 @@ function renderSiteFooter(){
   if (!container) return;
   container.className = 'site-footer';
   container.innerHTML =
-    '<div class="site-footer-inner">'
-    + '<div class="site-footer-left">© 2026 · Не является официальным сайтом НИУ МГСУ</div>'
-    + '<div class="site-footer-right">'
-    +   '<a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>'
-    +   '<span class="site-footer-dot">·</span>'
-    +   '<a href="/privacy">О проекте</a>'
-    +   '<span class="site-footer-dot">·</span>'
-    +   '<a href="/privacy">Политика конфиденциальности</a>'
-    +   '<span class="site-footer-dot">·</span>'
-    +   '<a href="https://t.me/mgsu_wall_archive" target="_blank" rel="noopener">Telegram-канал</a>'
-    + '</div>'
-    + '</div>';
+    '<div class="site-footer-inner">' +
+      '<div class="site-footer-left">© 2026 · Не является официальным сайтом НИУ МГСУ</div>' +
+      '<div class="site-footer-right">' +
+        '<a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>' +
+        '<span class="site-footer-dot">·</span>' +
+        '<a href="/privacy">О проекте</a>' +
+        '<span class="site-footer-dot">·</span>' +
+        '<a href="/privacy">Политика конфиденциальности</a>' +
+        '<span class="site-footer-dot">·</span>' +
+        '<a href="https://t.me/mgsu_wall_archive" target="_blank" rel="noopener">Telegram-канал</a>' +
+      '</div>' +
+    '</div>';
 }
 
 
 /* ═══════════════════════════════════════════════════════════
-   PWA — манифест + мета-теги
+   PWA
    ═══════════════════════════════════════════════════════════ */
 (function(){
   if (!document.querySelector('link[rel="manifest"]')){
@@ -254,9 +262,8 @@ function renderSiteFooter(){
   ];
   metas.forEach(function(m){
     var existing = document.querySelector('meta[name="' + m.name + '"]');
-    if (existing){
-      existing.content = m.content;
-    } else {
+    if (existing){ existing.content = m.content; }
+    else {
       var meta = document.createElement('meta');
       meta.name = m.name;
       meta.content = m.content;
@@ -301,10 +308,10 @@ function renderSiteFooter(){
   if (window.__mgsuFeedbackInit) return;
   window.__mgsuFeedbackInit = true;
 
-  var isGamePage = location.pathname.indexOf('/games/') === 0;
-  var isHome = isOnHomePage();
+  var onGame = isGamePage();
+  var onHome = isOnHomePage();
 
-  if (isGamePage){
+  if (onGame){
     try{
       var key = 'mgsu_games_seen_' + location.pathname;
       if (!sessionStorage.getItem(key)){
@@ -468,7 +475,7 @@ function renderSiteFooter(){
       return;
     }
 
-    if (!isHome) return;
+    if (!onHome) return;
     if (!shouldShowByGames()) return;
     setTimeout(function(){ showFeedbackPopup(false); }, 4000);
   }

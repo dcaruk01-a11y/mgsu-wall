@@ -46,60 +46,46 @@
   width:100%;padding:16px;border-radius:999px;border:0;cursor:pointer;
   background:linear-gradient(135deg,#FFB347,#FF7A2B);color:#1a0e05;
   font-family:inherit;font-size:16px;font-weight:900;
-  box-shadow:0 12px 30px rgba(255,140,50,0.5);transition:transform .12s;letter-spacing:0.02em;
+  box-shadow:0 12px 30px rgba(255,140,50,0.5);transition:transform .12s;
 }
 .welcome-btn:active{transform:scale(0.97);}
-.welcome-hint{font-size:12px;color:rgba(255,255,255,0.4);margin-top:14px;line-height:1.5;}
+.welcome-hint{font-size:12px;color:rgba(255,255,255,0.4);margin-top:14px;}
 
 /* ═══════════ MINI HERO ═══════════ */
 .mini-hero{
-  padding:36px 20px 28px;
+  padding:36px 20px 20px;
   max-width:1100px;
   margin:0 auto;
   text-align:center;
 }
 .mini-hero-kicker{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:11px;font-weight:800;
-  letter-spacing:0.16em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:800;letter-spacing:0.16em;
+  text-transform:uppercase;
   padding:8px 18px;border-radius:999px;
   background:rgba(128,128,128,0.15);
   border:1px solid rgba(128,128,128,0.28);
   color:inherit;opacity:0.85;
-  margin-bottom:18px;
-  text-decoration:none;
-  transition:all .15s;
-  cursor:pointer;
+  margin-bottom:18px;text-decoration:none;
+  transition:all .15s;cursor:pointer;
 }
 .mini-hero-kicker:hover{
-  opacity:1;
-  background:rgba(255,180,80,0.15);
-  border-color:rgba(255,180,80,0.5);
-  transform:translateY(-1px);
+  opacity:1;background:rgba(255,180,80,0.15);
+  border-color:rgba(255,180,80,0.5);transform:translateY(-1px);
 }
 .mini-hero h1{
   font-size:clamp(28px,5.5vw,48px);
-  font-weight:900;
-  letter-spacing:-0.03em;
-  line-height:1.05;
-  margin-bottom:14px;
-  color:inherit;
+  font-weight:900;letter-spacing:-0.03em;line-height:1.05;
+  margin-bottom:14px;color:inherit;
 }
 .mini-hero h1 em{
   font-style:normal;
   background:linear-gradient(135deg,#FFB347,#FF7A2B);
-  -webkit-background-clip:text;
-  background-clip:text;
-  color:transparent;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .mini-hero p{
-  font-size:15px;
-  opacity:0.7;
-  max-width:540px;
-  margin:0 auto 26px;
-  line-height:1.55;
+  font-size:15px;opacity:0.7;max-width:540px;
+  margin:0 auto 26px;line-height:1.55;
 }
 .mini-hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
 .btn-hero{
@@ -107,13 +93,11 @@
   padding:15px 32px;border-radius:999px;
   font-family:inherit;font-size:15px;font-weight:800;
   text-decoration:none;cursor:pointer;border:0;
-  transition:transform .12s, box-shadow .2s;
-  min-width:180px;
+  transition:transform .12s, box-shadow .2s;min-width:180px;
 }
 .btn-hero.primary{
   background:linear-gradient(135deg,#FFB347,#FF7A2B);
-  color:#1a0e05;
-  box-shadow:0 12px 30px rgba(255,140,50,0.4);
+  color:#1a0e05;box-shadow:0 12px 30px rgba(255,140,50,0.4);
   animation:heroPulse 2.2s ease-in-out infinite;
 }
 @keyframes heroPulse{
@@ -123,13 +107,100 @@
 .btn-hero.primary:hover{transform:translateY(-2px);animation-play-state:paused;}
 .btn-hero.primary:active{transform:translateY(0) scale(0.98);}
 .btn-hero.secondary{
-  background:rgba(128,128,128,0.12);
-  color:inherit;
+  background:rgba(128,128,128,0.12);color:inherit;
   border:1px solid rgba(128,128,128,0.35);
 }
 .btn-hero.secondary:hover{background:rgba(128,128,128,0.22);transform:translateY(-2px);}
 
-/* ═══════════ КАК ЭТО РАБОТАЕТ (НЕ КЛИКАБЕЛЬНО) ═══════════ */
+/* ═══════════ МИНИ-ПОЛОСКА ТОП-3 ДНЯ ═══════════ */
+.mini-top{
+  max-width:640px;
+  margin:8px auto 24px;
+  padding:0 20px;
+}
+.mini-top-inner{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 18px;
+  border-radius:999px;
+  background:rgba(255,180,80,0.10);
+  border:1px solid rgba(255,180,80,0.35);
+  text-decoration:none;
+  color:inherit;
+  transition:transform .15s, background .15s;
+  overflow:hidden;
+}
+.mini-top-inner:hover{
+  transform:translateY(-2px);
+  background:rgba(255,180,80,0.18);
+}
+.mini-top-label{
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:#FFB347;
+  flex-shrink:0;
+}
+.mini-top-list{
+  flex:1;
+  display:flex;
+  gap:6px;
+  overflow:hidden;
+  min-width:0;
+  font-size:13px;
+}
+.mini-top-player{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:inherit;
+  opacity:0.85;
+}
+.mini-top-player b{
+  color:inherit;
+  font-weight:800;
+  opacity:1;
+}
+.mini-top-player .medal{
+  font-size:14px;
+  flex-shrink:0;
+}
+.mini-top-player .nick{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:90px;
+}
+.mini-top-player .score{
+  color:#FFB347;
+  font-weight:800;
+  flex-shrink:0;
+}
+.mini-top-arrow{
+  color:#FFB347;
+  font-weight:900;
+  font-size:16px;
+  flex-shrink:0;
+}
+.mini-top-empty{
+  flex:1;
+  font-size:13px;
+  opacity:0.65;
+}
+
+@media(max-width:520px){
+  .mini-top-inner{padding:10px 14px;gap:8px;border-radius:14px;}
+  .mini-top-label{font-size:11px;}
+  .mini-top-list{font-size:12px;gap:4px;}
+  .mini-top-player .nick{max-width:60px;}
+  .mini-top-player:nth-child(n+3){display:none;} /* на телефоне только топ-2 */
+}
+
+/* ═══════════ КАК ЭТО РАБОТАЕТ ═══════════ */
 .how-it-works{
   max-width:900px;
   margin:0 auto 32px;
@@ -146,7 +217,6 @@
   background:rgba(128,128,128,0.10);
   border:1px solid rgba(128,128,128,0.20);
   text-align:center;
-  /* НЕ кликабельно — просто информационный блок */
   cursor:default;
   user-select:none;
 }
@@ -154,49 +224,12 @@
 .how-title{font-size:14px;font-weight:800;color:inherit;margin-bottom:4px;}
 .how-desc{font-size:12px;opacity:0.65;line-height:1.4;}
 
-/* ═══════════ ЗАДАНИЯ ═══════════ */
-.daily-tasks-widget{
-  max-width:640px;margin:0 auto;padding:20px 24px;border-radius:18px;
-  background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.20);
-}
-.daily-tasks-widget h3{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.7;margin:0 0 14px;}
-.daily-task-item{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:14px;border-bottom:1px solid rgba(128,128,128,0.15);}
-.daily-task-item:last-child{border-bottom:none;}
-.daily-task-check{width:20px;height:20px;border-radius:50%;border:2px solid rgba(128,128,128,0.4);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
-.daily-task-item.done .daily-task-check{background:#4ADE80;border-color:#4ADE80;color:#0a1f0f;}
-.daily-task-item.done .daily-task-text{text-decoration:line-through;opacity:0.55;}
-.daily-task-text{flex:1;line-height:1.4;}
-.daily-task-reward{font-size:12px;font-weight:700;color:#4ADE80;white-space:nowrap;}
-
-/* ═══════════ ТОП ДНЯ ═══════════ */
-.top-day-block{
-  max-width:640px;margin:0 auto;padding:24px;border-radius:18px;
-  background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.20);
-}
-.top-day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
-.top-day-title{font-size:15px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;opacity:0.85;}
-.top-day-link{font-size:13px;font-weight:700;color:inherit;opacity:0.7;text-decoration:none;}
-.top-day-link:hover{opacity:1;text-decoration:underline;}
-.top-day-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid rgba(128,128,128,0.15);}
-.top-day-row:last-child{border-bottom:none;}
-.top-day-pos{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;background:rgba(128,128,128,0.20);flex-shrink:0;color:inherit;}
-.top-day-pos.gold{background:#FFD700;color:#1a1a1a;}
-.top-day-pos.silver{background:#C0C0C0;color:#1a1a1a;}
-.top-day-pos.bronze{background:#CD7F32;color:#fff;}
-.top-day-nick{flex:1;font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.top-day-score{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;opacity:0.85;}
-.top-day-empty{text-align:center;padding:20px;opacity:0.6;font-size:13px;}
-
-/* ═══════════ ЗАГОЛОВОК СЕКЦИИ ИГР ═══════════ */
+/* ═══════════ СЕТКА ИГР ═══════════ */
 .games-section-head{
-  max-width:1100px;
-  margin:0 auto 20px;
-  padding:0 20px;
+  max-width:1100px;margin:0 auto 20px;padding:0 20px;
 }
 .games-section-title{
-  font-size:26px;font-weight:900;
-  letter-spacing:-0.02em;
-  color:inherit;
+  font-size:26px;font-weight:900;letter-spacing:-0.02em;color:inherit;
 }
 .games-grid-wrap{max-width:1100px;margin:0 auto;padding:0 20px;}
 .games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
@@ -206,10 +239,28 @@
   background:rgba(128,128,128,0.10);border:1px solid rgba(128,128,128,0.20);
   text-decoration:none;color:inherit;cursor:pointer;font-family:inherit;text-align:left;
   transition:transform .15s, background .15s, border-color .15s;
+  position:relative;
 }
 .game-card:hover{transform:translateY(-4px);background:rgba(128,128,128,0.18);border-color:rgba(128,128,128,0.45);}
 .game-card.soon{opacity:0.55;cursor:default;}
 .game-card.soon:hover{transform:none;}
+
+/* Бейдж с количеством заданий по игре */
+.game-card-task{
+  position:absolute;
+  top:14px;right:14px;
+  display:none;
+  font-size:10px;
+  font-weight:900;
+  padding:3px 8px;
+  border-radius:999px;
+  background:rgba(74,222,128,0.15);
+  color:#4ADE80;
+  border:1px solid rgba(74,222,128,0.5);
+  letter-spacing:0.04em;
+}
+.game-card.has-task .game-card-task{display:inline-block;}
+
 .game-card-tag{
   display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;
   padding:4px 10px;border-radius:999px;background:rgba(128,128,128,0.20);color:inherit;
@@ -235,11 +286,69 @@
 .dev-card__note{font-size:12px;opacity:0.7;}
 .dev-credits__footer{font-size:13px;opacity:0.7;border-top:1px dashed rgba(128,128,128,0.25);padding-top:16px;margin-top:4px;}
 
-#gameActions{display:flex;justify-content:center;}
-#gameActions .btn-play{margin:0;min-width:240px;max-width:320px;width:100%;}
+/* ═══════════ МОДАЛКА ИГРЫ ═══════════ */
+#gameActions{display:flex;justify-content:center;flex-direction:column;gap:14px;}
+#gameActions .btn-play{margin:0 auto;min-width:240px;max-width:320px;width:100%;}
 
+/* Задания в модалке игры */
+.game-tasks-block{
+  padding:16px 18px;
+  border-radius:14px;
+  background:rgba(74,222,128,0.06);
+  border:1px solid rgba(74,222,128,0.30);
+  text-align:left;
+}
+.game-tasks-title{
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:#4ADE80;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.game-task{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px dashed rgba(74,222,128,0.20);
+}
+.game-task:last-child{border-bottom:none;}
+.game-task.done{opacity:0.55;}
+.game-task.done .game-task-text{text-decoration:line-through;}
+.game-task-icon{
+  font-size:14px;
+  line-height:1.4;
+  flex-shrink:0;
+  width:20px;
+  text-align:center;
+}
+.game-task-text{
+  flex:1;
+  font-size:13px;
+  line-height:1.45;
+  color:inherit;
+}
+.game-task-progress{
+  font-size:11px;
+  opacity:0.65;
+  margin-top:3px;
+  font-variant-numeric:tabular-nums;
+}
+.game-task-reward{
+  font-size:12px;
+  font-weight:900;
+  color:#4ADE80;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
+/* ═══════════ АДАПТИВ ═══════════ */
 @media(max-width:640px){
-  .mini-hero{padding:24px 16px 20px;}
+  .mini-hero{padding:24px 16px 14px;}
   .mini-hero h1{margin-bottom:10px;}
   .mini-hero p{font-size:14px;margin-bottom:20px;}
   .btn-hero{padding:14px 24px;font-size:14px;min-width:auto;flex:1;}
@@ -255,6 +364,7 @@
   .game-card-title{font-size:17px;margin-top:10px;}
   .game-card-tag{font-size:9px;padding:3px 8px;}
   .game-card-arrow{font-size:13px;}
+  .game-card-task{top:10px;right:10px;font-size:9px;padding:2px 6px;}
 
   .dev-credits__inner{padding:22px 18px;}
   .dev-credits__title{font-size:18px;}
@@ -268,8 +378,7 @@
   .welcome-step-text{font-size:13px;}
 }
 @media(max-width:520px){
-  #gameActions{justify-content:stretch;}
-  #gameActions .play{max-width:none;}
+  #gameActions .btn-play{max-width:none;}
 }
 </style>
 </head><body>
@@ -321,6 +430,17 @@
   </div>
 </section>
 
+<!-- ══════════ МИНИ-ПОЛОСКА ТОП-3 ДНЯ ══════════ -->
+<section class="mini-top" id="miniTopSection" style="display:none;">
+  <a href="/ratings" class="mini-top-inner" id="miniTopLink">
+    <span class="mini-top-label">🏆 Топ дня</span>
+    <div class="mini-top-list" id="miniTopList">
+      <span class="mini-top-empty">Загрузка…</span>
+    </div>
+    <span class="mini-top-arrow">→</span>
+  </a>
+</section>
+
 <!-- ══════════ КАК ЭТО РАБОТАЕТ ══════════ -->
 <section class="how-it-works">
   <div class="how-steps">
@@ -358,25 +478,6 @@
   </div>
 </section>
 
-<!-- ══════════ ЗАДАНИЯ ДНЯ ══════════ -->
-<section id="dailyTasksSection" style="padding:0 16px 24px;display:none;">
-  <div class="daily-tasks-widget" id="dailyWidget">
-    <h3>🎯 Задания на сегодня</h3>
-    <div id="dailyTasksList"></div>
-  </div>
-</section>
-
-<!-- ══════════ ТОП ДНЯ ══════════ -->
-<section style="padding:0 16px 32px;">
-  <div class="top-day-block" id="topDayBlock" style="display:none;">
-    <div class="top-day-head">
-      <div class="top-day-title">🏆 Рейтинг дня</div>
-      <a href="/ratings" class="top-day-link">Весь рейтинг →</a>
-    </div>
-    <div id="topDayList"></div>
-  </div>
-</section>
-
 <!-- ══════════ БЛОК РАЗРАБОТЧИКОВ ══════════ -->
 <section class="dev-credits" id="devCreditsSection" style="display:none;">
   <div class="dev-credits__inner">
@@ -395,7 +496,8 @@
       <div class="section-eyebrow">Правила</div>
       <h2 id="gameTitle" style="margin-bottom:20px;">Стена</h2>
       <div id="gameRules"></div>
-      <div id="gameActions" style="margin-top:36px;"></div>
+      <div id="gameTasksBlock" style="margin-top:20px;"></div>
+      <div id="gameActions" style="margin-top:24px;"></div>
     </div>
   </div>
 </div>
@@ -487,7 +589,7 @@ document.getElementById('startPlayingBtn').addEventListener('click', function(){
 });
 
 /* ═══════════════════════════════════════════════════════════
-   ПОДМЕНА КНОПКИ ПРОФИЛЯ
+   ПРОФИЛЬ — подмена
    ═══════════════════════════════════════════════════════════ */
 (function(){
   var btn = document.getElementById('profileCta');
@@ -520,6 +622,9 @@ const GAMES_INFO = {
   click: { title: 'Гонка кликов', rules: `<p class="rule-text">Игра в разработке.</p>`, playUrl: null, playLabel: 'Скоро' }
 };
 
+// Кэш заданий по играм: {key: [tasks]}
+let gameTasksCache = {};
+
 async function loadGames(){
   try{
     const r = await fetch('/api/games');
@@ -530,6 +635,39 @@ async function loadGames(){
     const all = Object.keys(GAMES_INFO).map(k => ({key:k, title:GAMES_INFO[k].title, enabled:true, status: GAMES_INFO[k].playUrl ? 'available':'soon'}));
     renderTiles(all);
   }
+}
+
+async function loadGameTasks(){
+  const token = localStorage.getItem('mgsu_token') || '';
+  if (!token) return;
+  try{
+    const r = await fetch('/api/tasks', {headers:{'Authorization': 'Bearer ' + token}});
+    const data = await r.json();
+    if (!data.logged_in || !data.tasks) return;
+
+    // Разложить по играм
+    gameTasksCache = {};
+    data.tasks.forEach(t => {
+      const g = t.game;
+      if (!gameTasksCache[g]) gameTasksCache[g] = [];
+      gameTasksCache[g].push(t);
+    });
+
+    // Обновить бейджи на карточках
+    document.querySelectorAll('.game-card').forEach(card => {
+      const key = card.dataset.gameKey;
+      if (!key) return;
+      if (gameTasksCache[key] && gameTasksCache[key].length){
+        card.classList.add('has-task');
+        const badge = card.querySelector('.game-card-task');
+        if (badge){
+          const doneCount = gameTasksCache[key].filter(t => t.done).length;
+          badge.textContent = '🎯 ' + gameTasksCache[key].length +
+            (doneCount ? ' (' + doneCount + '✓)' : '');
+        }
+      }
+    });
+  }catch(e){}
 }
 
 function renderTiles(games){
@@ -549,7 +687,9 @@ function renderTiles(games){
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'game-card ' + (isAvailable ? '' : 'soon');
+    btn.dataset.gameKey = g.key;
     btn.innerHTML =
+      '<span class="game-card-task">🎯 0</span>' +
       '<span class="game-card-tag' + (isAvailable ? '' : ' grey') + '">' + (isAvailable ? 'Доступно' : 'Скоро') + '</span>' +
       '<span class="game-card-title"></span>' +
       (isAvailable ? '<span class="game-card-arrow">Играть →</span>' : '');
@@ -557,6 +697,9 @@ function renderTiles(games){
     if (isAvailable) btn.onclick = () => openGame(g.key);
     box.appendChild(btn);
   });
+
+  // Догружаем бейджи с заданиями
+  loadGameTasks();
 }
 
 function openGame(key){
@@ -564,6 +707,15 @@ function openGame(key){
   if (!info) return;
   document.getElementById('gameTitle').textContent = info.title;
   document.getElementById('gameRules').innerHTML = info.rules;
+
+  // Задания для этой игры
+  const tasksBlock = document.getElementById('gameTasksBlock');
+  tasksBlock.innerHTML = '';
+  const taskList = gameTasksCache[key] || [];
+  if (taskList.length){
+    tasksBlock.innerHTML = renderTasksBlock(taskList);
+  }
+
   const actions = document.getElementById('gameActions');
   if (info.playUrl){
     actions.innerHTML = '<a class="btn-play" href="' + info.playUrl + '">' + info.playLabel + ' →</a>';
@@ -573,6 +725,34 @@ function openGame(key){
   lockScroll();
   document.getElementById('gameModal').classList.add('open');
 }
+
+function renderTasksBlock(tasks){
+  let html = '<div class="game-tasks-block">';
+  html += '<div class="game-tasks-title">🎯 Задания по этой игре</div>';
+  tasks.forEach(t => {
+    const cls = 'game-task' + (t.done ? ' done' : '');
+    let progress = '';
+    if (!t.done){
+      if (t.target > 1){
+        progress = '<div class="game-task-progress">' + t.progress + ' / ' + t.target + '</div>';
+      }
+    } else {
+      progress = '<div class="game-task-progress">✓ Выполнено</div>';
+    }
+    html += '<div class="' + cls + '">';
+    html +=   '<div class="game-task-icon">' + (t.done ? '✓' : '🎯') + '</div>';
+    html +=   '<div class="game-task-text">' + escapeHtml(t.text) + progress + '</div>';
+    html +=   '<div class="game-task-reward">+' + t.reward + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function closeGame(){ document.getElementById('gameModal').classList.remove('open'); unlockScroll(); }
 function closePrivacy(){ document.getElementById('privacyModal').classList.remove('open'); unlockScroll(); }
 
@@ -587,30 +767,39 @@ function unlockScroll(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ЗАДАНИЯ (только для авторизованных)
+   МИНИ-ТОП ДНЯ
    ═══════════════════════════════════════════════════════════ */
-async function loadDailyTasks(){
-  const token = localStorage.getItem('mgsu_token') || '';
-  if (!token) return;   // без аккаунта — блок не показываем
+async function loadMiniTop(){
   try{
-    const r = await fetch('/api/tasks', {headers:{'Authorization': 'Bearer ' + token}});
+    const r = await fetch('/api/top-day');
     const data = await r.json();
-    if (!data.logged_in || !data.tasks || !data.tasks.length) return;
-    const section = document.getElementById('dailyTasksSection');
-    const list = document.getElementById('dailyTasksList');
-    section.style.display = 'block';
-    list.innerHTML = '';
-    data.tasks.forEach(t => {
-      const row = document.createElement('div');
-      row.className = 'daily-task-item' + (t.done ? ' done' : '');
-      row.innerHTML =
-        '<div class="daily-task-check">' + (t.done ? '✓' : '') + '</div>' +
-        '<div class="daily-task-text"></div>' +
-        '<div class="daily-task-reward">+' + t.reward + '</div>';
-      row.querySelector('.daily-task-text').textContent = t.text;
-      list.appendChild(row);
-    });
+    renderMiniTop(data.top || []);
   }catch(e){}
+}
+
+function renderMiniTop(top){
+  const section = document.getElementById('miniTopSection');
+  const list = document.getElementById('miniTopList');
+  if (!section || !list) return;
+
+  if (!top.length){
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  list.innerHTML = '';
+  const medals = ['🥇', '🥈', '🥉'];
+  top.forEach((t, i) => {
+    const el = document.createElement('span');
+    el.className = 'mini-top-player';
+    el.innerHTML =
+      '<span class="medal">' + (medals[i] || '•') + '</span>' +
+      '<span class="nick"></span>' +
+      '<b class="score">' + t.score + '</b>';
+    el.querySelector('.nick').textContent = t.nick || 'Аноним';
+    list.appendChild(el);
+  });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -643,38 +832,6 @@ async function loadDevCredits(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ТОП ДНЯ
-   ═══════════════════════════════════════════════════════════ */
-async function loadTopDay(){
-  try{
-    const r = await fetch('/api/top-day');
-    const data = await r.json();
-    renderTopDay(data.top || []);
-  }catch(e){}
-}
-
-function renderTopDay(top){
-  const block = document.getElementById('topDayBlock');
-  const list = document.getElementById('topDayList');
-  if (!block || !list) return;
-  if (!top.length){ block.style.display = 'none'; return; }
-  block.style.display = 'block';
-  list.innerHTML = '';
-  const medals = ['gold', 'silver', 'bronze'];
-  top.forEach(function(t, i){
-    const row = document.createElement('div');
-    row.className = 'top-day-row';
-    const posCls = 'top-day-pos' + (i < 3 ? ' ' + medals[i] : '');
-    row.innerHTML =
-      '<div class="' + posCls + '">' + (i + 1) + '</div>' +
-      '<div class="top-day-nick"></div>' +
-      '<div class="top-day-score">' + t.score + '</div>';
-    row.querySelector('.top-day-nick').textContent = t.nick || 'Аноним';
-    list.appendChild(row);
-  });
-}
-
-/* ═══════════════════════════════════════════════════════════
    ИНИЦИАЛИЗАЦИЯ
    ═══════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function(){
@@ -689,9 +846,8 @@ document.addEventListener('DOMContentLoaded', function(){
     if (e.key==='Escape'){ closeGame(); closePrivacy(); }
   });
   loadGames();
-  loadDailyTasks();
+  loadMiniTop();
   loadDevCredits();
-  loadTopDay();
 });
 </script>
 <script>

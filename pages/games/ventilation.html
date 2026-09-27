@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Вентиляция МГСУ · Игры</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
+<style>
+html,body{height:100%;}
+body.vent-page{
+  height:100vh;
+  height:100dvh;
+  max-height:100dvh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+.status-banner{
+  position:fixed;top:0;left:0;right:0;z-index:99;
+  background:#AC1422;color:#fff;padding:12px 20px;
+  text-align:center;font-size:13px;font-weight:600;display:none;
+}
+.status-banner.show{display:block;}
+.status-banner small{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:2px;}
+
+/* ═══════════ СТЕЙДЖ ═══════════ */
+.vent-stage{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  padding:10px max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  gap:8px;
+}
+
+/* ─── HUD ─── */
+.vent-hud{
+  flex:0 0 auto;
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.vent-hud-box{
+  padding:6px 12px;
+  border-radius:10px;
+  background:rgba(128,128,128,0.12);
+  border:1px solid rgba(128,128,128,0.22);
+  font-size:14px;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:inherit;
+}
+.vent-hud-box .lbl{opacity:0.55;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;}
+.vent-hud-box .val{font-size:16px;font-weight:900;}
+.vent-hud-box .val.warn{color:#FFB347;}
+
+/* ─── Прогресс воздуха ─── */
+.vent-bar{
+  flex:0 0 auto;
+  height:8px;
+  border-radius:4px;
+  background:rgba(128,128,128,0.20);
+  overflow:hidden;
+  max-width:600px;
+  width:100%;
+  margin:0 auto;
+}
+.vent-bar-fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg, #6FA8FF, #4ADE80);
+  transition:width .3s ease;
+  border-radius:4px;
+}
+
+/* ─── Canvas ─── */
+.vent-wrap{
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+canvas{
+  display:block;
+  background:#0a0f1e;
+  border-radius:12px;
+  border:1px solid rgba(128,128,128,0.25);
+  box-shadow:0 12px 32px rgba(0,0,0,0.35);
+  max-width:100%;
+  max-height:100%;
+  touch-action:none;
+}
+
+/* ─── Управление ─── */
+.vent-controls{
+  flex:0 0 auto;
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.vent-btn{
+  padding:10px 20px;
+  border-radius:10px;
+  border:1px solid rgba(128,128,128,0.3);
+  background:rgba(128,128,128,0.12);
+  color:inherit;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:800;
+  cursor:pointer;
+  transition:transform .1s, background .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.vent-btn:active{transform:scale(0.96);background:rgba(128,128,128,0.25);}
+.vent-btn.primary{background:rgba(111,168,255,0.22);border-color:rgba(111,168,255,0.5);color:#fff;}
+
+/* ─── Оверлеи ─── */
+.vent-overlay{
+  position:absolute;inset:0;
+  background:rgba(5,14,31,0.94);
+  backdrop-filter:blur(10px);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:14px;padding:22px;text-align:center;
+  z-index:20;transition:opacity .3s;
+  border-radius:12px;
+}
+.vent-overlay.hide{opacity:0;pointer-events:none;}
+.vent-overlay-emoji{font-size:60px;margin-bottom:2px;}
+.vent-overlay h2{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.vent-overlay p{font-size:13px;color:rgba(255,255,255,0.75);max-width:340px;line-height:1.55;}
+.vent-overlay p b{color:#FFD700;}
+
+.vent-ov-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 28px;border-radius:999px;
+  background:#fff;color:#0F3C73;
+  font-family:inherit;font-size:14px;font-weight:700;
+  border:0;cursor:pointer;
+  box-shadow:0 12px 30px rgba(0,0,0,0.3);
+  transition:transform .1s;
+  text-decoration:none;
+}
+.vent-ov-btn:active{transform:scale(0.97);}
+.vent-ov-btn.ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);box-shadow:none;}
+
+.vent-finish-score{font-size:48px;font-weight:900;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;color:#fff;}
+.vent-finish-label{font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
+.vent-finish-rank{font-size:20px;font-weight:800;color:#fff;}
+.vent-finish-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+
+#progressBlock{
+  display:none;width:100%;max-width:380px;
+  padding:12px 16px;border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  font-size:13px;text-align:left;line-height:1.5;
+  color:#fff;
+}
+#progressBlock a{color:#4ADE80;text-decoration:none;font-weight:700;}
+
+@media(max-width:520px){
+  .vent-hud-box{padding:5px 9px;font-size:12px;}
+  .vent-hud-box .val{font-size:14px;}
+  .vent-overlay-emoji{font-size:48px;}
+  .vent-overlay h2{font-size:19px;}
+  .vent-finish-score{font-size:40px;}
+  .vent-finish-rank{font-size:17px;}
+  .vent-btn{padding:9px 16px;font-size:12px;}
+}
+</style>
+</head><body class="vent-page">
+
+<div class="status-banner" id="statusBanner">
+  🔒 Технический перерыв
+  <small id="statusBannerSub">Игры доступны только в учебное время</small>
+</div>
+
+<div id="siteHeader"></div>
+
+<div class="vent-stage">
+
+  <div class="vent-hud">
+    <div class="vent-hud-box">
+      <span class="lbl">Уровень</span>
+      <span class="val" id="hudLevel">1</span>
+    </div>
+    <div class="vent-hud-box">
+      <span class="lbl">Воздух</span>
+      <span class="val" id="hudAir">0%</span>
+    </div>
+    <div class="vent-hud-box">
+      <span class="lbl">Очки</span>
+      <span class="val" id="hudScore">0</span>
+    </div>
+  </div>
+
+  <div class="vent-bar"><div class="vent-bar-fill" id="airBar"></div></div>
+
+  <div class="vent-wrap" id="canvasWrap">
+    <canvas id="c"></canvas>
+
+    <div class="vent-overlay" id="startOv">
+      <div class="vent-overlay-emoji">💨</div>
+      <h2>Вентиляция МГСУ</h2>
+      <p>Проведи <b>воздух</b> от вытяжки 🟢 до комнаты 🟡. Тапай и тяни пальцем по земле, чтобы прокапывать тоннели.</p>
+      <button class="vent-ov-btn" id="startBtn" type="button">Начать смену →</button>
+    </div>
+
+    <div class="vent-overlay hide" id="levelOv">
+      <div class="vent-overlay-emoji" id="levelEmoji">✅</div>
+      <h2 id="levelTitle">Уровень пройден!</h2>
+      <p id="levelDesc">Воздух дошёл до комнаты</p>
+      <button class="vent-ov-btn" id="nextBtn" type="button">Следующий уровень →</button>
+    </div>
+
+    <div class="vent-overlay hide" id="finishOv">
+      <div class="vent-overlay-emoji" id="finishEmoji">🏆</div>
+      <div class="vent-finish-score" id="finishScore">0</div>
+      <div class="vent-finish-label">очков</div>
+      <div class="vent-finish-rank" id="finishRank">Слесарь</div>
+      <div id="progressBlock"></div>
+      <div class="vent-finish-actions">
+        <button class="vent-ov-btn" id="shareBtn" type="button">Показать другу</button>
+        <button class="vent-ov-btn ghost" id="againBtn" type="button">Ещё раз</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="vent-controls">
+    <button class="vent-btn" id="btnRetry" type="button">🔄 Сброс</button>
+    <button class="vent-btn primary" id="btnMenu" type="button">🏠 Меню</button>
+  </div>
+
+</div>
+
+<script src="/static/site-header.js"></script>
+<script>
+renderSiteHeader('games');
+
+/* ═══════════════════════════════════════════════════════════
+   КОНСТАНТЫ
+   ═══════════════════════════════════════════════════════════ */
+const COLS = 24;
+const ROWS = 16;
+
+// Типы клеток
+const C_EMPTY  = 0;
+const C_DIRT   = 1;  // можно копать
+const C_WALL   = 2;  // нельзя копать
+const C_SOURCE = 3;  // источник воздуха
+const C_TARGET = 4;  // цель
+
+// Скорость симуляции воздуха
+const AIR_STEP_MS = 60;   // раз в 60мс считаем один шаг
+const TARGET_FILL = 0.75; // нужно заполнить 75% цели
+
+/* ═══════════════════════════════════════════════════════════
+   УРОВНИ
+   S = источник, T = цель, D = копаемая земля, # = стена, . = пусто
+   ═══════════════════════════════════════════════════════════ */
+const LEVELS = [
+  // Уровень 1 — простой, веди вниз-вправо
+  [
+    "........................",
+    "..SSSS..................",
+    "..DDDD..................",
+    "..DDDD..................",
+    "..DDDD..................",
+    "..DDDD..DDDDDDDDDDDD....",
+    "..DDDD..DDDDDDDDDDDD....",
+    "..DDDD..DDDDDDDDDDDD....",
+    "..DDDD..DDDDDDDDDDDD....",
+    "..DDDD..DDDDDDDDDDDD....",
+    "..DDDD..DDDDDDDDDDDD....",
+    "..DDDD..DDDDDDDDDDDD....",
+    "..DDDD..DDDDDDDDDDDD....",
+    "..DDDD..DDDDDDDDTTTT....",
+    "..DDDD..........TTTT....",
+    "................TTTT....",
+  ],
+
+  // Уровень 2 — вертикальный, есть стены
+  [
+    "........................",
+    "....SSSS................",
+    "....DDDD................",
+    "....DDDD....########....",
+    "....DDDD....#......#....",
+    "....DDDD....#......#....",
+    "....DDDD....#......#....",
+    "....DDDD....#......#....",
+    "....DDDD....#......#....",
+    "....DDDD....#......#....",
+    "....DDDD....#......#....",
+    "....DDDD....########....",
+    "....DDDD................",
+    "....DDDDDDDDDDDDDDDD....",
+    "................TTTT....",
+    "................TTTT....",
+  ],
+
+  // Уровень 3 — лабиринт
+  [
+    "........................",
+    "..SSSS..................",
+    "..DDDD..................",
+    "..DDDD#######...........",
+    "..DDDD......#...........",
+    "..DDDD......#...........",
+    "..DDDD......#..########.",
+    "..DDDDDDDD..D..#......#.",
+    "..DDDDDDDD..D..#......#.",
+    "..DDDD......D..#......#.",
+    "..DDDD......D..#......#.",
+    "..DDDD......DDDD......#.",
+    "..DDDD######..........#.",
+    "..DDDD...............DDD",
+    "....................TTTT",
+    "....................TTTT",
+  ],
+];
+
+/* ═══════════════════════════════════════════════════════════
+   СОСТОЯНИЕ
+   ═══════════════════════════════════════════════════════════ */
+let grid = [];       // [{type, air}]
+let canvas, ctx;
+let CW = 0, CH = 0, CELL = 20;
+
+let currentLevel = 0;
+let totalScore = 0;
+let levelScore = 0;
+let running = false;
+let airSteps = 0;
+let fillPercentage = 0;
+let targetCells = [];
+
+/* ═══════════════════════════════════════════════════════════
+   РАСПИСАНИЕ
+   ═══════════════════════════════════════════════════════════ */
+let scheduleOpen = true;
+async function checkScheduleStatus(){
+  try{
+    const r = await fetch('/status');
+    const s = await r.json();
+    scheduleOpen = !!s.open;
+    const banner = document.getElementById('statusBanner');
+    const sub = document.getElementById('statusBannerSub');
+    if (!scheduleOpen){
+      sub.textContent = 'Игры доступны только в учебное время: с ' + s.opens_at + ' до ' + s.closes_at;
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }catch(e){}
+}
+checkScheduleStatus();
+setInterval(checkScheduleStatus, 60000);
+
+/* ═══════════════════════════════════════════════════════════
+   ЗВУК
+   ═══════════════════════════════════════════════════════════ */
+let audioCtx = null;
+function initAudio(){
+  if (audioCtx) return;
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }catch(e){}
+}
+function beep(freq, dur, type, vol, slideTo){
+  if (!audioCtx) return;
+  try{
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'square';
+    osc.frequency.setValueAtTime(freq, t);
+    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    gain.gain.setValueAtTime(vol || 0.06, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + dur + 0.02);
+  }catch(e){}
+}
+let lastDigSound = 0;
+const SFX = {
+  dig:   () => { const n = performance.now(); if (n - lastDigSound < 60) return; lastDigSound = n; beep(140 + Math.random()*80, 0.03, 'sawtooth', 0.05); },
+  drop:  () => beep(400, 0.05, 'sine', 0.04, 250),
+  level: () => { [660, 880, 1100, 1400].forEach((f,i) => setTimeout(() => beep(f, 0.12, 'square', 0.09), i*90)); },
+  finish:() => { [660, 880, 1100, 1400, 1800].forEach((f,i) => setTimeout(() => beep(f, 0.13, 'square', 0.10), i*100)); },
+  reset: () => beep(300, 0.08, 'triangle', 0.06, 180),
+};
+
+/* ═══════════════════════════════════════════════════════════
+   ИНИЦИАЛИЗАЦИЯ
+   ═══════════════════════════════════════════════════════════ */
+canvas = document.getElementById('c');
+ctx = canvas.getContext('2d');
+
+function loadLevel(idx){
+  const map = LEVELS[idx];
+  grid = [];
+  targetCells = [];
+  for (let y = 0; y < ROWS; y++){
+    const row = [];
+    for (let x = 0; x < COLS; x++){
+      const ch = map[y] ? map[y][x] : '.';
+      let type = C_EMPTY;
+      if (ch === '#') type = C_WALL;
+      else if (ch === 'D') type = C_DIRT;
+      else if (ch === 'S') type = C_SOURCE;
+      else if (ch === 'T'){ type = C_TARGET; targetCells.push({x, y}); }
+      row.push({ type, air: 0 });
+    }
+    grid.push(row);
+  }
+  levelScore = 0;
+  airSteps = 0;
+  fillPercentage = 0;
+  updateHud();
+  draw();
+}
+
+function resize(){
+  const wrap = document.getElementById('canvasWrap');
+  if (!wrap) return;
+  const rect = wrap.getBoundingClientRect();
+  const availW = rect.width - 4;
+  const availH = rect.height - 4;
+  const cellW = Math.floor(availW / COLS);
+  const cellH = Math.floor(availH / ROWS);
+  CELL = Math.max(10, Math.min(cellW, cellH, 40));
+  CW = COLS * CELL;
+  CH = ROWS * CELL;
+  canvas.width = CW;
+  canvas.height = CH;
+  canvas.style.width = CW + 'px';
+  canvas.style.height = CH + 'px';
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 200));
+
+/* ═══════════════════════════════════════════════════════════
+   СИМУЛЯЦИЯ ВОЗДУХА
+   ═══════════════════════════════════════════════════════════ */
+function canHoldAir(cell){
+  return cell.type === C_EMPTY || cell.type === C_TARGET || cell.type === C_SOURCE;
+}
+
+function stepAir(){
+  // Обходим снизу вверх
+  for (let y = ROWS - 2; y >= 0; y--){
+    const ltr = Math.random() < 0.5;
+    for (let i = 0; i < COLS; i++){
+      const x = ltr ? i : COLS - 1 - i;
+      const cell = grid[y][x];
+
+      // Источник всегда полный
+      if (cell.type === C_SOURCE){
+        cell.air = 1;
+        continue;
+      }
+
+      // Только пустота и цель могут содержать воздух
+      if (!canHoldAir(cell)) continue;
+      if (cell.air <= 0.02) continue;
+
+      // Цель — поглощает воздух и не отдаёт
+      if (cell.type === C_TARGET){
+        // Медленно впитывает, чтобы был виден прогресс
+        continue;
+      }
+
+      // Пробуем течь вниз
+      const below = grid[y+1][x];
+      if (canHoldAir(below)){
+        const space = 1 - below.air;
+        if (space > 0.02){
+          const flow = Math.min(cell.air * 0.5, space * 0.5);
+          cell.air -= flow;
+          below.air += flow;
+          continue;
+        }
+      }
+
+      // Пробуем в стороны
+      const dirs = Math.random() < 0.5 ? [1, -1] : [-1, 1];
+      let flowed = false;
+      for (const dx of dirs){
+        const nx = x + dx;
+        if (nx < 0 || nx >= COLS) continue;
+        const side = grid[y][nx];
+        if (!canHoldAir(side)) continue;
+        const space = 1 - side.air;
+        if (space > 0.05){
+          const flow = Math.min(cell.air * 0.3, space * 0.3);
+          cell.air -= flow;
+          side.air += flow;
+          flowed = true;
+          break;
+        }
+      }
+    }
+  }
+
+  // Проверка прогресса
+  let total = 0;
+  for (const t of targetCells){
+    total += grid[t.y][t.x].air;
+  }
+  fillPercentage = targetCells.length ? total / targetCells.length : 0;
+
+  if (fillPercentage >= TARGET_FILL && running){
+    running = false;
+    onLevelComplete();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   КОПАНИЕ
+   ═══════════════════════════════════════════════════════════ */
+let digging = false;
+
+function digAt(clientX, clientY){
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.floor((clientX - rect.left) / (rect.width / COLS));
+  const y = Math.floor((clientY - rect.top) / (rect.height / ROWS));
+  if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return;
+  const cell = grid[y][x];
+  if (cell.type === C_DIRT){
+    cell.type = C_EMPTY;
+    cell.air = 0;
+    SFX.dig();
+    draw();
+  }
+}
+
+function startDig(e){
+  if (!running) return;
+  digging = true;
+  const p = e.touches ? e.touches[0] : e;
+  digAt(p.clientX, p.clientY);
+  e.preventDefault();
+}
+function moveDig(e){
+  if (!digging || !running) return;
+  const p = e.touches ? e.touches[0] : e;
+  digAt(p.clientX, p.clientY);
+  e.preventDefault();
+}
+function endDig(){
+  digging = false;
+}
+
+canvas.addEventListener('touchstart', startDig, {passive: false});
+canvas.addEventListener('touchmove', moveDig, {passive: false});
+canvas.addEventListener('touchend', endDig);
+canvas.addEventListener('mousedown', startDig);
+canvas.addEventListener('mousemove', moveDig);
+document.addEventListener('mouseup', endDig);
+
+/* ═══════════════════════════════════════════════════════════
+   РЕНДЕР
+   ═══════════════════════════════════════════════════════════ */
+function draw(){
+  // Фон
+  ctx.fillStyle = '#0a0f1e';
+  ctx.fillRect(0, 0, CW, CH);
+
+  // Сетка
+  ctx.strokeStyle = 'rgba(128,128,128,0.05)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= COLS; x++){
+    ctx.beginPath();
+    ctx.moveTo(x * CELL, 0);
+    ctx.lineTo(x * CELL, CH);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= ROWS; y++){
+    ctx.beginPath();
+    ctx.moveTo(0, y * CELL);
+    ctx.lineTo(CW, y * CELL);
+    ctx.stroke();
+  }
+
+  // Клетки
+  for (let y = 0; y < ROWS; y++){
+    for (let x = 0; x < COLS; x++){
+      const cell = grid[y][x];
+      const px = x * CELL;
+      const py = y * CELL;
+
+      if (cell.type === C_DIRT){
+        // Земля — коричневая с текстурой
+        ctx.fillStyle = '#5a3a22';
+        ctx.fillRect(px, py, CELL, CELL);
+        // Крапинки
+        ctx.fillStyle = 'rgba(0,0,0,0.20)';
+        const dot = Math.max(1, Math.floor(CELL / 8));
+        // Детерминированные позиции на основе координат
+        const seed = (x * 73856093) ^ (y * 19349663);
+        for (let i = 0; i < 3; i++){
+          const r = ((seed >> (i * 4)) & 0xF) / 15;
+          const c = ((seed >> (i * 4 + 8)) & 0xF) / 15;
+          ctx.fillRect(px + r * (CELL - dot), py + c * (CELL - dot), dot, dot);
+        }
+      } else if (cell.type === C_WALL){
+        // Стена — кирпичи
+        ctx.fillStyle = '#3a2412';
+        ctx.fillRect(px, py, CELL, CELL);
+        ctx.strokeStyle = '#5a3a22';
+        ctx.lineWidth = 1;
+        const bh = Math.max(3, Math.floor(CELL / 3));
+        const bw = Math.max(6, Math.floor(CELL / 2));
+        for (let r = 0; r * bh < CELL; r++){
+          const oy = py + r * bh;
+          const ox = px + (r % 2) * Math.floor(bw / 2);
+          ctx.beginPath();
+          ctx.moveTo(px, oy);
+          ctx.lineTo(px + CELL, oy);
+          ctx.stroke();
+          for (let cx = 0; cx * bw < CELL + bw; cx++){
+            const bx = ox + cx * bw;
+            if (bx > px && bx < px + CELL){
+              ctx.beginPath();
+              ctx.moveTo(bx, oy);
+              ctx.lineTo(bx, oy + bh);
+              ctx.stroke();
+            }
+          }
+        }
+      } else if (cell.type === C_SOURCE){
+        // Источник — зелёный
+        ctx.fillStyle = 'rgba(74, 222, 128, 0.35)';
+        ctx.fillRect(px, py, CELL, CELL);
+        ctx.fillStyle = '#4ADE80';
+        ctx.fillRect(px + CELL*0.2, py + CELL*0.2, CELL*0.6, CELL*0.6);
+        // Стрелка вниз
+        ctx.fillStyle = 'rgba(10,15,30,0.8)';
+        const cx = px + CELL/2, cy = py + CELL/2;
+        ctx.beginPath();
+        ctx.moveTo(cx - CELL*0.15, cy - CELL*0.15);
+        ctx.lineTo(cx + CELL*0.15, cy - CELL*0.15);
+        ctx.lineTo(cx, cy + CELL*0.15);
+        ctx.closePath();
+        ctx.fill();
+      } else if (cell.type === C_TARGET){
+        // Цель — золотая рамка
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.10)';
+        ctx.fillRect(px, py, CELL, CELL);
+        ctx.strokeStyle = '#FFD700';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(px + 1, py + 1, CELL - 2, CELL - 2);
+        // Иконка домика
+        ctx.fillStyle = 'rgba(255,215,0,0.6)';
+        ctx.font = Math.floor(CELL * 0.6) + 'px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🏠', px + CELL/2, py + CELL/2);
+      }
+
+      // Воздух — рисуем поверх
+      if (cell.air > 0.02 && canHoldAir(cell) && cell.type !== C_SOURCE){
+        const a = Math.min(cell.air, 1);
+        ctx.fillStyle = 'rgba(120, 180, 255, ' + (a * 0.75) + ')';
+        ctx.fillRect(px + 1, py + 1, CELL - 2, CELL - 2);
+      }
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HUD
+   ═══════════════════════════════════════════════════════════ */
+function updateHud(){
+  document.getElementById('hudLevel').textContent = (currentLevel + 1);
+  const pct = Math.round(fillPercentage * 100);
+  const airEl = document.getElementById('hudAir');
+  airEl.textContent = pct + '%';
+  airEl.classList.toggle('warn', pct >= 50 && pct < 75);
+  document.getElementById('hudScore').textContent = totalScore + levelScore;
+  document.getElementById('airBar').style.width = Math.min(100, pct * (100 / (TARGET_FILL * 100))) + '%';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ЦИКЛ
+   ═══════════════════════════════════════════════════════════ */
+let lastAirStep = 0;
+let lastFrame = 0;
+
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = now - lastFrame;
+  lastFrame = now;
+
+  if (!running) return;
+
+  lastAirStep += dt;
+  if (lastAirStep >= AIR_STEP_MS){
+    lastAirStep = 0;
+    stepAir();
+    airSteps++;
+
+    // Очки за «стабильность» — поощряем медленное течение
+    if (airSteps % 20 === 0 && fillPercentage < TARGET_FILL){
+      levelScore += 1;
+    }
+
+    updateHud();
+    draw();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   СТАРТ / КОНЕЦ
+   ═══════════════════════════════════════════════════════════ */
+function startGame(){
+  if (!scheduleOpen){ checkScheduleStatus(); return; }
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+  currentLevel = 0;
+  totalScore = 0;
+  loadLevel(currentLevel);
+  resize();
+  running = true;
+  lastAirStep = 0;
+  lastFrame = performance.now();
+
+  document.getElementById('startOv').classList.add('hide');
+  document.getElementById('levelOv').classList.add('hide');
+  document.getElementById('finishOv').classList.add('hide');
+  document.getElementById('progressBlock').style.display = 'none';
+}
+
+function retryLevel(){
+  if (!scheduleOpen){ checkScheduleStatus(); return; }
+  initAudio();
+  loadLevel(currentLevel);
+  resize();
+  running = true;
+  lastAirStep = 0;
+  lastFrame = performance.now();
+  SFX.reset();
+  document.getElementById('levelOv').classList.add('hide');
+  document.getElementById('finishOv').classList.add('hide');
+}
+
+function onLevelComplete(){
+  // Очки за уровень
+  const bonus = 500 + Math.max(0, 200 - airSteps);
+  levelScore += bonus;
+  totalScore += levelScore;
+  updateHud();
+
+  if (currentLevel + 1 >= LEVELS.length){
+    // Финальный экран
+    showFinish();
+  } else {
+    // Промежуточный экран
+    document.getElementById('levelEmoji').textContent = '✅';
+    document.getElementById('levelTitle').textContent = 'Уровень ' + (currentLevel + 1) + ' пройден!';
+    document.getElementById('levelDesc').textContent = 'Очков за уровень: +' + levelScore + ' · Всего: ' + totalScore;
+    document.getElementById('levelOv').classList.remove('hide');
+    SFX.level();
+  }
+}
+
+function nextLevel(){
+  currentLevel++;
+  loadLevel(currentLevel);
+  resize();
+  running = true;
+  lastAirStep = 0;
+  lastFrame = performance.now();
+  document.getElementById('levelOv').classList.add('hide');
+}
+
+function rankFor(s){
+  if (s < 800)   return { name: 'Подмастерье', emoji: '🔧' };
+  if (s < 1600)  return { name: 'Слесарь', emoji: '🔩' };
+  if (s < 2500)  return { name: 'Мастер', emoji: '🛠️' };
+  if (s < 3500)  return { name: 'Инженер', emoji: '⚙️' };
+  if (s < 5000)  return { name: 'Главный инженер', emoji: '🏗️' };
+  return { name: 'Легенда вентиляции', emoji: '👑' };
+}
+
+async function showFinish(){
+  const r = rankFor(totalScore);
+  document.getElementById('finishEmoji').textContent = r.emoji;
+  document.getElementById('finishScore').textContent = totalScore;
+  document.getElementById('finishRank').textContent = r.name;
+  document.getElementById('finishOv').classList.remove('hide');
+  SFX.finish();
+
+  const token = localStorage.getItem('mgsu_token') || '';
+  const block = document.getElementById('progressBlock');
+  block.style.display = 'block';
+  block.textContent = 'Отправляю результат…';
+
+  try{
+    const headers = {'Content-Type': 'application/json'};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch('/api/game/finish', {
+      method: 'POST', headers,
+      body: JSON.stringify({ game: 'ventilation', raw_score: totalScore })
+    });
+    const data = await res.json();
+    renderProgress(data);
+  }catch(e){
+    block.style.display = 'none';
+  }
+}
+
+function renderProgress(data){
+  const block = document.getElementById('progressBlock');
+  if (!block) return;
+  if (!data.logged_in){
+    block.innerHTML = '💡 Хочешь монеты и топ? <a href="/auth">Создай аккаунт</a>';
+    return;
+  }
+  let html = '<div>🎯 Очков: <b>+' + data.points + '</b></div>';
+  if (data.daily_plays && data.daily_multiplier !== undefined && data.daily_multiplier < 1){
+    html += '<div style="color:#FFB347;">📉 ' + data.daily_plays + '-я партия — награда ×' + data.daily_multiplier + '</div>';
+  }
+  if (data.progress){
+    html += '<div>💰 Монет: <b>' + data.progress.coins + '</b></div>';
+    html += '<div>🔥 Серия: <b>' + data.progress.streak + '</b> дней';
+    if (data.progress.streak_changed) html += ' <span style="color:#4ADE80;">+1</span>';
+    html += '</div>';
+  }
+  if (data.tasks_completed && data.tasks_completed.length){
+    data.tasks_completed.forEach(t => { html += '<div style="color:#4ADE80;">✓ ' + t.text + ' (+' + t.reward + ')</div>'; });
+  }
+  html += '<div style="margin-top:8px;"><a href="/profile">Открыть профиль →</a></div>';
+  block.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   КНОПКИ
+   ═══════════════════════════════════════════════════════════ */
+document.getElementById('startBtn').onclick = startGame;
+document.getElementById('againBtn').onclick = startGame;
+document.getElementById('nextBtn').onclick = nextLevel;
+document.getElementById('btnRetry').onclick = retryLevel;
+document.getElementById('btnMenu').onclick = () => { location.href = '/glavnaya'; };
+document.getElementById('shareBtn').onclick = async () => {
+  const r = rankFor(totalScore);
+  const text = `Прошёл вентиляцию МГСУ на ${totalScore} очков и стал ${r.name} ${r.emoji}! А ты?\nhttps://mgsu-wall.onrender.com/games/ventilation`;
+  try{
+    if (navigator.share) await navigator.share({text});
+    else await navigator.clipboard.writeText(text);
+  }catch(e){}
+};
+
+/* ═══════════════════════════════════════════════════════════
+   СТАРТ
+   ═══════════════════════════════════════════════════════════ */
+window.addEventListener('load', () => setTimeout(resize, 100));
+setTimeout(resize, 200);
+resize();
+loadLevel(0);
+draw();
+requestAnimationFrame(loop);
+</script>
+</body></html>

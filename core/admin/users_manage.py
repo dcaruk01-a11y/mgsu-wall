@@ -56,13 +56,15 @@ async def admin_user_detail(uid: str, token: str = Header(default="", alias="aut
 
     uid = uid.strip().upper()
     async with aiosqlite.connect(DB_PATH) as db:
-        cur = await db.execute("""
+              cur = await db.execute("""
             SELECT uid, display_name, created_at, last_seen,
                    streak, best_streak, coins, total_score, games_played,
                    COALESCE(owned_chars, '["student"]'),
                    COALESCE(active_char, 'student'),
                    COALESCE(banned, 0),
-                   COALESCE(ban_reason, '')
+                   COALESCE(ban_reason, ''),
+                   COALESCE(feedback_request_at, 0),
+                   COALESCE(feedback_seen_at, 0)
             FROM users WHERE uid=?
         """, (uid,))
         row = await cur.fetchone()

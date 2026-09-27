@@ -1,18 +1,19 @@
-/* ===== ОБЩАЯ РАСКЛАДКА ===== */
+/* ═══════════════════════════════════════════════════════════
+   ОБЩАЯ РАСКЛАДКА
+   ═══════════════════════════════════════════════════════════ */
 html{min-height:100%;}
 body{
   min-height:100vh;
   display:flex;
   flex-direction:column;
   margin:0;
-  padding-top:60px; /* высота шапки */
+  padding-top:60px;
 }
-#siteFooter{
-  flex-shrink:0;
-  margin-top:auto;
-}
+#siteFooter{flex-shrink:0;margin-top:auto;}
 
-/* ===== ФИКСИРОВАННАЯ ШАПКА ===== */
+/* ═══════════════════════════════════════════════════════════
+   ШАПКА
+   ═══════════════════════════════════════════════════════════ */
 .site-header{
   position:fixed;
   top:0;
@@ -26,7 +27,6 @@ body{
   color:var(--header-text, inherit);
   height:60px;
   transition:transform .25s ease;
-  overflow:hidden; /* не даём контенту выпирать за пределы */
 }
 .site-header.hidden{transform:translateY(-100%);}
 
@@ -39,50 +39,56 @@ body{
   align-items:center;
   justify-content:space-between;
   gap:16px;
-  min-width:0; /* разрешаем детям сжиматься */
 }
 
+/* ─── ЛОГОТИП ─── */
 .site-header-brand{
   display:flex;
   align-items:center;
   gap:12px;
+  padding:4px 10px;
+  margin-left:-10px;
+  border-radius:10px;
   text-decoration:none;
-  flex-shrink:0;
-  min-width:0;
   color:inherit;
+  flex-shrink:0;
+  transition:background .15s, opacity .15s;
 }
+.site-header-brand:hover{background:var(--header-hover, rgba(128,128,128,0.15));}
+.site-header-brand.active{background:var(--header-active, rgba(128,128,128,0.20));}
 .site-header-logo{
   width:34px;height:34px;display:block;
   background:var(--logo-bg, rgba(255,255,255,0.85));
-  border-radius:8px;padding:3px;object-fit:contain;flex-shrink:0;
+  border-radius:8px;
+  padding:3px;
+  object-fit:contain;
+  flex-shrink:0;
 }
 .site-header-label{
-  font-size:14px;font-weight:500;color:inherit;opacity:0.85;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:14px;font-weight:500;
+  color:inherit;opacity:0.85;
+  white-space:nowrap;
 }
 .site-header-label b{font-weight:700;opacity:1;}
 
-/* Навигация — прокручивается по горизонтали, если не влезает */
+/* ─── НАВИГАЦИЯ ─── */
 .site-header-nav{
   display:flex;
   align-items:center;
   gap:4px;
-  flex-shrink:1;
-  min-width:0;
-  overflow-x:auto;
-  overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-  -ms-overflow-style:none;
+  flex-shrink:0;
 }
-.site-header-nav::-webkit-scrollbar{display:none;}
 
 .site-header-link{
-  display:flex;align-items:center;gap:8px;padding:8px 14px;
-  border-radius:10px;color:inherit;opacity:0.75;text-decoration:none;
-  font-size:13px;font-weight:600;transition:background .12s, opacity .12s;
-  white-space:nowrap;font-family:inherit;
-  flex-shrink:0;
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;
+  border-radius:10px;
+  color:inherit;opacity:0.75;
+  text-decoration:none;
+  font-size:13px;font-weight:600;
+  transition:background .12s, opacity .12s;
+  white-space:nowrap;
+  font-family:inherit;
 }
 .site-header-link:hover{background:var(--header-hover, rgba(128,128,128,0.15));opacity:1;}
 .site-header-link.active{background:var(--header-active, rgba(128,128,128,0.20));opacity:1;font-weight:800;}
@@ -92,43 +98,61 @@ body{
   width:1px;height:22px;
   background:var(--header-line, rgba(128,128,128,0.3));
   margin:0 6px;
-  flex-shrink:0;
 }
 
+/* ─── АВАТАР / ВОЙТИ ─── */
 .site-header-avatar{
-  width:36px;height:36px;border-radius:50%;
+  width:36px;height:36px;
+  border-radius:50%;
   background:var(--header-active, rgba(128,128,128,0.20));
-  border:1.5px solid currentColor;opacity:0.9;
+  border:1.5px solid currentColor;
+  opacity:0.9;
   display:flex;align-items:center;justify-content:center;
   color:inherit;font-size:15px;font-weight:800;
-  text-decoration:none;transition:transform .12s, opacity .12s;
+  text-decoration:none;
+  transition:transform .12s, opacity .12s;
   flex-shrink:0;
 }
 .site-header-avatar:hover{transform:scale(1.06);opacity:1;}
 .site-header-avatar.active{box-shadow:0 0 0 2px currentColor;opacity:1;}
 
 .site-header-login{
-  display:flex;align-items:center;gap:6px;padding:8px 14px;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;
   border-radius:10px;
   background:var(--header-active, rgba(128,128,128,0.15));
-  border:1px solid currentColor;color:inherit;opacity:0.9;
-  text-decoration:none;font-size:13px;font-weight:700;
-  transition:background .12s, opacity .12s;white-space:nowrap;flex-shrink:0;
+  border:1px solid currentColor;
+  color:inherit;opacity:0.9;
+  text-decoration:none;
+  font-size:13px;font-weight:700;
+  transition:background .12s, opacity .12s;
+  white-space:nowrap;
+  flex-shrink:0;
 }
 .site-header-login:hover{background:var(--header-hover, rgba(128,128,128,0.25));opacity:1;}
 .site-header-login.active{opacity:1;}
 .site-header-login-icon{font-size:14px;}
 
-/* ===== ФУТЕР ===== */
+/* ═══════════════════════════════════════════════════════════
+   ФУТЕР
+   ═══════════════════════════════════════════════════════════ */
 .site-footer{
   border-top:1px solid rgba(128,128,128,0.20);
-  padding:28px 0;margin-top:auto;
-  color:inherit;opacity:0.85;
+  padding:28px 0;
+  margin-top:auto;
+  color:inherit;
+  opacity:0.85;
 }
 .site-footer-inner{
-  max-width:1240px;margin:0 auto;padding:0 20px;
-  display:flex;justify-content:space-between;align-items:center;
-  flex-wrap:wrap;gap:12px 24px;font-size:13px;
+  max-width:1240px;
+  margin:0 auto;
+  padding:0 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px 24px;
+  font-size:13px;
 }
 .site-footer-left{opacity:0.7;line-height:1.5;}
 .site-footer-right{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-left:auto;}
@@ -137,73 +161,79 @@ body{
 .site-footer-right a:hover{opacity:1;text-decoration:underline;}
 
 /* ═══════════════════════════════════════════════════════════
-   МОБИЛЬНАЯ ВЕРСИЯ
-   Триггерится И по ширине экрана, И по тач-устройству
-   (чтобы работало даже в режиме «Полная версия сайта» в Safari)
+   ТЕЛЕФОН / ТАЧ
+   Только слова, без иконок, 5 элементов аккуратно
    ═══════════════════════════════════════════════════════════ */
 
-/* Тач-устройства — всегда компактно */
+/* Тач-устройства — компактный режим */
 @media (pointer:coarse){
-  body{padding-top:54px;}
+  body{padding-top:52px;}
+  .site-header{height:52px;}
+  .site-header-inner{
+    padding:0 10px;
+    height:52px;
+    gap:6px;
+  }
 
-  .site-header{height:54px;}
-  .site-header-inner{padding:0 10px;height:54px;gap:6px;}
+  .site-header-brand{gap:0;padding:4px;margin-left:0;}
+  .site-header-logo{width:32px;height:32px;border-radius:7px;}
+  .site-header-label{display:none;}
 
-  .site-header-brand{gap:8px;}
-  .site-header-logo{width:30px;height:30px;border-radius:6px;}
+  /* Иконки скрываем, оставляем ТОЛЬКО текст */
+  .site-header-link-icon{display:none;}
+  .site-header-link{
+    padding:7px 10px;
+    font-size:13px;
+    gap:0;
+  }
+  .site-header-link-label{font-size:13px;}
 
-  /* Скрываем текст бренда на узких экранах */
-  .site-header-label{font-size:11px;max-width:110px;}
+  .site-header-login-icon{display:none;}
+  .site-header-login{
+    padding:7px 12px;
+    font-size:13px;
+    gap:0;
+  }
+  .site-header-login-label{font-size:13px;}
 
-  .site-header-link{padding:8px 10px;gap:4px;}
-  .site-header-link-icon{font-size:18px;}
-  .site-header-link-label{font-size:11px;}
-
-  .site-header-login{padding:8px 12px;gap:4px;}
-  .site-header-login-icon{font-size:16px;}
-  .site-header-login-label{font-size:11px;}
-
-  .site-header-divider{margin:0 4px;height:20px;}
-  .site-header-avatar{width:34px;height:34px;font-size:14px;}
+  .site-header-divider{margin:0 2px;height:18px;}
+  .site-header-avatar{width:32px;height:32px;font-size:13px;}
 }
 
-/* Узкие экраны (<720px) — скрываем надписи, оставляем иконки */
+/* Страховка по ширине — если pointer:coarse не сработал */
 @media (max-width:720px){
   body{padding-top:52px;}
-
   .site-header{height:52px;}
-  .site-header-inner{padding:0 8px;height:52px;gap:4px;}
+  .site-header-inner{padding:0 10px;height:52px;gap:6px;}
 
-  .site-header-logo{width:28px;height:28px;border-radius:6px;}
-  .site-header-label{font-size:11px;max-width:90px;}
+  .site-header-brand{gap:0;padding:4px;margin-left:0;}
+  .site-header-logo{width:32px;height:32px;}
+  .site-header-label{display:none;}
 
-  .site-header-link{
-    padding:8px 9px;
-    gap:0;
-  }
-  .site-header-link-label{display:none !important;}
-  .site-header-link-icon{font-size:20px;}
+  .site-header-link-icon{display:none;}
+  .site-header-link{padding:7px 10px;font-size:13px;gap:0;}
+  .site-header-link-label{font-size:13px;}
 
-  .site-header-login{
-    padding:8px 10px;
-    gap:0;
-  }
-  .site-header-login-label{display:none !important;}
-  .site-header-login-icon{font-size:18px;}
+  .site-header-login-icon{display:none;}
+  .site-header-login{padding:7px 12px;font-size:13px;gap:0;}
+  .site-header-login-label{font-size:13px;}
 
-  .site-header-divider{margin:0 2px;height:20px;}
-  .site-header-avatar{width:32px;height:32px;font-size:14px;}
+  .site-header-divider{margin:0 2px;height:18px;}
+  .site-header-avatar{width:32px;height:32px;font-size:13px;}
 
   .site-footer{padding:22px 0;}
   .site-footer-inner{padding:0 12px;flex-direction:column;align-items:flex-start;gap:10px;font-size:12px;}
   .site-footer-right{margin-left:0;gap:4px 8px;}
 }
 
-/* Совсем узкие (iPhone SE 320-400px) */
-@media (max-width:420px){
-  .site-header-label{display:none;} /* остаётся только логотип */
-  .site-header-brand{gap:0;}
+/* Совсем узкие экраны (iPhone SE и подобные, < 360px) */
+@media (max-width:360px){
   .site-header-inner{padding:0 6px;gap:2px;}
-  .site-header-link{padding:8px 7px;}
-  .site-header-link-icon{font-size:19px;}
+  .site-header-link{padding:6px 7px;font-size:12px;}
+  .site-header-link-label{font-size:12px;}
+  .site-header-login{padding:6px 9px;font-size:12px;}
+  .site-header-login-label{font-size:12px;}
+  .site-header-logo{width:28px;height:28px;}
+  .site-header-avatar{width:28px;height:28px;font-size:12px;}
+  .site-header-divider{display:none;}
 }

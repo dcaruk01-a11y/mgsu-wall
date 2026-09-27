@@ -24,7 +24,8 @@
   border:1px solid rgba(255,255,255,0.15);
   border-radius:24px;
   padding:32px 26px 26px;
-  text-align:center;color:#fff;
+  text-align:center;
+  color:#fff;
   box-shadow:0 30px 80px rgba(0,0,0,0.6);
   animation:slideUp .4s cubic-bezier(.2,1.2,.4,1);
 }
@@ -50,25 +51,108 @@
 .welcome-btn:active{transform:scale(0.97);}
 .welcome-hint{font-size:12px;color:rgba(255,255,255,0.4);margin-top:14px;}
 
-/* ═══════════════════════════════════════════════════════════
-   HERO — ВОЗДУШНЫЙ
-   ═══════════════════════════════════════════════════════════ */
-.hero-block{
-  padding:80px 24px 56px;
-  max-width:900px;
+/* ═══════════ ОБЩАЯ РАСКЛАДКА ГЛАВНОЙ ═══════════ */
+.page{
+  max-width:1240px;
   margin:0 auto;
+  padding:0 24px;
+}
+
+/* ═══════════ ТОП ДНЯ — ВЕРХНИЙ БЛОК ═══════════ */
+.top-strip-section{
+  padding:32px 0 0;
+  display:none;
+}
+.top-strip-section.show{display:block;}
+
+.top-strip{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  padding:16px 24px;
+  border-radius:16px;
+  background:rgba(255,180,80,0.07);
+  border:1px solid rgba(255,180,80,0.25);
+  text-decoration:none;
+  color:inherit;
+  transition:transform .2s, background .2s, border-color .2s;
+  flex-wrap:wrap;
+}
+.top-strip:hover{
+  transform:translateY(-2px);
+  background:rgba(255,180,80,0.13);
+  border-color:rgba(255,180,80,0.45);
+}
+
+.top-strip-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:#FFB347;
+  flex-shrink:0;
+}
+
+.top-strip-players{
+  display:flex;
+  align-items:center;
+  gap:24px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.top-strip-player{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+}
+.top-strip-player .medal{
+  font-size:18px;
+  line-height:1;
+}
+.top-strip-player .nick{
+  color:inherit;
+  font-weight:700;
+  max-width:140px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.top-strip-player .score{
+  color:#FFB347;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+}
+.top-strip-arrow{
+  color:#FFB347;
+  font-weight:900;
+  font-size:18px;
+  flex-shrink:0;
+  margin-left:8px;
+  transition:transform .2s;
+}
+.top-strip:hover .top-strip-arrow{transform:translateX(4px);}
+
+/* ═══════════ HERO — КРУПНЫЙ И ПРОСТОРНЫЙ ═══════════ */
+.hero{
+  padding:80px 0 72px;
   text-align:center;
 }
 
-.hero-title{
-  font-size:clamp(36px,7vw,68px);
+.hero h1{
+  font-size:clamp(40px,7vw,84px);
   font-weight:900;
-  letter-spacing:-0.04em;
+  letter-spacing:-0.045em;
   line-height:1.02;
-  margin:0 0 20px;
+  margin:0 0 28px;
   color:inherit;
 }
-.hero-title em{
+.hero h1 em{
   font-style:normal;
   background:linear-gradient(135deg,#FFB347,#FF7A2B);
   -webkit-background-clip:text;
@@ -76,12 +160,12 @@
   color:transparent;
 }
 
-.hero-subtitle{
-  font-size:16px;
+.hero p{
+  font-size:17px;
   opacity:0.65;
-  max-width:480px;
-  margin:0 auto 36px;
-  line-height:1.55;
+  max-width:560px;
+  margin:0 auto 40px;
+  line-height:1.6;
 }
 
 .hero-buttons{
@@ -90,16 +174,15 @@
   justify-content:center;
   flex-wrap:wrap;
 }
-
 .btn-hero{
   display:inline-flex;
   align-items:center;
   justify-content:center;
   gap:10px;
-  padding:16px 32px;
+  padding:18px 36px;
   border-radius:999px;
   font-family:inherit;
-  font-size:15px;
+  font-size:16px;
   font-weight:800;
   text-decoration:none;
   cursor:pointer;
@@ -110,197 +193,89 @@
 .btn-hero.primary{
   background:linear-gradient(135deg,#FFB347,#FF7A2B);
   color:#1a0e05;
-  box-shadow:0 12px 28px rgba(255,140,50,0.40);
+  box-shadow:0 12px 30px rgba(255,140,50,0.35);
 }
 .btn-hero.primary:hover{
   transform:translateY(-3px);
-  box-shadow:0 18px 40px rgba(255,140,50,0.55);
+  box-shadow:0 18px 40px rgba(255,140,50,0.5);
 }
 .btn-hero.primary:active{transform:translateY(0) scale(0.98);}
 .btn-hero.secondary{
-  background:rgba(128,128,128,0.10);
+  background:rgba(128,128,128,0.08);
   color:inherit;
-  border:1px solid rgba(128,128,128,0.28);
+  border:1px solid rgba(128,128,128,0.25);
 }
 .btn-hero.secondary:hover{
-  background:rgba(128,128,128,0.20);
+  background:rgba(128,128,128,0.16);
   transform:translateY(-3px);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ТОП ДНЯ — СЕКЦИЯ С ЗАГОЛОВКОМ И КАРТОЧКАМИ
-   ═══════════════════════════════════════════════════════════ */
-.top-section{
-  max-width:900px;
-  margin:0 auto;
-  padding:0 24px 72px;
+/* ═══════════ СЕКЦИЯ ИГР ═══════════ */
+.games-section{
+  padding:0 0 40px;
 }
 
-.section-header{
+.games-header{
   display:flex;
-  justify-content:space-between;
   align-items:baseline;
+  justify-content:space-between;
   gap:16px;
-  margin-bottom:20px;
+  margin-bottom:32px;
   flex-wrap:wrap;
 }
-.section-title{
-  font-size:22px;
+.games-title{
+  font-size:32px;
   font-weight:900;
-  letter-spacing:-0.02em;
+  letter-spacing:-0.03em;
   color:inherit;
+  margin:0;
 }
-.section-link{
+.games-hint{
   font-size:14px;
-  font-weight:700;
-  color:#FFB347;
-  text-decoration:none;
-  transition:opacity .15s;
-}
-.section-link:hover{opacity:0.75;text-decoration:underline;}
-
-.top-cards{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:14px;
-}
-
-.top-card{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:8px;
-  padding:22px 14px 20px;
-  border-radius:16px;
-  background:rgba(128,128,128,0.08);
-  border:1px solid rgba(128,128,128,0.18);
-  transition:transform .15s, border-color .15s, background .15s;
-  text-decoration:none;
-  color:inherit;
-}
-.top-card:hover{
-  transform:translateY(-3px);
-}
-.top-card.gold{
-  background:linear-gradient(180deg, rgba(255,215,0,0.12), rgba(255,180,80,0.04));
-  border-color:rgba(255,215,0,0.40);
-}
-.top-card.silver{
-  background:linear-gradient(180deg, rgba(192,192,192,0.10), rgba(128,128,128,0.04));
-  border-color:rgba(192,192,192,0.35);
-}
-.top-card.bronze{
-  background:linear-gradient(180deg, rgba(205,127,50,0.10), rgba(128,128,128,0.04));
-  border-color:rgba(205,127,50,0.35);
-}
-
-.top-medal{
-  font-size:36px;
-  line-height:1;
-}
-.top-card.gold .top-medal{filter:drop-shadow(0 4px 12px rgba(255,215,0,0.5));}
-.top-card.silver .top-medal{filter:drop-shadow(0 4px 12px rgba(192,192,192,0.4));}
-.top-card.bronze .top-medal{filter:drop-shadow(0 4px 12px rgba(205,127,50,0.4));}
-
-.top-nick{
-  font-size:14px;
-  font-weight:700;
-  color:inherit;
-  max-width:100%;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  text-align:center;
-  padding:0 4px;
-}
-.top-score{
-  font-size:22px;
-  font-weight:900;
-  font-variant-numeric:tabular-nums;
-  color:inherit;
-  line-height:1;
-}
-.top-score-label{
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
   opacity:0.5;
-  margin-top:2px;
-}
-
-/* Placeholder для пустой позиции */
-.top-card.empty{
-  opacity:0.35;
-  background:rgba(128,128,128,0.04);
-  border-style:dashed;
-  border-color:rgba(128,128,128,0.20);
-}
-.top-card.empty .top-medal{filter:grayscale(1);opacity:0.4;}
-
-@media(max-width:640px){
-  .top-cards{grid-template-columns:1fr;gap:10px;}
-  .top-card{
-    flex-direction:row;
-    padding:14px 18px;
-    justify-content:flex-start;
-    gap:14px;
-    text-align:left;
-  }
-  .top-medal{font-size:26px;}
-  .top-nick{flex:1;text-align:left;}
-  .top-score{margin-left:auto;}
-  .top-score-label{display:none;}
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ИГРЫ — БОЛЬШАЯ СЕКЦИЯ
-   ═══════════════════════════════════════════════════════════ */
-.games-section{
-  max-width:1100px;
-  margin:0 auto;
-  padding:0 24px 80px;
+  font-weight:600;
 }
 
 .games-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-  gap:16px;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:20px;
 }
 
 .game-card{
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  min-height:160px;
-  padding:24px 22px;
-  border-radius:16px;
-  background:rgba(128,128,128,0.08);
-  border:1px solid rgba(128,128,128,0.18);
+  min-height:180px;
+  padding:26px 24px;
+  border-radius:18px;
+  background:rgba(128,128,128,0.07);
+  border:1px solid rgba(128,128,128,0.16);
   text-decoration:none;
   color:inherit;
   cursor:pointer;
   font-family:inherit;
   text-align:left;
-  transition:transform .15s, background .15s, border-color .15s;
+  transition:transform .2s, background .2s, border-color .2s, box-shadow .2s;
   position:relative;
 }
 .game-card:hover{
   transform:translateY(-4px);
-  background:rgba(128,128,128,0.16);
-  border-color:rgba(128,128,128,0.42);
+  background:rgba(128,128,128,0.13);
+  border-color:rgba(128,128,128,0.35);
+  box-shadow:0 12px 32px rgba(0,0,0,0.08);
 }
 .game-card.soon{opacity:0.5;cursor:default;}
-.game-card.soon:hover{transform:none;}
+.game-card.soon:hover{transform:none;box-shadow:none;background:rgba(128,128,128,0.07);}
 
 .game-card-task{
   position:absolute;
-  top:16px;
-  right:16px;
+  top:18px;
+  right:18px;
   display:none;
-  font-size:10px;
+  font-size:11px;
   font-weight:900;
-  padding:3px 8px;
+  padding:4px 10px;
   border-radius:999px;
   background:rgba(74,222,128,0.15);
   color:#4ADE80;
@@ -313,74 +288,71 @@
   display:inline-block;
   font-size:10px;
   font-weight:800;
-  letter-spacing:0.12em;
+  letter-spacing:0.14em;
   text-transform:uppercase;
-  padding:4px 10px;
+  padding:5px 12px;
   border-radius:999px;
-  background:rgba(128,128,128,0.15);
+  background:rgba(128,128,128,0.14);
   color:inherit;
   margin-bottom:auto;
   align-self:flex-start;
   opacity:0.75;
 }
-.game-card-tag.grey{opacity:0.5;}
+.game-card-tag.grey{opacity:0.45;}
 
 .game-card-title{
-  font-size:22px;
+  font-size:26px;
   font-weight:800;
-  letter-spacing:-0.02em;
-  margin-top:16px;
+  letter-spacing:-0.025em;
+  margin-top:20px;
   color:inherit;
   line-height:1.1;
 }
 .game-card-arrow{
-  font-size:14px;
-  opacity:0.55;
-  margin-top:10px;
+  font-size:15px;
+  opacity:0.5;
+  margin-top:12px;
   display:inline-flex;
   align-items:center;
   gap:6px;
   font-weight:700;
+  transition:opacity .15s;
 }
 .game-card:hover .game-card-arrow{opacity:1;}
 
-/* ═══════════════════════════════════════════════════════════
-   БЛОК РАЗРАБОТЧИКОВ
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════════ БЛОК РАЗРАБОТЧИКОВ ═══════════ */
 .dev-credits{
-  margin:0 auto 56px;
-  padding:0 24px;
-  max-width:1100px;
+  padding:60px 0 40px;
 }
 .dev-credits__inner{
   background:rgba(128,128,128,0.06);
   border:1px solid rgba(128,128,128,0.16);
-  border-radius:16px;
-  padding:32px 28px;
+  border-radius:20px;
+  padding:40px 32px;
   text-align:center;
 }
 .dev-credits__title{
-  font-size:20px;
+  font-size:22px;
   font-weight:800;
   color:inherit;
-  margin-bottom:6px;
+  margin-bottom:8px;
 }
 .dev-credits__subtitle{
   font-size:14px;
   opacity:0.65;
-  margin-bottom:24px;
+  margin-bottom:28px;
 }
 .dev-credits__grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:12px;
-  margin-bottom:20px;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:14px;
+  margin-bottom:24px;
 }
 .dev-card{
-  background:rgba(128,128,128,0.06);
-  border:1px solid rgba(128,128,128,0.14);
-  border-radius:12px;
-  padding:16px 14px;
+  background:rgba(128,128,128,0.05);
+  border:1px solid rgba(128,128,128,0.12);
+  border-radius:14px;
+  padding:18px 16px;
 }
 .dev-card__role{
   font-size:10px;
@@ -402,14 +374,13 @@
 }
 .dev-credits__footer{
   font-size:13px;
-  opacity:0.65;
-  border-top:1px dashed rgba(128,128,128,0.20);
+  opacity:0.6;
+  border-top:1px dashed rgba(128,128,128,0.2);
   padding-top:18px;
+  margin-top:4px;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   МОДАЛКА ИГРЫ
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════════ МОДАЛКА ИГРЫ ═══════════ */
 #gameActions{
   display:flex;
   justify-content:center;
@@ -424,7 +395,7 @@
 }
 
 .game-tasks-block{
-  padding:18px 20px;
+  padding:16px 18px;
   border-radius:14px;
   background:rgba(74,222,128,0.06);
   border:1px solid rgba(74,222,128,0.30);
@@ -436,17 +407,16 @@
   letter-spacing:0.14em;
   text-transform:uppercase;
   color:#4ADE80;
-  margin-bottom:14px;
+  margin-bottom:12px;
 }
 .game-task{
   display:flex;
   align-items:flex-start;
   gap:10px;
-  padding:10px 0;
+  padding:8px 0;
   border-bottom:1px dashed rgba(74,222,128,0.20);
 }
-.game-task:last-child{border-bottom:none;padding-bottom:0;}
-.game-task:first-child{padding-top:0;}
+.game-task:last-child{border-bottom:none;}
 .game-task.done{opacity:0.55;}
 .game-task.done .game-task-text{text-decoration:line-through;}
 .game-task-icon{
@@ -465,7 +435,7 @@
 .game-task-progress{
   font-size:11px;
   opacity:0.65;
-  margin-top:4px;
+  margin-top:3px;
   font-variant-numeric:tabular-nums;
 }
 .game-task-reward{
@@ -476,52 +446,35 @@
   flex-shrink:0;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   АДАПТИВ
-   ═══════════════════════════════════════════════════════════ */
-@media(max-width:720px){
-  .hero-block{
-    padding:56px 20px 40px;
-  }
-  .hero-title{
-    margin-bottom:14px;
-  }
-  .hero-subtitle{
-    font-size:15px;
-    margin-bottom:28px;
-  }
-  .btn-hero{
-    padding:14px 24px;
-    font-size:14px;
-    min-width:auto;
-    flex:1;
-  }
+/* ═══════════ АДАПТИВ ═══════════ */
+@media(max-width:768px){
+  .page{padding:0 16px;}
 
-  .top-section{
-    padding:0 20px 56px;
-  }
-  .section-title{font-size:20px;}
+  .top-strip-section{padding:20px 0 0;}
+  .top-strip{padding:14px 18px;gap:12px;}
+  .top-strip-players{gap:16px;}
+  .top-strip-player{font-size:13px;}
+  .top-strip-player .nick{max-width:100px;}
 
-  .games-section{
-    padding:0 20px 64px;
-  }
-  .games-grid{
-    grid-template-columns:repeat(2,1fr);
-    gap:12px;
-  }
-  .game-card{
-    min-height:130px;
-    padding:18px 16px;
-    border-radius:12px;
-  }
-  .game-card-title{font-size:17px;margin-top:12px;}
+  .hero{padding:48px 0 44px;}
+  .hero h1{margin:0 0 20px;}
+  .hero p{font-size:15px;margin:0 auto 28px;}
+  .btn-hero{padding:15px 26px;font-size:14px;min-width:auto;flex:1;}
+
+  .games-header{margin-bottom:22px;}
+  .games-title{font-size:24px;}
+  .games-hint{display:none;}
+  .games-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
+  .game-card{min-height:140px;padding:18px 16px;border-radius:14px;}
+  .game-card-title{font-size:17px;margin-top:14px;}
   .game-card-tag{font-size:9px;padding:3px 8px;}
-  .game-card-arrow{font-size:13px;}
-  .game-card-task{top:12px;right:12px;font-size:9px;padding:2px 6px;}
+  .game-card-arrow{font-size:12px;margin-top:8px;}
+  .game-card-task{top:12px;right:12px;font-size:9px;padding:2px 7px;}
 
-  .dev-credits{padding:0 20px;margin-bottom:40px;}
-  .dev-credits__inner{padding:24px 20px;}
-  .dev-credits__title{font-size:17px;}
+  .dev-credits{padding:40px 0 20px;}
+  .dev-credits__inner{padding:24px 20px;border-radius:16px;}
+  .dev-credits__title{font-size:18px;}
+  .dev-credits__subtitle{margin-bottom:18px;}
 
   .welcome-card{padding:26px 20px 20px;border-radius:20px;}
   .welcome-emoji{font-size:60px;margin-bottom:10px;}
@@ -532,11 +485,18 @@
   .welcome-step-text{font-size:13px;}
 }
 
+@media(max-width:480px){
+  .hero{padding:36px 0 36px;}
+  .hero p{font-size:14px;}
+  .btn-hero{padding:14px 22px;font-size:13px;}
+  .games-grid{grid-template-columns:1fr;gap:12px;}
+  .game-card{min-height:auto;padding:20px 18px;}
+  .game-card-title{margin-top:16px;font-size:19px;}
+  .game-card-arrow{margin-top:10px;}
+}
+
 @media(max-width:520px){
-  .hero-buttons{flex-direction:column;gap:10px;}
-  .btn-hero{width:100%;}
   #gameActions .btn-play{max-width:none;}
-  .games-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
 }
 </style>
 </head><body>
@@ -577,61 +537,49 @@
 
 <div id="siteHeader"></div>
 
-<!-- ══════════ HERO ══════════ -->
-<section class="hero-block">
-  <h1 class="hero-title">Играй. Копи монеты.<br><em>Качай персонажа.</em></h1>
-  <p class="hero-subtitle">Игры для студентов МГСУ. Без установки, без регистрации.</p>
-  <div class="hero-buttons">
-    <button class="btn-hero primary" id="startPlayingBtn" type="button">🎮 Начать играть ↓</button>
-    <a class="btn-hero secondary" href="/profile" id="profileCta">👤 Мой профиль</a>
-  </div>
-</section>
+<div class="page">
 
-<!-- ══════════ ТОП ДНЯ ══════════ -->
-<section class="top-section" id="topSection" style="display:none;">
-  <div class="section-header">
-    <div class="section-title">🏆 Топ дня</div>
-    <a href="/ratings" class="section-link">Весь рейтинг →</a>
-  </div>
-  <div class="top-cards" id="topCards">
-    <div class="top-card empty">
-      <div class="top-medal">🥇</div>
-      <div class="top-nick">—</div>
-      <div class="top-score">0</div>
-      <div class="top-score-label">очков</div>
-    </div>
-    <div class="top-card empty">
-      <div class="top-medal">🥈</div>
-      <div class="top-nick">—</div>
-      <div class="top-score">0</div>
-      <div class="top-score-label">очков</div>
-    </div>
-    <div class="top-card empty">
-      <div class="top-medal">🥉</div>
-      <div class="top-nick">—</div>
-      <div class="top-score">0</div>
-      <div class="top-score-label">очков</div>
-    </div>
-  </div>
-</section>
+  <!-- ══════════ ТОП ДНЯ (СВЕРХУ) ══════════ -->
+  <section class="top-strip-section" id="topStripSection">
+    <a href="/ratings" class="top-strip">
+      <span class="top-strip-label">🏆 Топ дня</span>
+      <div class="top-strip-players" id="topStripPlayers">
+        <span style="opacity:0.6;font-size:14px;">Загрузка…</span>
+      </div>
+      <span class="top-strip-arrow">→</span>
+    </a>
+  </section>
 
-<!-- ══════════ ИГРЫ ══════════ -->
-<section class="games-section" id="games">
-  <div class="section-header">
-    <div class="section-title">🎮 Все игры</div>
-  </div>
-  <div class="games-grid" id="gamesGrid"></div>
-</section>
+  <!-- ══════════ HERO ══════════ -->
+  <section class="hero">
+    <h1>Играй. Копи монеты.<br><em>Качай персонажа.</em></h1>
+    <p>Игры для студентов МГСУ. Без установки, без регистрации. Работает на телефоне.</p>
+    <div class="hero-buttons">
+      <button class="btn-hero primary" id="startPlayingBtn" type="button">🎮 Начать играть</button>
+      <a class="btn-hero secondary" href="/profile" id="profileCta">👤 Мой профиль</a>
+    </div>
+  </section>
 
-<!-- ══════════ БЛОК РАЗРАБОТЧИКОВ ══════════ -->
-<section class="dev-credits" id="devCreditsSection" style="display:none;">
-  <div class="dev-credits__inner">
-    <div class="dev-credits__title" id="dcTitleEl"></div>
-    <div class="dev-credits__subtitle" id="dcSubtitleEl"></div>
-    <div class="dev-credits__grid" id="dcGridEl"></div>
-    <div class="dev-credits__footer" id="dcFooterEl"></div>
-  </div>
-</section>
+  <!-- ══════════ ИГРЫ ══════════ -->
+  <section class="games-section" id="games">
+    <div class="games-header">
+      <h2 class="games-title">🎮 Все игры</h2>
+      <div class="games-hint">Выбери и играй →</div>
+    </div>
+    <div class="games-grid" id="gamesGrid"></div>
+  </section>
+
+  <!-- ══════════ БЛОК РАЗРАБОТЧИКОВ ══════════ -->
+  <section class="dev-credits" id="devCreditsSection" style="display:none;">
+    <div class="dev-credits__inner">
+      <div class="dev-credits__title" id="dcTitleEl"></div>
+      <div class="dev-credits__subtitle" id="dcSubtitleEl"></div>
+      <div class="dev-credits__grid" id="dcGridEl"></div>
+      <div class="dev-credits__footer" id="dcFooterEl"></div>
+    </div>
+  </section>
+
+</div>
 
 <!-- ══════════ МОДАЛКА ИГРЫ ══════════ -->
 <div id="gameModal" class="modal-overlay" role="dialog" aria-modal="true">
@@ -709,7 +657,7 @@ renderSiteFooter();
     setTimeout(function(){
       var gamesSection = document.getElementById('games');
       if (gamesSection){
-        var headerH = 60;
+        var headerH = 64;
         var top = gamesSection.getBoundingClientRect().top + window.pageYOffset - headerH - 20;
         window.scrollTo({top: top, behavior: 'smooth'});
       }
@@ -728,7 +676,7 @@ renderSiteFooter();
 document.getElementById('startPlayingBtn').addEventListener('click', function(){
   var gamesSection = document.getElementById('games');
   if (!gamesSection) return;
-  var headerH = 60;
+  var headerH = 64;
   var top = gamesSection.getBoundingClientRect().top + window.pageYOffset - headerH - 20;
   window.scrollTo({top: top, behavior: 'smooth'});
 });
@@ -907,53 +855,37 @@ function unlockScroll(){
 /* ═══════════════════════════════════════════════════════════
    ТОП ДНЯ
    ═══════════════════════════════════════════════════════════ */
-async function loadTopDay(){
+async function loadTopStrip(){
   try{
     const r = await fetch('/api/top-day');
     const data = await r.json();
-    renderTopDay(data.top || []);
+    renderTopStrip(data.top || []);
   }catch(e){}
 }
 
-function renderTopDay(top){
-  const section = document.getElementById('topSection');
-  const cardsBox = document.getElementById('topCards');
-  if (!section || !cardsBox) return;
+function renderTopStrip(top){
+  const section = document.getElementById('topStripSection');
+  const list = document.getElementById('topStripPlayers');
+  if (!section || !list) return;
 
   if (!top.length){
-    section.style.display = 'none';
+    section.classList.remove('show');
     return;
   }
 
-  section.style.display = 'block';
-  cardsBox.innerHTML = '';
-
+  section.classList.add('show');
+  list.innerHTML = '';
   const medals = ['🥇', '🥈', '🥉'];
-  const classes = ['gold', 'silver', 'bronze'];
-
-  for (let i = 0; i < 3; i++){
-    const t = top[i];
-    const el = document.createElement('div');
-
-    if (t){
-      el.className = 'top-card ' + classes[i];
-      el.innerHTML =
-        '<div class="top-medal">' + medals[i] + '</div>' +
-        '<div class="top-nick"></div>' +
-        '<div class="top-score">' + t.score + '</div>' +
-        '<div class="top-score-label">очков</div>';
-      el.querySelector('.top-nick').textContent = t.nick || 'Аноним';
-    } else {
-      // Пустая карточка — заполняем бледной
-      el.className = 'top-card empty';
-      el.innerHTML =
-        '<div class="top-medal">' + medals[i] + '</div>' +
-        '<div class="top-nick">—</div>' +
-        '<div class="top-score">0</div>' +
-        '<div class="top-score-label">очков</div>';
-    }
-    cardsBox.appendChild(el);
-  }
+  top.forEach((t, i) => {
+    const el = document.createElement('span');
+    el.className = 'top-strip-player';
+    el.innerHTML =
+      '<span class="medal">' + (medals[i] || '•') + '</span>' +
+      '<span class="nick"></span>' +
+      '<span class="score">' + t.score + '</span>';
+    el.querySelector('.nick').textContent = t.nick || 'Аноним';
+    list.appendChild(el);
+  });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1000,7 +932,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if (e.key==='Escape'){ closeGame(); closePrivacy(); }
   });
   loadGames();
-  loadTopDay();
+  loadTopStrip();
   loadDevCredits();
 });
 </script>

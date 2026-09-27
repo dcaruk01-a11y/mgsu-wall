@@ -68,7 +68,18 @@ async def grable():
 @router.get("/games/tetris")
 async def tetris():
     return FileResponse("pages/games/tetris.html")
+# ═══════════ ПРОТОТИПЫ (скрытые, нигде не слинкованы) ═══════════
+@router.get("/proto/home")
+async def proto_home():
+    return FileResponse("pages/proto/home.html")
 
+@router.get("/proto/street")
+async def proto_street():
+    return FileResponse("pages/proto/street.html")
+
+@router.get("/proto/university")
+async def proto_university():
+    return FileResponse("pages/proto/university.html")
 # Общие страницы
 @router.get("/privacy")
 async def privacy():

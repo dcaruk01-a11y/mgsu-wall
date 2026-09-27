@@ -5,6 +5,8 @@ import core.state as state
 router = APIRouter()
 
 THEME_FILES = {
+    "white":     "static/white.css",
+    "black":     "static/black.css",
     "classic":   "static/public.css",
     "retro":     "static/retro.css",
     "notebook":  "static/notebook.css",
@@ -15,8 +17,8 @@ THEME_FILES = {
 
 @router.get("/theme.css")
 async def theme_css():
-    theme = state.theme_config.get("current", "classic")
-    path = THEME_FILES.get(theme, THEME_FILES["classic"])
+    theme = state.theme_config.get("current", "white")
+    path = THEME_FILES.get(theme, THEME_FILES["white"])
     try:
         with open(path, "r", encoding="utf-8") as f:
             css = f.read()

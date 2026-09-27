@@ -17,27 +17,172 @@
 .field-label{width:140px;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
 .field-input{flex:1;min-width:100px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:14px;outline:none;}
 .field-input:focus{border-color:rgba(255,255,255,0.5);}
-.field-btn{padding:10px 18px;border-radius:10px;border:0;background:#fff;color:#0F3C73;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;}
+.field-btn{padding:10px 18px;border-radius:10px;border:0;background:#fff;color:#0F3C73;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:transform .1s;}
 .field-btn:hover{transform:translateY(-1px);}
 .field-btn.danger{background:#FF4D5E;color:#fff;}
 .field-btn.ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);}
+.field-btn.warn{background:rgba(255,180,80,0.15);color:#FFB347;border:1px solid rgba(255,180,80,0.4);}
 
 .uid-copy{font-family:monospace;font-size:14px;padding:6px 12px;background:rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;}
 .uid-copy:hover{background:rgba(255,255,255,0.12);}
 
-.chars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
-.char-item{padding:14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);text-align:center;cursor:pointer;transition:all .15s;}
-.char-item:hover{background:rgba(255,255,255,0.08);}
-.char-item.owned{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08);}
-.char-item.active{border-color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,0.3);}
-.char-emoji{font-size:28px;margin-bottom:6px;}
-.char-name{font-size:12px;font-weight:600;color:#fff;}
+/* ═══════════ ПЕРСОНАЖИ ═══════════ */
+.chars-info{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;flex-wrap:wrap;
+  padding:12px 16px;
+  background:rgba(255,180,80,0.06);
+  border:1px solid rgba(255,180,80,0.25);
+  border-radius:12px;
+  margin-bottom:16px;
+  font-size:13px;
+}
+.chars-info-left{display:flex;gap:20px;flex-wrap:wrap;align-items:center;}
+.chars-info-item{color:rgba(255,255,255,0.7);}
+.chars-info-item b{color:#fff;font-weight:900;font-size:15px;margin-left:4px;}
+.chars-info-item.active b{color:#FFD700;}
+.chars-info-item.owned b{color:#4ADE80;}
 
+.chars-actions-top{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ─── Список персонажей — КАРТОЧКИ ─── */
+.chars-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:14px;
+}
+
+.char-card{
+  padding:16px 14px 14px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.04);
+  border:2px solid rgba(255,255,255,0.10);
+  display:flex;flex-direction:column;
+  gap:10px;
+  position:relative;
+  transition:border-color .15s, background .15s;
+}
+.char-card.owned{
+  border-color:rgba(74,222,128,0.35);
+  background:rgba(74,222,128,0.04);
+}
+.char-card.active{
+  border-color:#FFD700;
+  background:linear-gradient(180deg, rgba(255,215,0,0.10), rgba(74,222,128,0.03));
+  box-shadow:0 0 24px rgba(255,215,0,0.15);
+}
+
+/* Статус — сверху карточки, не absolute */
+.char-status{
+  align-self:flex-start;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  padding:4px 10px;
+  border-radius:999px;
+}
+.char-card.active .char-status{
+  background:#FFD700;color:#1a1a1a;
+}
+.char-card.owned .char-status{
+  background:#4ADE80;color:#0a1f0f;
+}
+.char-card.locked .char-status{
+  background:rgba(255,255,255,0.10);
+  color:rgba(255,255,255,0.5);
+}
+
+/* Эмодзи + имя */
+.char-visual{
+  display:flex;flex-direction:column;align-items:center;
+  gap:6px;padding:6px 0 4px;
+}
+.char-emoji{font-size:44px;line-height:1;}
+.char-name{font-size:14px;font-weight:800;color:#fff;text-align:center;line-height:1.2;}
+
+/* Кнопки — крупные, всегда видны */
+.char-buttons{
+  display:flex;flex-direction:column;gap:6px;
+  margin-top:auto;
+}
+.char-btn{
+  padding:10px 12px;
+  border-radius:10px;
+  border:0;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:800;
+  cursor:pointer;
+  transition:all .12s;
+  white-space:nowrap;
+  text-align:center;
+  line-height:1;
+}
+.char-btn:active{transform:scale(0.97);}
+.char-btn:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+  filter:grayscale(0.4);
+}
+
+/* Кнопки по действиям */
+.char-btn.select{
+  background:linear-gradient(135deg,#4ADE80,#22c55e);
+  color:#0a1f0f;
+  box-shadow:0 4px 12px rgba(74,222,128,0.3);
+}
+.char-btn.select:hover:not(:disabled){
+  box-shadow:0 6px 18px rgba(74,222,128,0.45);
+  transform:translateY(-1px);
+}
+
+.char-btn.give{
+  background:linear-gradient(135deg,#6FA8FF,#3b82f6);
+  color:#fff;
+  box-shadow:0 4px 12px rgba(111,168,255,0.3);
+}
+.char-btn.give:hover:not(:disabled){
+  box-shadow:0 6px 18px rgba(111,168,255,0.45);
+  transform:translateY(-1px);
+}
+
+.char-btn.revoke{
+  background:rgba(255,77,94,0.10);
+  color:#FF8B8B;
+  border:1px solid rgba(255,77,94,0.35);
+}
+.char-btn.revoke:hover:not(:disabled){
+  background:rgba(255,77,94,0.25);
+  color:#fff;
+}
+
+.char-btn.current{
+  background:linear-gradient(135deg, rgba(255,215,0,0.20), rgba(255,180,80,0.10));
+  color:#FFD700;
+  border:1px solid rgba(255,215,0,0.5);
+  cursor:default;
+}
+
+/* ═══════════ ДЕЙСТВИЯ ОБЩИЕ ═══════════ */
 .actions-row{display:flex;gap:10px;flex-wrap:wrap;}
-.action-btn{padding:12px 20px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.action-btn{padding:12px 20px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
 .action-btn:hover{background:rgba(255,255,255,0.12);}
 .action-btn.danger{background:rgba(255,77,94,0.15);color:#FF4D5E;border-color:rgba(255,77,94,0.4);}
 .action-btn.danger:hover{background:rgba(255,77,94,0.25);}
+.action-btn.feedback{
+  background:linear-gradient(135deg, rgba(255,180,80,0.15), rgba(255,140,40,0.10));
+  color:#FFB347;
+  border-color:rgba(255,180,80,0.5);
+}
+.action-btn.feedback:hover{
+  background:linear-gradient(135deg, rgba(255,180,80,0.25), rgba(255,140,40,0.20));
+}
+.action-btn.feedback.active{
+  background:rgba(74,222,128,0.15);
+  color:#4ADE80;
+  border-color:rgba(74,222,128,0.5);
+}
 
 .banned-badge{display:inline-block;padding:4px 12px;border-radius:999px;background:#FF4D5E;color:#fff;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;}
 .ok-badge{display:inline-block;padding:4px 12px;border-radius:999px;background:#4ADE80;color:#0a1f0f;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;}
@@ -45,7 +190,6 @@
 .info-line{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:4px;}
 .info-line b{color:#fff;font-weight:700;}
 
-/* Модалка подтверждения */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:100;}
 .modal-bg.open{display:flex;}
 .modal-box{background:#0F1524;border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:28px;max-width:440px;width:100%;}
@@ -53,6 +197,18 @@
 .modal-box p{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:16px;}
 .modal-box input{width:100%;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:14px;outline:none;margin-bottom:16px;box-sizing:border-box;}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:700;box-shadow:0 12px 32px rgba(0,0,0,0.3);z-index:200;opacity:0;transition:all .3s;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.err{background:#FF4D5E;color:#fff;}
+
+@media(max-width:520px){
+  .chars-list{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .char-emoji{font-size:36px;}
+  .char-name{font-size:13px;}
+  .char-btn{font-size:12px;padding:9px 8px;}
+  .chars-info{flex-direction:column;align-items:stretch;}
+}
 </style>
 </head><body class="admin-page">
 
@@ -114,15 +270,27 @@
       <!-- ПЕРСОНАЖИ -->
       <div class="card">
         <h2>🎭 Персонажи</h2>
-        <div class="chars-grid" id="charsGrid"></div>
+
+        <div class="chars-info">
+          <div class="chars-info-left">
+            <div class="chars-info-item owned">Куплено<b id="charsOwnedCount">0</b>/7</div>
+            <div class="chars-info-item active">Активен<b id="charsActiveName">—</b></div>
+          </div>
+          <div class="chars-actions-top">
+            <button class="field-btn ghost" id="btnResetActive">🎓 Сбросить на Студента</button>
+            <button class="field-btn danger" id="btnClearAll">🗑 Забрать всех</button>
+          </div>
+        </div>
+
+        <div class="chars-list" id="charsList"></div>
       </div>
 
       <!-- ДЕЙСТВИЯ -->
       <div class="card">
         <h2>⚙ Действия</h2>
         <div class="actions-row">
+          <button class="action-btn feedback" id="btnRequestFeedback">💌 Запросить отзыв</button>
           <button class="action-btn" id="btnResetPin">🔑 Сбросить PIN на 1234</button>
-          <button class="action-btn" id="btnGiveAll">🎁 Выдать всех персонажей</button>
           <button class="action-btn" id="btnClearCoins">💰 Обнулить монеты</button>
           <button class="action-btn" id="btnClearStreak">🔥 Сбросить серию</button>
           <button class="action-btn danger" id="btnBan">🚫 Забанить</button>
@@ -134,7 +302,6 @@
   </main>
 </div>
 
-<!-- Модалка -->
 <div class="modal-bg" id="modalBg">
   <div class="modal-box">
     <h3 id="modalTitle">—</h3>
@@ -146,6 +313,8 @@
     </div>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script src="/static/admin-menu.js"></script>
 <script>
@@ -174,6 +343,13 @@ function fmtTime(ts){
   return new Date(ts * 1000).toLocaleString('ru-RU');
 }
 
+function showToast(text, isError){
+  const el = document.getElementById('toast');
+  el.textContent = text;
+  el.className = 'toast show' + (isError ? ' err' : '');
+  setTimeout(() => { el.className = 'toast'; }, 2000);
+}
+
 async function load(){
   try{
     userData = await adminApi('/admin/api/user/' + encodeURIComponent(uid));
@@ -197,7 +373,6 @@ function render(){
   document.getElementById('fScore').value = userData.total_score;
   document.getElementById('fStreak').value = userData.streak;
 
-  // Статус
   const statusEl = document.getElementById('pStatus');
   if (userData.banned){
     statusEl.innerHTML = '<span class="banned-badge">Забанен</span>';
@@ -212,46 +387,169 @@ function render(){
     document.getElementById('btnBan').classList.add('danger');
   }
 
-  // Персонажи
-  const grid = document.getElementById('charsGrid');
-  grid.innerHTML = '';
+  renderChars();
+  renderFeedbackBtn();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ПЕРСОНАЖИ — большие карточки с кнопками
+   ═══════════════════════════════════════════════════════════ */
+function renderChars(){
+  const list = document.getElementById('charsList');
+  list.innerHTML = '';
+
+  const owned = userData.owned_chars || ['student'];
+  const active = userData.active_char || 'student';
+
+  // Обновляем инфо-строку
+  document.getElementById('charsOwnedCount').textContent = owned.length;
+  const activeChar = CHARS.find(c => c.key === active);
+  document.getElementById('charsActiveName').textContent = activeChar ? activeChar.name : '—';
+
   CHARS.forEach(c => {
-    const owned = userData.owned_chars.includes(c.key);
-    const active = userData.active_char === c.key;
+    const isOwned = owned.includes(c.key);
+    const isActive = active === c.key;
+    const isStudent = c.key === 'student';
+
+    // Класс карточки
+    let cls = 'char-card';
+    if (isActive) cls += ' active';
+    else if (isOwned) cls += ' owned';
+    else cls += ' locked';
+
+    // Статус
+    let statusText = 'Не куплен';
+    if (isActive) statusText = '👑 Активен';
+    else if (isOwned) statusText = '✓ Куплен';
+
     const el = document.createElement('div');
-    el.className = 'char-item' + (owned ? ' owned' : '') + (active ? ' active' : '');
+    el.className = cls;
     el.innerHTML =
-      '<div class="char-emoji">' + c.emoji + '</div>' +
-      '<div class="char-name">' + c.name + '</div>';
-    el.onclick = () => toggleChar(c.key, owned);
-    grid.appendChild(el);
+      '<div class="char-status">' + statusText + '</div>' +
+      '<div class="char-visual">' +
+        '<div class="char-emoji">' + c.emoji + '</div>' +
+        '<div class="char-name">' + escapeHtml(c.name) + '</div>' +
+      '</div>' +
+      '<div class="char-buttons"></div>';
+
+    const btnBox = el.querySelector('.char-buttons');
+
+    /* ─── Главная кнопка (зависит от статуса) ─── */
+    const mainBtn = document.createElement('button');
+    mainBtn.className = 'char-btn';
+
+    if (isActive){
+      // Уже активен — показать что активен (не кликабельно)
+      mainBtn.className += ' current';
+      mainBtn.textContent = '✓ Сейчас активен';
+      mainBtn.disabled = true;
+    } else if (isOwned){
+      // Куплен, но не активен → выбрать
+      mainBtn.className += ' select';
+      mainBtn.textContent = '✓ Выбрать';
+      mainBtn.onclick = () => setActiveChar(c.key);
+    } else {
+      // Не куплен → выдать
+      mainBtn.className += ' give';
+      mainBtn.textContent = '🎁 Выдать';
+      mainBtn.onclick = () => giveChar(c.key);
+    }
+    btnBox.appendChild(mainBtn);
+
+    /* ─── Вторая кнопка: Забрать (не для студента) ─── */
+    if (!isStudent){
+      const revokeBtn = document.createElement('button');
+      revokeBtn.className = 'char-btn revoke';
+
+      if (!isOwned){
+        // Не куплен — кнопка неактивна
+        revokeBtn.textContent = '— Забрать';
+        revokeBtn.disabled = true;
+      } else {
+        revokeBtn.textContent = '🗑 Забрать';
+        revokeBtn.onclick = () => revokeChar(c.key, c.name);
+      }
+      btnBox.appendChild(revokeBtn);
+    }
+
+    list.appendChild(el);
   });
 }
 
-async function toggleChar(char, owned){
+/* ═══════════════════════════════════════════════════════════
+   ДЕЙСТВИЯ С ПЕРСОНАЖАМИ
+   ═══════════════════════════════════════════════════════════ */
+async function giveChar(char){
   try{
-    if (owned){
-      // Если уже выбран — делаем активным
-      if (userData.active_char === char){
-        return;
-      }
-      await adminApi('/admin/api/user/set-active-char', {
-        method:'POST',
-        body: JSON.stringify({uid, char})
-      });
-    } else {
-      await adminApi('/admin/api/user/give-char', {
-        method:'POST',
-        body: JSON.stringify({uid, char})
-      });
-    }
+    await adminApi('/admin/api/user/give-char', {
+      method:'POST',
+      body: JSON.stringify({uid, char, make_active: false})
+    });
+    showToast('Персонаж выдан');
     await load();
   }catch(e){
-    alert('Ошибка: ' + e.message);
+    showToast('Ошибка: ' + e.message, true);
   }
 }
 
-/* === Изменение полей === */
+async function revokeChar(char, name){
+  if (!confirm('Забрать «' + name + '» у игрока?')) return;
+  try{
+    await adminApi('/admin/api/user/revoke-char', {
+      method:'POST',
+      body: JSON.stringify({uid, char})
+    });
+    showToast('Персонаж забран');
+    await load();
+  }catch(e){
+    showToast('Ошибка: ' + e.message, true);
+  }
+}
+
+async function setActiveChar(char){
+  try{
+    await adminApi('/admin/api/user/set-active-char', {
+      method:'POST',
+      body: JSON.stringify({uid, char})
+    });
+    showToast('Активный персонаж изменён');
+    await load();
+  }catch(e){
+    showToast('Ошибка: ' + e.message, true);
+  }
+}
+
+document.getElementById('btnResetActive').onclick = async () => {
+  if (!confirm('Сбросить активного персонажа на Студента?')) return;
+  try{
+    await adminApi('/admin/api/user/reset-char', {
+      method:'POST',
+      body: JSON.stringify({uid})
+    });
+    showToast('Активный сброшен на Студента');
+    await load();
+  }catch(e){
+    showToast('Ошибка: ' + e.message, true);
+  }
+};
+
+document.getElementById('btnClearAll').onclick = async () => {
+  if (!confirm('Забрать ВСЕХ персонажей у игрока? Останется только Студент.')) return;
+  try{
+    await adminApi('/admin/api/user/clear-chars', {
+      method:'POST',
+      body: JSON.stringify({uid})
+    });
+    showToast('Все персонажи забраны');
+    await load();
+  }catch(e){
+    showToast('Ошибка: ' + e.message, true);
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Статистика — поля ввода
+   ═══════════════════════════════════════════════════════════ */
 document.querySelectorAll('[data-set]').forEach(btn => {
   btn.onclick = async () => {
     const field = btn.dataset.set;
@@ -266,12 +564,60 @@ document.querySelectorAll('[data-set]').forEach(btn => {
       setTimeout(() => btn.textContent = 'Сохранить', 1200);
       await load();
     }catch(e){
-      alert('Ошибка: ' + e.message);
+      showToast('Ошибка: ' + e.message, true);
     }
   };
 });
 
-/* === Сброс PIN === */
+/* ═══════════════════════════════════════════════════════════
+   Обратная связь — кнопка
+   ═══════════════════════════════════════════════════════════ */
+function renderFeedbackBtn(){
+  var btn = document.getElementById('btnRequestFeedback');
+  if (!btn) return;
+
+  var reqAt = userData.feedback_request_at || 0;
+  var seenAt = userData.feedback_seen_at || 0;
+  var isPending = reqAt > 0 && seenAt < reqAt;
+
+  if (isPending){
+    btn.textContent = '✓ Отзыв запрошен (отменить)';
+    btn.classList.add('active');
+    btn.onclick = cancelFeedback;
+  } else {
+    btn.textContent = '💌 Запросить отзыв';
+    btn.classList.remove('active');
+    btn.onclick = requestFeedback;
+  }
+}
+
+async function requestFeedback(){
+  if (!confirm('Запросить у игрока отзыв? Он увидит попап при следующем заходе на сайт.')) return;
+  try{
+    await adminApi('/admin/api/user/request-feedback', {
+      method:'POST',
+      body: JSON.stringify({uid})
+    });
+    showToast('✓ Отзыв запрошен — игрок увидит попап');
+    await load();
+  }catch(e){ showToast('Ошибка: ' + e.message, true); }
+}
+
+async function cancelFeedback(){
+  if (!confirm('Отменить запрос отзыва?')) return;
+  try{
+    await adminApi('/admin/api/user/cancel-feedback', {
+      method:'POST',
+      body: JSON.stringify({uid})
+    });
+    showToast('Запрос отменён');
+    await load();
+  }catch(e){ showToast('Ошибка: ' + e.message, true); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Прочие действия
+   ═══════════════════════════════════════════════════════════ */
 document.getElementById('btnResetPin').onclick = async () => {
   if (!confirm('Сбросить PIN на 1234? Все сессии игрока сбросятся.')) return;
   try{
@@ -279,29 +625,10 @@ document.getElementById('btnResetPin').onclick = async () => {
       method:'POST',
       body: JSON.stringify({uid, new_pin: '1234'})
     });
-    alert('PIN сброшен на 1234');
-  }catch(e){
-    alert('Ошибка: ' + e.message);
-  }
+    showToast('PIN сброшен на 1234');
+  }catch(e){ showToast('Ошибка: ' + e.message, true); }
 };
 
-/* === Выдать всех персонажей === */
-document.getElementById('btnGiveAll').onclick = async () => {
-  if (!confirm('Выдать игроку всех персонажей?')) return;
-  for (const c of CHARS){
-    if (!userData.owned_chars.includes(c.key)){
-      try{
-        await adminApi('/admin/api/user/give-char', {
-          method:'POST',
-          body: JSON.stringify({uid, char: c.key})
-        });
-      }catch(e){}
-    }
-  }
-  await load();
-};
-
-/* === Обнулить монеты === */
 document.getElementById('btnClearCoins').onclick = async () => {
   if (!confirm('Обнулить монеты?')) return;
   try{
@@ -310,10 +637,10 @@ document.getElementById('btnClearCoins').onclick = async () => {
       body: JSON.stringify({uid, coins: 0})
     });
     await load();
-  }catch(e){}
+    showToast('Монеты обнулены');
+  }catch(e){ showToast('Ошибка: ' + e.message, true); }
 };
 
-/* === Сбросить серию === */
 document.getElementById('btnClearStreak').onclick = async () => {
   if (!confirm('Сбросить серию дней?')) return;
   try{
@@ -322,10 +649,10 @@ document.getElementById('btnClearStreak').onclick = async () => {
       body: JSON.stringify({uid, streak: 0})
     });
     await load();
-  }catch(e){}
+    showToast('Серия сброшена');
+  }catch(e){ showToast('Ошибка: ' + e.message, true); }
 };
 
-/* === Бан / разбан === */
 document.getElementById('btnBan').onclick = async () => {
   if (userData.banned){
     if (!confirm('Разбанить игрока?')) return;
@@ -335,7 +662,8 @@ document.getElementById('btnBan').onclick = async () => {
         body: JSON.stringify({uid})
       });
       await load();
-    }catch(e){}
+      showToast('Игрок разбанен');
+    }catch(e){ showToast('Ошибка: ' + e.message, true); }
   } else {
     const reason = prompt('Причина бана:', 'Нарушение правил');
     if (!reason) return;
@@ -345,11 +673,11 @@ document.getElementById('btnBan').onclick = async () => {
         body: JSON.stringify({uid, reason})
       });
       await load();
-    }catch(e){}
+      showToast('Игрок забанен');
+    }catch(e){ showToast('Ошибка: ' + e.message, true); }
   }
 };
 
-/* === Удаление === */
 document.getElementById('btnDelete').onclick = () => {
   const modalBg = document.getElementById('modalBg');
   const modalInput = document.getElementById('modalInput');
@@ -362,7 +690,7 @@ document.getElementById('btnDelete').onclick = () => {
   document.getElementById('modalConfirm').onclick = async () => {
     const confirm = modalInput.value.trim().toUpperCase();
     if (confirm !== uid){
-      alert('UID не совпал');
+      showToast('UID не совпал', true);
       return;
     }
     try{
@@ -370,16 +698,15 @@ document.getElementById('btnDelete').onclick = () => {
         method:'POST',
         body: JSON.stringify({uid, confirm})
       });
-      alert('Аккаунт удалён');
-      location.href = '/admin/users';
+      showToast('Аккаунт удалён');
+      setTimeout(() => location.href = '/admin/users', 800);
     }catch(e){
-      alert('Ошибка: ' + e.message);
+      showToast('Ошибка: ' + e.message, true);
     }
   };
   document.getElementById('modalCancel').onclick = () => modalBg.classList.remove('open');
 };
 
-/* Копирование UID */
 document.getElementById('pUid').onclick = async () => {
   try{
     await navigator.clipboard.writeText(userData.uid);

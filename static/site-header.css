@@ -275,3 +275,29 @@ body{
   .site-header-link-icon,
   .site-header-profile-icon{font-size:19px;}
 }
+/* ═══════════════════════════════════════════════════════════
+   ФИКС: убираем подчёркивание у всех ссылок и кнопок
+   (кроме .underlined — если где-то понадобится)
+   ═══════════════════════════════════════════════════════════ */
+a,
+a:hover,
+a:focus,
+a:active,
+a:visited,
+button,
+.btn-play,
+.btn-hero,
+.mini-hero-kicker,
+.game-card,
+.site-header-brand,
+.site-header-link,
+.site-header-profile,
+.site-header-avatar{
+  text-decoration: none !important;
+}
+
+/* Если где-то нужно подчёркивание — добавь класс .underlined */
+a.underlined,
+.underlined{
+  text-decoration: underline !important;
+}

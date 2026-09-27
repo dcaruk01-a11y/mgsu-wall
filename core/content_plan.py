@@ -11,15 +11,14 @@ from config import DB_PATH, MSK, today_str
 SLOTS = [
     {"key":"morning",  "hour":9,  "minute":0,  "label":"🌅 Игра дня"},
     {"key":"stats",    "hour":17, "minute":5,  "label":"📊 Статистика дня", "auto":True},
-    {"key":"wall",     "hour":17, "minute":10, "label":"🖼 Стена дня", "auto":True},
+    {"key":"wall",     "hour":17, "minute":10, "label":"🖼 Стена дня",      "auto":True},
     {"key":"extra",    "hour":18, "minute":0,  "label":"💡 Доп. пост"},
-    {"key":"rating",   "hour":20, "minute":0,  "label":"🏆 Рейтинг дня", "auto":True},
+    {"key":"rating",   "hour":20, "minute":0,  "label":"🏆 Рейтинг дня",    "auto":True},
     {"key":"author",   "hour":21, "minute":0,  "label":"📖 Пост автора"},
 ]
 
 # Какие слоты в какие дни недели
 WEEK_SCHEDULE = {
-    # 0=Пн, 6=Вс
     0: ["morning","stats","wall","rating","author"],
     1: ["morning","stats","wall","extra","rating"],
     2: ["morning","stats","wall","rating"],
@@ -63,6 +62,16 @@ async def db_init_content():
             CREATE INDEX IF NOT EXISTS idx_content_day_slot
             ON content_plan (day, slot)
         """)
+        # Чистим возможные дубли (если уже накопились)
+        try:
+            await db.execute("""
+                DELETE FROM content_plan
+                WHERE id NOT IN (
+                    SELECT MIN(id) FROM content_plan GROUP BY day, slot
+                )
+            """)
+        except Exception:
+            pass
         await db.commit()
 
 
@@ -102,7 +111,6 @@ async def save_slot(week_str, day, slot, text):
         row = await cur.fetchone()
 
         if row:
-            # Обновляем только если ещё не опубликовано
             if row[1] != "published":
                 await db.execute(
                     "UPDATE content_plan SET text=?, status='pending' WHERE id=?",
@@ -117,20 +125,45 @@ async def save_slot(week_str, day, slot, text):
 
 
 async def mark_published(day, slot):
+    """UPSERT — если записи нет, создаёт её со статусом 'published'."""
+    now = time.time()
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
-            UPDATE content_plan SET status='published', published_at=?
-            WHERE day=? AND slot=?
-        """, (time.time(), day, slot))
+        cur = await db.execute(
+            "SELECT id FROM content_plan WHERE day=? AND slot=?",
+            (day, slot)
+        )
+        row = await cur.fetchone()
+        if row:
+            await db.execute(
+                "UPDATE content_plan SET status='published', published_at=? WHERE id=?",
+                (now, row[0])
+            )
+        else:
+            await db.execute("""
+                INSERT INTO content_plan (week, day, slot, text, status, published_at, created_at)
+                VALUES (?,?,?,'', 'published', ?, ?)
+            """, (week_key(), day, slot, now, now))
         await db.commit()
 
 
 async def mark_skipped(day, slot):
+    """UPSERT — если записи нет, создаёт её со статусом 'skipped'."""
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
-            UPDATE content_plan SET status='skipped'
-            WHERE day=? AND slot=?
-        """, (day, slot))
+        cur = await db.execute(
+            "SELECT id FROM content_plan WHERE day=? AND slot=?",
+            (day, slot)
+        )
+        row = await cur.fetchone()
+        if row:
+            await db.execute(
+                "UPDATE content_plan SET status='skipped' WHERE id=?",
+                (row[0],)
+            )
+        else:
+            await db.execute("""
+                INSERT INTO content_plan (week, day, slot, text, status, created_at)
+                VALUES (?,?,?,'', 'skipped', ?)
+            """, (week_key(), day, slot, time.time()))
         await db.commit()
 
 
@@ -138,6 +171,7 @@ async def get_pending_for_now():
     """
     Возвращает посты, которые надо опубликовать прямо сейчас.
     Проверяет день, час, минуту ± 2 минуты.
+    Возвращает только 'pending' или отсутствующие auto-слоты.
     """
     now = datetime.now(MSK)
     day = now.strftime("%Y-%m-%d")
@@ -164,12 +198,23 @@ async def get_pending_for_now():
             row = await cur.fetchone()
 
             if not row:
-                result.append({
-                    "day": day, "slot": slot_key,
-                    "label": slot_def["label"],
-                    "auto": slot_def.get("auto", False),
-                    "text": "", "status": "empty"
-                })
+                # Если слот автоматический — публикуем сгенерированный контент
+                if slot_def.get("auto", False):
+                    result.append({
+                        "day": day, "slot": slot_key,
+                        "label": slot_def["label"],
+                        "auto": True,
+                        "text": "", "status": "pending"
+                    })
+                else:
+                    # Ручной слот без записи — отправляем алерт админу ОДИН раз
+                    # (записав сразу 'skipped', чтобы не спамить)
+                    result.append({
+                        "day": day, "slot": slot_key,
+                        "label": slot_def["label"],
+                        "auto": False,
+                        "text": "", "status": "empty"
+                    })
                 continue
 
             if row[2] == "pending":
@@ -209,7 +254,6 @@ async def get_stats(week_str=None):
         elif status == "pending":
             filled += 1
 
-    # Всего слотов на неделю
     for wd in range(7):
         total_planned += len(WEEK_SCHEDULE.get(wd, []))
 

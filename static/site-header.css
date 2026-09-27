@@ -73,9 +73,9 @@ body{
   width:36px;
   height:36px;
   display:block;
-  background:var(--logo-bg, #fff);
-  border-radius:9px;
-  padding:3px;
+  background:transparent;
+  border-radius:0;
+  padding:0;
   object-fit:contain;
   flex-shrink:0;
 }

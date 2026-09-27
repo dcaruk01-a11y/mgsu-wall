@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🏠 Дом · Прототип</title>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   ПРОТОТИП ДОМА. Всё на CSS + эмодзи, без картинок.
+   Чтобы поменять цвета — правь переменные в :root.
+   Чтобы поменять мебель — ищи .furniture-* в HTML внизу.
+   ═══════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root{
+  /* СТЕНЫ */
+  --wall-top:#2a1a3a;
+  --wall-mid:#3d2845;
+  --wall-bot:#4a3040;
+  /* ПОЛ */
+  --floor-1:#5a3a2a;
+  --floor-2:#3d2519;
+  /* СВЕТ */
+  --lamp:#ffd27a;
+  --window-sky-1:#ff9a5c;
+  --window-sky-2:#ffd27a;
+  --window-sky-3:#7a5aa8;
+  /* UI */
+  --card:rgba(20,12,30,0.55);
+  --card-line:rgba(255,220,170,0.18);
+  --text:#fff4e0;
+  --text-dim:#b8a5a0;
+  --accent:#ffb347;
+  --good:#6bd67a;
+  --warn:#ffd24a;
+  --bad:#ff6b6b;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+
+body{
+  font-family:'Nunito',system-ui,sans-serif;
+  background:#0d0515;
+  color:var(--text);
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+/* ═══════════ СЦЕНА — КОМНАТА ═══════════ */
+.scene{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+}
+
+/* Фон стен: градиент + текстура обоев */
+.wall{
+  position:absolute;
+  inset:0 0 42% 0;
+  background:
+    /* полосы обоев */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 60px,
+      rgba(255,255,255,0.02) 60px 62px
+    ),
+    radial-gradient(ellipse at 50% 40%, rgba(255,200,120,0.18) 0%, transparent 60%),
+    linear-gradient(180deg, var(--wall-top) 0%, var(--wall-mid) 50%, var(--wall-bot) 100%);
+}
+
+/* Пол */
+.floor{
+  position:absolute;
+  inset:58% 0 0 0;
+  background:
+    /* доски */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 80px,
+      rgba(0,0,0,0.25) 80px 82px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.03) 0 30px,
+      rgba(0,0,0,0.08) 30px 32px
+    ),
+    linear-gradient(180deg, var(--floor-1) 0%, var(--floor-2) 100%);
+  box-shadow:inset 0 20px 40px rgba(0,0,0,0.5);
+}
+
+/* Тёплое пятно света от лампы */
+.lamp-glow{
+  position:absolute;
+  top:0;left:50%;
+  width:120%;
+  height:80%;
+  transform:translateX(-50%);
+  background:radial-gradient(
+    ellipse at 50% 0%,
+    rgba(255,210,122,0.35) 0%,
+    rgba(255,210,122,0.10) 30%,
+    transparent 70%
+  );
+  pointer-events:none;
+  z-index:1;
+}
+
+/* ═══════════ ОКНО С ЗАКАТОМ ═══════════ */
+.window{
+  position:absolute;
+  top:6%; left:14%;
+  width:22%;
+  height:44%;
+  min-width:160px;
+  min-height:180px;
+  border-radius:14px;
+  background:
+    /* силуэт панелек */
+    linear-gradient(180deg, transparent 60%, rgba(80,40,30,0.6) 60%),
+    linear-gradient(180deg,
+      var(--window-sky-3) 0%,
+      var(--window-sky-1) 45%,
+      var(--window-sky-2) 70%,
+      #ffbb7a 100%
+    );
+  border:6px solid rgba(30,18,12,0.85);
+  box-shadow:
+    inset 0 0 60px rgba(255,180,90,0.4),
+    0 20px 40px rgba(0,0,0,0.5);
+  overflow:hidden;
+  z-index:2;
+}
+.window::before{
+  /* рама крест-накрест */
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg, transparent 48%, rgba(30,18,12,0.85) 48%, rgba(30,18,12,0.85) 52%, transparent 52%),
+    linear-gradient(180deg, transparent 48%, rgba(30,18,12,0.85) 48%, rgba(30,18,12,0.85) 52%, transparent 52%);
+}
+.window::after{
+  /* силуэт кота на подоконнике */
+  content:'🐈‍⬛';
+  position:absolute;
+  bottom:0; right:8%;
+  font-size:38px;
+  filter:brightness(0.15);
+  transform:scaleX(-1);
+  z-index:3;
+}
+
+/* ═══════════ ПОЛКА ═══════════ */
+.shelf{
+  position:absolute;
+  top:8%; right:14%;
+  width:16%;
+  height:8px;
+  min-width:120px;
+  background:linear-gradient(180deg, #6b4a30 0%, #3d2818 100%);
+  border-radius:3px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.5);
+  z-index:2;
+}
+.shelf::before{
+  content:'📚 🪴 🕰';
+  position:absolute;
+  bottom:4px;
+  left:0;
+  font-size:26px;
+  letter-spacing:4px;
+  filter:brightness(0.9);
+}
+
+/* ═══════════ ПОСТЕР НА СТЕНЕ ═══════════ */
+.poster{
+  position:absolute;
+  top:14%; right:34%;
+  width:9%;
+  height:14%;
+  min-width:70px;
+  min-height:90px;
+  background:linear-gradient(135deg, #ff9a5c 0%, #ffd27a 100%);
+  border:3px solid rgba(30,18,12,0.85);
+  border-radius:4px;
+  transform:rotate(-3deg);
+  box-shadow:0 6px 16px rgba(0,0,0,0.4);
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+}
+.poster::after{
+  content:'🎮';
+}
+
+/* ═══════════ ЛАМПА ═══════════ */
+.lamp{
+  position:absolute;
+  top:0; left:50%;
+  transform:translateX(-50%);
+  width:2px;
+  height:10%;
+  background:linear-gradient(180deg, #1a1018 0%, #3d2519 100%);
+  z-index:3;
+}
+.lamp::after{
+  content:'';
+  position:absolute;
+  bottom:0; left:50%;
+  transform:translateX(-50%);
+  width:60px;
+  height:26px;
+  background:radial-gradient(ellipse at 50% 30%, #ffd27a 0%, #b87820 70%, #6b4010 100%);
+  border-radius:0 0 40px 40px;
+  box-shadow:0 0 40px rgba(255,210,122,0.6);
+}
+
+/* ═══════════ ПЕРСОНАЖ ═══════════ */
+.character{
+  position:absolute;
+  bottom:32%;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:10;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  animation:breathe 3.5s ease-in-out infinite;
+}
+@keyframes breathe{
+  0%,100%{transform:translateX(-50%) translateY(0) scale(1);}
+  50%{transform:translateX(-50%) translateY(-6px) scale(1.02);}
+}
+.character:active{
+  animation:none;
+  transform:translateX(-50%) scale(0.94);
+}
+.char-emoji{
+  font-size:96px;
+  line-height:1;
+  filter:drop-shadow(0 12px 24px rgba(0,0,0,0.6));
+  transition:transform .15s;
+}
+.char-name{
+  font-size:13px;
+  font-weight:800;
+  color:var(--text);
+  background:var(--card);
+  backdrop-filter:blur(8px);
+  padding:4px 12px;
+  border-radius:999px;
+  border:1px solid var(--card-line);
+  letter-spacing:0.03em;
+}
+.char-bubble{
+  position:absolute;
+  bottom:100%;
+  left:50%;
+  transform:translateX(-50%) translateY(-8px);
+  background:#fff;
+  color:#1a0f1a;
+  padding:8px 14px;
+  border-radius:14px;
+  font-size:13px;
+  font-weight:700;
+  white-space:nowrap;
+  opacity:0;
+  transition:opacity .3s;
+  pointer-events:none;
+  box-shadow:0 8px 20px rgba(0,0,0,0.4);
+}
+.char-bubble::after{
+  content:'';
+  position:absolute;
+  top:100%;
+  left:50%;
+  transform:translateX(-50%);
+  border:6px solid transparent;
+  border-top-color:#fff;
+}
+.char-bubble.show{opacity:1;}
+
+/* ═══════════ МЕБЕЛЬ — кликабельная ═══════════ */
+.furniture{
+  position:absolute;
+  z-index:5;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  cursor:pointer;
+  transition:transform .15s;
+  padding:6px;
+  border-radius:12px;
+}
+.furniture:hover{
+  transform:translateY(-4px);
+  background:rgba(255,220,170,0.08);
+}
+.furniture:active{
+  transform:translateY(0) scale(0.96);
+}
+.furniture-emoji{
+  font-size:44px;
+  line-height:1;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5));
+}
+.furniture-label{
+  font-size:11px;
+  font-weight:700;
+  color:var(--text-dim);
+  letter-spacing:0.05em;
+  background:var(--card);
+  backdrop-filter:blur(6px);
+  padding:2px 8px;
+  border-radius:999px;
+  border:1px solid var(--card-line);
+}
+
+/* ПОЗИЦИИ МЕБЕЛИ */
+.f-bed{       bottom:14%; left:4%; }
+.f-kitchen{   bottom:8%;  left:24%; }
+.f-board{     bottom:44%; left:2%; }
+.f-wardrobe{  bottom:14%; right:6%; }
+.f-computer{  bottom:38%; right:2%; }
+.f-door{      bottom:24%; right:26%; }
+.f-plant{     bottom:8%;  right:32%; }
+
+/* ═══════════ HUD — СТАТЫ СВЕРХУ ═══════════ */
+.hud{
+  position:absolute;
+  top:14px;
+  left:14px;
+  right:14px;
+  z-index:20;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+}
+.hud > *{pointer-events:auto;}
+
+.stat{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--card);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--card-line);
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:700;
+  min-width:118px;
+}
+.stat-icon{font-size:16px;}
+.stat-bar{
+  flex:1;
+  height:6px;
+  background:rgba(255,255,255,0.12);
+  border-radius:3px;
+  overflow:hidden;
+  position:relative;
+  min-width:40px;
+}
+.stat-fill{
+  height:100%;
+  background:var(--good);
+  border-radius:3px;
+  transition:width .4s ease, background .3s;
+}
+.stat-fill.warn{background:var(--warn);}
+.stat-fill.bad{background:var(--bad);}
+.stat-value{
+  font-variant-numeric:tabular-nums;
+  min-width:28px;
+  text-align:right;
+  font-size:12px;
+}
+
+.coins{
+  background:linear-gradient(135deg, rgba(255,200,80,0.25), rgba(255,150,40,0.15));
+  border-color:rgba(255,200,80,0.5);
+  color:#ffe9a8;
+  font-size:14px;
+  font-weight:800;
+}
+.coins-icon{font-size:16px;}
+
+/* Кнопка выхода на улицу — универсальная */
+.top-btn{
+  background:var(--card);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--card-line);
+  color:var(--text);
+  padding:8px 16px;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .12s, background .15s;
+}
+.top-btn:hover{transform:translateY(-2px);background:rgba(255,220,170,0.15);}
+
+/* ═══════════ МОДАЛКИ ═══════════ */
+.modal-bg{
+  position:fixed;
+  inset:0;
+  z-index:200;
+  background:rgba(5,2,10,0.75);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s;
+}
+.modal-bg.open{
+  opacity:1;
+  pointer-events:auto;
+}
+.modal{
+  background:linear-gradient(180deg, rgba(45,28,55,0.98) 0%, rgba(30,18,40,0.98) 100%);
+  border:1px solid rgba(255,220,170,0.25);
+  border-radius:22px;
+  padding:26px 24px;
+  max-width:460px;
+  width:100%;
+  max-height:80vh;
+  overflow-y:auto;
+  color:var(--text);
+  transform:scale(0.92) translateY(20px);
+  transition:transform .3s;
+  box-shadow:0 30px 80px rgba(0,0,0,0.6);
+}
+.modal-bg.open .modal{transform:scale(1) translateY(0);}
+.modal h2{
+  font-size:22px;
+  font-weight:800;
+  margin-bottom:6px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.modal p{
+  font-size:14px;
+  line-height:1.55;
+  color:var(--text-dim);
+  margin-bottom:16px;
+}
+.modal-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:18px;
+}
+.btn{
+  padding:12px 22px;
+  border-radius:12px;
+  border:0;
+  background:linear-gradient(135deg, #ffb347, #ff8a2b);
+  color:#2a1208;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+  transition:transform .12s, box-shadow .15s;
+  flex:1;
+  min-width:130px;
+  box-shadow:0 6px 16px rgba(255,140,50,0.3);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(255,140,50,0.45);}
+.btn:active{transform:translateY(0) scale(0.98);}
+.btn.ghost{
+  background:rgba(255,255,255,0.08);
+  color:var(--text);
+  border:1px solid var(--card-line);
+  box-shadow:none;
+}
+.btn.ghost:hover{background:rgba(255,255,255,0.14);}
+.btn:disabled{
+  opacity:0.4;
+  cursor:not-allowed;
+  filter:grayscale(0.5);
+}
+.btn:disabled:hover{transform:none;box-shadow:none;}
+
+.close-x{
+  position:absolute;
+  top:14px;
+  right:14px;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  border:1px solid var(--card-line);
+  color:var(--text);
+  font-size:16px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .15s;
+}
+.close-x:hover{background:rgba(255,255,255,0.18);}
+
+/* ═══════════ DEBUG — кнопка сброса ═══════════ */
+.debug-btn{
+  position:fixed;
+  bottom:10px;
+  right:10px;
+  z-index:100;
+  background:rgba(255,60,60,0.15);
+  border:1px solid rgba(255,60,60,0.4);
+  color:#ffb8b8;
+  padding:6px 12px;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  opacity:0.6;
+  transition:opacity .15s;
+}
+.debug-btn:hover{opacity:1;}
+
+/* ═══════════ АДАПТИВ ═══════════ */
+@media(max-width:640px){
+  .character{bottom:36%;}
+  .char-emoji{font-size:72px;}
+  .furniture-emoji{font-size:34px;}
+  .furniture-label{font-size:10px;padding:2px 6px;}
+  .hud{top:8px;left:8px;right:8px;gap:6px;}
+  .stat{padding:6px 10px;font-size:11px;min-width:98px;gap:5px;}
+  .stat-icon{font-size:13px;}
+  .coins{padding:6px 10px;font-size:12px;}
+  .top-btn{padding:6px 12px;font-size:11px;}
+  .window{top:4%;left:6%;width:30%;height:36%;}
+  .shelf{top:6%;right:6%;width:26%;}
+  .poster{display:none;}
+  /* мебель перекомпонуем */
+  .f-bed{       bottom:10%; left:2%;  }
+  .f-kitchen{   bottom:6%;  left:22%; }
+  .f-board{     bottom:46%; left:2%;  }
+  .f-wardrobe{  bottom:10%; right:4%; }
+  .f-computer{  bottom:44%; right:2%; }
+  .f-door{      bottom:22%; right:2%; }
+  .f-plant{     display:none; }
+  .modal{padding:20px 18px;border-radius:18px;}
+  .modal h2{font-size:19px;}
+}
+</style>
+</head><body>
+
+<!-- ═══════════ КОМНАТА ═══════════ -->
+<div class="scene">
+
+  <!-- Стены и пол -->
+  <div class="wall"></div>
+  <div class="floor"></div>
+  <div class="lamp-glow"></div>
+
+  <!-- Декор на стене -->
+  <div class="window"></div>
+  <div class="shelf"></div>
+  <div class="poster"></div>
+  <div class="lamp"></div>
+
+  <!-- Персонаж -->
+  <div class="character" id="character">
+    <div class="char-bubble" id="charBubble">Привет!</div>
+    <div class="char-emoji" id="charEmoji">🧑‍🎓</div>
+    <div class="char-name" id="charName">Студент</div>
+  </div>
+
+  <!-- Мебель: кликабельная -->
+  <div class="furniture f-bed"       onclick="openBed()">
+    <div class="furniture-emoji">🛏️</div>
+    <div class="furniture-label">Спать</div>
+  </div>
+  <div class="furniture f-kitchen"   onclick="openKitchen()">
+    <div class="furniture-emoji">🍳</div>
+    <div class="furniture-label">Кухня</div>
+  </div>
+  <div class="furniture f-board"     onclick="openBoard()">
+    <div class="furniture-emoji">📌</div>
+    <div class="furniture-label">Доска</div>
+  </div>
+  <div class="furniture f-wardrobe"  onclick="openWardrobe()">
+    <div class="furniture-emoji">👕</div>
+    <div class="furniture-label">Гардероб</div>
+  </div>
+  <div class="furniture f-computer"  onclick="openComputer()">
+    <div class="furniture-emoji">💻</div>
+    <div class="furniture-label">Комп</div>
+  </div>
+  <div class="furniture f-door"      onclick="openDoor()">
+    <div class="furniture-emoji">🚪</div>
+    <div class="furniture-label">Улица</div>
+  </div>
+  <div class="furniture f-plant">
+    <div class="furniture-emoji">🪴</div>
+  </div>
+
+  <!-- HUD сверху -->
+  <div class="hud">
+    <div class="stat" title="Голод">
+      <span class="stat-icon">🍔</span>
+      <div class="stat-bar"><div class="stat-fill" id="barHunger"></div></div>
+      <span class="stat-value" id="valHunger">100</span>
+    </div>
+    <div class="stat" title="Энергия">
+      <span class="stat-icon">⚡</span>
+      <div class="stat-bar"><div class="stat-fill" id="barEnergy"></div></div>
+      <span class="stat-value" id="valEnergy">100</span>
+    </div>
+    <div class="stat" title="Настроение">
+      <span class="stat-icon">😊</span>
+      <div class="stat-bar"><div class="stat-fill" id="barMood"></div></div>
+      <span class="stat-value" id="valMood">100</span>
+    </div>
+    <div class="stat coins">
+      <span class="coins-icon">💰</span>
+      <span id="valCoins">250</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════ МОДАЛКА — КУХНЯ ═══════════ -->
+<div class="modal-bg" id="mKitchen">
+  <div class="modal" style="position:relative;">
+    <button class="close-x" onclick="closeModal('mKitchen')">✕</button>
+    <h2>🍳 Кухня</h2>
+    <p>Что покушать? Еда восстанавливает голод и немного настроение.</p>
+    <div class="modal-actions" style="flex-direction:column;">
+      <button class="btn" onclick="eat('pizza', 30, 10, 20)">
+        🍕 Пицца · +30 голод · +10 настроение · 20 💰
+      </button>
+      <button class="btn" onclick="eat('coffee', 15, 20, 10)">
+        ☕ Кофе · +15 голод · +20 энергия · 10 💰
+      </button>
+      <button class="btn" onclick="eat('apple', 10, 5, 5)">
+        🍎 Яблоко · +10 голод · +5 настроение · 5 💰
+      </button>
+      <button class="btn ghost" onclick="closeModal('mKitchen')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ МОДАЛКА — СПАЛЬНЯ ═══════════ -->
+<div class="modal-bg" id="mBed">
+  <div class="modal" style="position:relative;">
+    <button class="close-x" onclick="closeModal('mBed')">✕</button>
+    <h2>🛏️ Поспать</h2>
+    <p>Отдохни и восстанови энергию. Заодно настроение подрастёт.</p>
+    <div class="modal-actions" style="flex-direction:column;">
+      <button class="btn" onclick="sleep(30)">😴 Вздремнуть · +30 ⚡</button>
+      <button class="btn" onclick="sleep(60)">💤 Поспать час · +60 ⚡</button>
+      <button class="btn" onclick="sleep(100)">🌙 Выспаться · +100 ⚡</button>
+      <button class="btn ghost" onclick="closeModal('mBed')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ МОДАЛКА — ГАРДЕРОБ ═══════════ -->
+<div class="modal-bg" id="mWardrobe">
+  <div class="modal" style="position:relative;">
+    <button class="close-x" onclick="closeModal('mWardrobe')">✕</button>
+    <h2>👕 Гардероб</h2>
+    <p>Твоя одежда. Покупай вещи в «Унике», чтобы переодеваться.</p>
+    <div class="modal-actions" style="flex-direction:column;">
+      <button class="btn" onclick="dress('student', '🧑‍🎓', 'Студент')">🧑‍🎓 Студент (по умолчанию)</button>
+      <button class="btn" onclick="dress('sso', '👷', 'ССОшник')">👷 ССОшник</button>
+      <button class="btn" onclick="dress('prorab', '📋', 'Прораб')">📋 Прораб</button>
+      <button class="btn ghost" onclick="closeModal('mWardrobe')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ МОДАЛКА — КОМП ═══════════ -->
+<div class="modal-bg" id="mComputer">
+  <div class="modal" style="position:relative;">
+    <button class="close-x" onclick="closeModal('mComputer')">✕</button>
+    <h2>💻 Компьютер</h2>
+    <p>Сыграй в игру и заработай монет, чтобы покупать вещи и еду.</p>
+    <div class="modal-actions" style="flex-direction:column;">
+      <button class="btn" onclick="goGame('clicker')">🎓 Кликер</button>
+      <button class="btn" onclick="goGame('broadway')">🏃 Бродвей</button>
+      <button class="btn" onclick="goGame('grable')">🪤 Грабли</button>
+      <button class="btn" onclick="goGame('tetris')">🏗️ Тетрис</button>
+      <button class="btn ghost" onclick="closeModal('mComputer')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ МОДАЛКА — ДОСКА ═══════════ -->
+<div class="modal-bg" id="mBoard">
+  <div class="modal" style="position:relative;">
+    <button class="close-x" onclick="closeModal('mBoard')">✕</button>
+    <h2>📌 Доска</h2>
+    <p>Твои ачивки, рекорды и фото. Пока здесь пусто — играй и зарабатывай.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0;">
+      <div style="background:rgba(255,220,170,0.08);border:1px solid var(--card-line);border-radius:12px;padding:14px;text-align:center;font-size:24px;">🎓<div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Первая игра</div></div>
+      <div style="background:rgba(255,220,170,0.08);border:1px solid var(--card-line);border-radius:12px;padding:14px;text-align:center;font-size:24px;">🔒<div style="font-size:10px;color:var(--text-dim);margin-top:4px;">3 дня</div></div>
+      <div style="background:rgba(255,220,170,0.08);border:1px solid var(--card-line);border-radius:12px;padding:14px;text-align:center;font-size:24px;">🔒<div style="font-size:10px;color:var(--text-dim);margin-top:4px;">Рекорд</div></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('mBoard')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ МОДАЛКА — УЛИЦА ═══════════ -->
+<div class="modal-bg" id="mDoor">
+  <div class="modal" style="position:relative;">
+    <button class="close-x" onclick="closeModal('mDoor')">✕</button>
+    <h2>🚪 Пойти на улицу?</h2>
+    <p>Там качели, панельки, гаражи и площадка. И кнопка в университет.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="location.href='/proto/street'">🌳 Выйти гулять</button>
+      <button class="btn ghost" onclick="closeModal('mDoor')">Остаться</button>
+    </div>
+  </div>
+</div>
+
+<!-- Отладка -->
+<button class="debug-btn" onclick="resetGame()">🔄 Сброс</button>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ИГРОВАЯ ЛОГИКА — ПРОТОТИП
+   Всё в localStorage, бэкенда нет.
+   ═══════════════════════════════════════════════════════════ */
+
+const CONFIG = {
+  // Максимум статов
+  STATS_MAX: 100,
+  // Затухание статов (в час игрового времени = 1 сек реального)
+  DECAY_PER_TICK: 1,        // на сколько падает стат за 1 «тик»
+  TICK_INTERVAL: 60000,     // тик раз в 60 секунд (реальных)
+  // Стартовые значения
+  START_HUNGER: 100,
+  START_ENERGY: 100,
+  START_MOOD: 100,
+  START_COINS: 250,
+  // Погладить
+  PET_MOOD: 8,
+  PET_COOLDOWN: 4000,       // мс
+  // Версия ключа localStorage (увеличь, чтобы сбросить у всех)
+  SAVE_KEY: 'mgsu_proto_home_v1',
+};
+
+/* ───────── СОСТОЯНИЕ ───────── */
+let state = loadState();
+let lastTick = Date.now();
+let petCooldownUntil = 0;
+
+function defaultState(){
+  return {
+    hunger: CONFIG.START_HUNGER,
+    energy: CONFIG.START_ENERGY,
+    mood: CONFIG.START_MOOD,
+    coins: CONFIG.START_COINS,
+    charKey: 'student',
+    charEmoji: '🧑‍🎓',
+    charName: 'Студент',
+    lastSave: Date.now(),
+  };
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(CONFIG.SAVE_KEY);
+    if (!raw) return defaultState();
+    const s = JSON.parse(raw);
+    return Object.assign(defaultState(), s);
+  }catch(e){
+    return defaultState();
+  }
+}
+
+function saveState(){
+  state.lastSave = Date.now();
+  try{ localStorage.setItem(CONFIG.SAVE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function resetGame(){
+  if (!confirm('Сбросить весь прогресс прототипа?')) return;
+  localStorage.removeItem(CONFIG.SAVE_KEY);
+  state = defaultState();
+  renderAll();
+  bubble('Всё заново!');
+}
+
+/* ───────── UI ───────── */
+function renderAll(){
+  // Статы
+  setBar('barHunger', 'valHunger', state.hunger);
+  setBar('barEnergy', 'valEnergy', state.energy);
+  setBar('barMood',   'valMood',   state.mood);
+  // Монеты
+  document.getElementById('valCoins').textContent = state.coins;
+  // Персонаж
+  document.getElementById('charEmoji').textContent = state.charEmoji;
+  document.getElementById('charName').textContent = state.charName;
+}
+
+function setBar(barId, valId, value){
+  value = Math.max(0, Math.min(CONFIG.STATS_MAX, Math.round(value)));
+  const fill = document.getElementById(barId);
+  const val = document.getElementById(valId);
+  if (!fill || !val) return;
+  fill.style.width = value + '%';
+  fill.classList.remove('warn', 'bad');
+  if (value <= 25) fill.classList.add('bad');
+  else if (value <= 55) fill.classList.add('warn');
+  val.textContent = value;
+}
+
+/* ───────── ПУЗЫРЬ РЕЧИ ───────── */
+let bubbleTimer = null;
+function bubble(text, ms){
+  const el = document.getElementById('charBubble');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(bubbleTimer);
+  bubbleTimer = setTimeout(() => el.classList.remove('show'), ms || 2200);
+}
+
+/* ───────── КЛИК ПО ПЕРСОНАЖУ — ПОГЛАДИТЬ ───────── */
+document.getElementById('character').addEventListener('click', () => {
+  const now = Date.now();
+  if (now < petCooldownUntil){
+    bubble('Хи-хи!', 1200);
+    return;
+  }
+  petCooldownUntil = now + CONFIG.PET_COOLDOWN;
+  state.mood = Math.min(CONFIG.STATS_MAX, state.mood + CONFIG.PET_MOOD);
+  renderAll();
+  saveState();
+  const phrases = ['Мур! 😊', 'Приятно!', 'Ещё разок!', 'Класс!'];
+  bubble(phrases[Math.floor(Math.random() * phrases.length)]);
+});
+
+/* ───────── ЕДА ───────── */
+function eat(food, hungerBonus, moodBonus, cost){
+  if (state.coins < cost){
+    bubble('Мало монет 😢');
+    return;
+  }
+  state.coins -= cost;
+  state.hunger = Math.min(CONFIG.STATS_MAX, state.hunger + hungerBonus);
+  state.mood = Math.min(CONFIG.STATS_MAX, state.mood + moodBonus);
+  renderAll();
+  saveState();
+  closeModal('mKitchen');
+  bubble('Ням-ням! 😋');
+}
+
+/* ───────── СОН ───────── */
+function sleep(energyBonus){
+  state.energy = Math.min(CONFIG.STATS_MAX, state.energy + energyBonus);
+  state.mood = Math.min(CONFIG.STATS_MAX, state.mood + 5);
+  renderAll();
+  saveState();
+  closeModal('mBed');
+  bubble('Z-z-z... 😴');
+}
+
+/* ───────── ГАРДЕРОБ ───────── */
+function dress(key, emoji, name){
+  state.charKey = key;
+  state.charEmoji = emoji;
+  state.charName = name;
+  renderAll();
+  saveState();
+  closeModal('mWardrobe');
+  bubble('Как мне? ✨');
+}
+
+/* ───────── КОМП ───────── */
+function goGame(game){
+  // В прототипе ведём на реальные игры
+  // В финале — вернёмся назад и начислим монеты
+  location.href = '/games/' + game;
+}
+
+/* ───────── МОДАЛКИ ───────── */
+function openModal(id){
+  const m = document.getElementById(id);
+  if (m) m.classList.add('open');
+}
+function closeModal(id){
+  const m = document.getElementById(id);
+  if (m) m.classList.remove('open');
+}
+function openBed(){ openModal('mBed'); }
+function openKitchen(){ openModal('mKitchen'); }
+function openBoard(){ openModal('mBoard'); }
+function openWardrobe(){ openModal('mWardrobe'); }
+function openComputer(){ openModal('mComputer'); }
+function openDoor(){ openModal('mDoor'); }
+
+// Клик по фону — закрывает модалку
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => {
+    if (e.target === bg) bg.classList.remove('open');
+  });
+});
+
+/* ───────── ТИК — ЗАТУХАНИЕ ───────── */
+function tick(){
+  state.hunger = Math.max(0, state.hunger - CONFIG.DECAY_PER_TICK);
+  state.energy = Math.max(0, state.energy - CONFIG.DECAY_PER_TICK);
+  // Если сильно голоден или устал — настроение падает быстрее
+  const extraMood = (state.hunger < 20 || state.energy < 20) ? 2 : 0;
+  state.mood = Math.max(0, state.mood - CONFIG.DECAY_PER_TICK - extraMood);
+  renderAll();
+  saveState();
+}
+
+/* Триггерим тик раз в минуту */
+setInterval(tick, CONFIG.TICK_INTERVAL);
+
+/* При заходе — «догоняем» пропущенное время */
+(function catchUp(){
+  const elapsed = Date.now() - (state.lastSave || Date.now());
+  const ticks = Math.floor(elapsed / CONFIG.TICK_INTERVAL);
+  if (ticks > 0){
+    for (let i = 0; i < ticks && i < 100; i++) tick();
+  }
+})();
+
+/* ───────── СТАРТ ───────── */
+renderAll();
+
+// Приветствие через секунду
+setTimeout(() => {
+  const h = state.hunger, e = state.energy, m = state.mood;
+  if (h < 30) bubble('Есть хочу... 🍔');
+  else if (e < 30) bubble('Спать хочу... 😴');
+  else if (m < 30) bubble('Скучно... 🥺');
+  else bubble('Привет! 👋');
+}, 800);
+
+// Сохраняем при уходе
+window.addEventListener('beforeunload', saveState);
+window.addEventListener('visibilitychange', () => {
+  if (document.hidden) saveState();
+});
+</script>
+
+</body></html>

@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>2048 Здания · Игры МГСУ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
+<style>
+html,body{height:100%;}
+body.g2048-page{
+  height:100vh;
+  height:100dvh;
+  max-height:100dvh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+.status-banner{
+  position:fixed;top:0;left:0;right:0;z-index:99;
+  background:#AC1422;color:#fff;padding:12px 20px;
+  text-align:center;font-size:13px;font-weight:600;display:none;
+}
+.status-banner.show{display:block;}
+.status-banner small{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:2px;}
+
+/* ═══════════ СТЕЙДЖ ═══════════ */
+.g-stage{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  padding:10px max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  gap:10px;
+}
+
+/* ─── Счёт ─── */
+.score-row{
+  flex:0 0 auto;
+  display:flex;
+  gap:8px;
+  justify-content:center;
+}
+.score-box{
+  flex:1;
+  max-width:180px;
+  padding:8px 14px;
+  border-radius:12px;
+  background:rgba(128,128,128,0.12);
+  border:1px solid rgba(128,128,128,0.22);
+  text-align:center;
+}
+.score-label{
+  font-size:10px;font-weight:800;
+  letter-spacing:0.14em;text-transform:uppercase;
+  opacity:0.55;margin-bottom:2px;
+}
+.score-value{
+  font-size:22px;font-weight:900;
+  font-variant-numeric:tabular-nums;
+  color:inherit;line-height:1;
+}
+.score-value.bump{animation:scoreBump .3s ease-out;}
+@keyframes scoreBump{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.18);color:#4ADE80;}
+  100%{transform:scale(1);}
+}
+
+/* ─── Поле ─── */
+.board-wrap{
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+.board{
+  width:min(100%, 460px);
+  aspect-ratio:1 / 1;
+  position:relative;
+  background:rgba(128,128,128,0.12);
+  border-radius:14px;
+  border:1px solid rgba(128,128,128,0.25);
+  box-shadow:0 12px 32px rgba(0,0,0,0.35);
+  touch-action:none;
+  overflow:hidden;
+}
+
+/* Фоновая сетка 4×4 */
+.board-bg{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  grid-template-rows:repeat(4, 1fr);
+  gap:var(--gap);
+  padding:var(--gap);
+  box-sizing:border-box;
+}
+.bg-cell{
+  background:rgba(128,128,128,0.10);
+  border-radius:8px;
+}
+
+/* Слой плиток */
+.tiles-layer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+/* ─── Плитка ─── */
+.tile{
+  position:absolute;
+  top:0; left:0;
+  width:var(--cell);
+  height:var(--cell);
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+  transition:transform 110ms ease-in-out;
+  will-change:transform;
+  box-sizing:border-box;
+  padding:4px;
+  color:#f9f6f2;
+  user-select:none;
+}
+.tile.spawn{animation:tileSpawn 180ms ease-out;}
+@keyframes tileSpawn{
+  0%{opacity:0;transform:translate(var(--tx), var(--ty)) scale(0);}
+  100%{opacity:1;transform:translate(var(--tx), var(--ty)) scale(1);}
+}
+.tile.pop{animation:tilePop 200ms ease-out;}
+@keyframes tilePop{
+  0%{transform:translate(var(--tx), var(--ty)) scale(1);}
+  45%{transform:translate(var(--tx), var(--ty)) scale(1.22);}
+  100%{transform:translate(var(--tx), var(--ty)) scale(1);}
+}
+
+/* Иконка здания — маленькая в уголке */
+.tile-emoji{
+  position:absolute;
+  top:4px; right:6px;
+  font-size:calc(var(--cell) * 0.20);
+  line-height:1;
+  opacity:0.75;
+  pointer-events:none;
+}
+
+/* Цифра */
+.tile-num{
+  font-size:calc(var(--cell) * 0.42);
+  line-height:1;
+  position:relative;
+  z-index:1;
+}
+.tile[data-len="2"] .tile-num{font-size:calc(var(--cell) * 0.36);}
+.tile[data-len="3"] .tile-num{font-size:calc(var(--cell) * 0.28);}
+.tile[data-len="4"] .tile-num{font-size:calc(var(--cell) * 0.22);}
+
+/* Цвета плиток */
+.tile-2     { background:#eee4da; color:#776e65; }
+.tile-4     { background:#ede0c8; color:#776e65; }
+.tile-8     { background:#f2b179; }
+.tile-16    { background:#f59563; }
+.tile-32    { background:#f67c5f; }
+.tile-64    { background:#f65e3b; }
+.tile-128   { background:#edcf72; box-shadow:0 0 12px rgba(237,207,114,0.4); }
+.tile-256   { background:#edcc61; box-shadow:0 0 16px rgba(237,204,97,0.5); }
+.tile-512   { background:#edc850; box-shadow:0 0 20px rgba(237,200,80,0.6); }
+.tile-1024  { background:#edc53f; box-shadow:0 0 26px rgba(237,197,63,0.7); }
+.tile-2048  { background:#edc22e; box-shadow:0 0 32px rgba(237,194,46,0.9); }
+.tile-4096  { background:#3c3a32; box-shadow:0 0 32px rgba(120,80,255,0.7); }
+.tile-8192  { background:#2a2822; box-shadow:0 0 40px rgba(180,60,255,0.7); }
+
+/* ─── Управление ─── */
+.controls-row{
+  flex:0 0 auto;
+  display:flex;
+  gap:8px;
+  justify-content:center;
+}
+.ctrl-btn{
+  padding:12px 22px;
+  border-radius:12px;
+  border:1px solid rgba(128,128,128,0.3);
+  background:rgba(128,128,128,0.12);
+  color:inherit;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+  transition:transform .1s, background .15s;
+  touch-action:manipulation;
+}
+.ctrl-btn:active{transform:scale(0.96);background:rgba(128,128,128,0.25);}
+.ctrl-btn.primary{
+  background:rgba(111,168,255,0.22);
+  border-color:rgba(111,168,255,0.5);
+  color:#fff;
+}
+
+/* ─── Оверлеи ─── */
+.overlay{
+  position:absolute;inset:0;
+  background:rgba(5,14,31,0.94);
+  backdrop-filter:blur(10px);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:14px;padding:22px;text-align:center;
+  z-index:20;transition:opacity .3s;
+}
+.overlay.hide{opacity:0;pointer-events:none;}
+.overlay-emoji{font-size:64px;margin-bottom:2px;filter:drop-shadow(0 8px 24px rgba(255,180,80,0.4));}
+.overlay h2{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.overlay p{font-size:13px;color:rgba(255,255,255,0.7);max-width:340px;line-height:1.55;}
+.overlay p b{color:#FFD700;}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 28px;border-radius:999px;
+  background:#fff;color:#0F3C73;
+  font-family:inherit;font-size:14px;font-weight:700;
+  border:0;cursor:pointer;
+  box-shadow:0 12px 30px rgba(0,0,0,0.3);
+  transition:transform .1s;
+}
+.btn:active{transform:scale(0.97);}
+.btn-ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);box-shadow:none;}
+
+.finish-score{font-size:52px;font-weight:900;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;color:#fff;}
+.finish-label{font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
+.finish-rank{font-size:20px;font-weight:800;color:#fff;}
+.finish-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+
+#progressBlock{
+  display:none;width:100%;max-width:380px;
+  padding:12px 16px;border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  font-size:13px;text-align:left;line-height:1.5;
+  color:#fff;
+}
+#progressBlock a{color:#4ADE80;text-decoration:none;font-weight:700;}
+
+/* Достижение 2048 */
+.achieve-toast{
+  position:fixed;top:80px;left:50%;
+  transform:translateX(-50%) translateY(-30px);
+  background:linear-gradient(135deg,#edc22e,#d4a017);
+  color:#1a1205;
+  padding:14px 28px;border-radius:14px;
+  font-size:15px;font-weight:900;
+  box-shadow:0 12px 32px rgba(237,194,46,0.5);
+  z-index:200;opacity:0;transition:all .4s;
+  pointer-events:none;
+  letter-spacing:0.02em;
+}
+.achieve-toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* ─── Адаптив ─── */
+@media(max-width:520px){
+  .score-value{font-size:18px;}
+  .score-box{padding:6px 10px;}
+  .ctrl-btn{padding:10px 16px;font-size:13px;}
+  .overlay-emoji{font-size:52px;}
+  .overlay h2{font-size:19px;}
+  .finish-score{font-size:42px;}
+  .finish-rank{font-size:17px;}
+}
+@media(max-height:640px){
+  .g-stage{padding:6px;gap:6px;}
+  .score-value{font-size:16px;}
+  .score-box{padding:5px 10px;}
+  .ctrl-btn{padding:9px 14px;font-size:12px;}
+}
+</style>
+</head><body class="g2048-page">
+
+<div class="status-banner" id="statusBanner">
+  🔒 Технический перерыв
+  <small id="statusBannerSub">Игры доступны только в учебное время</small>
+</div>
+
+<div id="siteHeader"></div>
+
+<div class="g-stage">
+
+  <div class="score-row">
+    <div class="score-box">
+      <div class="score-label">Очки</div>
+      <div class="score-value" id="scoreVal">0</div>
+    </div>
+    <div class="score-box">
+      <div class="score-label">Рекорд</div>
+      <div class="score-value" id="bestVal">0</div>
+    </div>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board">
+      <div class="board-bg">
+        <div class="bg-cell"></div><div class="bg-cell"></div><div class="bg-cell"></div><div class="bg-cell"></div>
+        <div class="bg-cell"></div><div class="bg-cell"></div><div class="bg-cell"></div><div class="bg-cell"></div>
+        <div class="bg-cell"></div><div class="bg-cell"></div><div class="bg-cell"></div><div class="bg-cell"></div>
+        <div class="bg-cell"></div><div class="bg-cell"></div><div class="bg-cell"></div><div class="bg-cell"></div>
+      </div>
+      <div class="tiles-layer" id="tilesLayer"></div>
+
+      <div class="overlay" id="startOv">
+        <div class="overlay-emoji">🏗️</div>
+        <h2>2048 · Здания</h2>
+        <p>Свайпай или используй стрелки. Одинаковые домики сливаются в один побольше. Собери <b>2048</b>!</p>
+        <button class="btn" id="startBtn" type="button">Начать стройку →</button>
+      </div>
+
+      <div class="overlay hide" id="finishOv">
+        <div class="overlay-emoji" id="finishEmoji">🏗️</div>
+        <div class="finish-score" id="finishScore">0</div>
+        <div class="finish-label">очков</div>
+        <div class="finish-rank" id="finishRank">Подмастерье</div>
+        <div id="progressBlock"></div>
+        <div class="finish-actions">
+          <button class="btn" id="shareBtn" type="button">Показать другу</button>
+          <button class="btn btn-ghost" id="againBtn" type="button">Ещё раз</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-row">
+    <button class="ctrl-btn primary" id="btnNew" type="button">🔄 Заново</button>
+    <a class="ctrl-btn" href="/glavnaya" style="text-decoration:none;">🏠 Меню</a>
+  </div>
+
+</div>
+
+<div class="achieve-toast" id="achieveToast">🎉 2048! Ты построил мегаполис</div>
+
+<script src="/static/site-header.js"></script>
+<script>
+renderSiteHeader('games');
+
+/* ═══════════════════════════════════════════════════════════
+   ДАННЫЕ
+   ═══════════════════════════════════════════════════════════ */
+const SIZE = 4;
+const START_TILES = 2;
+const NEW_TILE_4_CHANCE = 0.1;
+
+const TILE_DATA = {
+  2:    { emoji: '🛖', color: '#eee4da' },
+  4:    { emoji: '🏠', color: '#ede0c8' },
+  8:    { emoji: '🏡', color: '#f2b179' },
+  16:   { emoji: '🏘', color: '#f59563' },
+  32:   { emoji: '🏢', color: '#f67c5f' },
+  64:   { emoji: '🏬', color: '#f65e3b' },
+  128:  { emoji: '🏨', color: '#edcf72' },
+  256:  { emoji: '🏰', color: '#edcc61' },
+  512:  { emoji: '🌆', color: '#edc850' },
+  1024: { emoji: '🏙', color: '#edc53f' },
+  2048: { emoji: '🌃', color: '#edc22e' },
+  4096: { emoji: '🌌', color: '#3c3a32' },
+  8192: { emoji: '✨', color: '#2a2822' },
+};
+
+/* ═══════════════════════════════════════════════════════════
+   СОСТОЯНИЕ
+   ═══════════════════════════════════════════════════════════ */
+let board = [];
+let score = 0;
+let best = parseInt(localStorage.getItem('mgsu_2048_best') || '0', 10);
+let running = false;
+let reached2048 = false;
+let pendingMerges = [];
+let busy = false;
+
+let CELL = 80;
+let GAP = 10;
+
+/* ═══════════════════════════════════════════════════════════
+   DOM
+   ═══════════════════════════════════════════════════════════ */
+const boardEl   = document.getElementById('board');
+const tilesLayer = document.getElementById('tilesLayer');
+const scoreEl   = document.getElementById('scoreVal');
+const bestEl    = document.getElementById('bestVal');
+const startOv   = document.getElementById('startOv');
+const finishOv  = document.getElementById('finishOv');
+const finishEmoji = document.getElementById('finishEmoji');
+const finishScore = document.getElementById('finishScore');
+const finishRank  = document.getElementById('finishRank');
+const progressBlock = document.getElementById('progressBlock');
+const achieveToast = document.getElementById('achieveToast');
+
+bestEl.textContent = best;
+
+/* ═══════════════════════════════════════════════════════════
+   ЗВУК
+   ═══════════════════════════════════════════════════════════ */
+let audioCtx = null;
+function initAudio(){
+  if (audioCtx) return;
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }catch(e){}
+}
+function beep(freq, duration, type, vol, slideTo){
+  if (!audioCtx) return;
+  try{
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'square';
+    osc.frequency.setValueAtTime(freq, t);
+    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + duration);
+    gain.gain.setValueAtTime(vol || 0.07, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + duration + 0.02);
+  }catch(e){}
+}
+const SFX = {
+  move:  () => beep(320, 0.035, 'square', 0.035),
+  merge: () => { beep(600, 0.07, 'square', 0.08); setTimeout(() => beep(850, 0.09, 'square', 0.08), 60); },
+  spawn: () => beep(220, 0.04, 'triangle', 0.04),
+  win:   () => { [660,880,1100,1500,1800].forEach((f,i) => setTimeout(() => beep(f, 0.14, 'square', 0.10), i*90)); },
+  over:  () => { [500,400,300,220,150].forEach((f,i) => setTimeout(() => beep(f, 0.2, 'triangle', 0.10), i*130)); },
+};
+
+/* ═══════════════════════════════════════════════════════════
+   РАСПИСАНИЕ
+   ═══════════════════════════════════════════════════════════ */
+let scheduleOpen = true;
+async function checkScheduleStatus(){
+  try{
+    const r = await fetch('/status');
+    const s = await r.json();
+    scheduleOpen = !!s.open;
+    const banner = document.getElementById('statusBanner');
+    const sub = document.getElementById('statusBannerSub');
+    if (!scheduleOpen){
+      sub.textContent = 'Игры доступны только в учебное время: с ' + s.opens_at + ' до ' + s.closes_at;
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }catch(e){}
+}
+checkScheduleStatus();
+setInterval(checkScheduleStatus, 60000);
+
+/* ═══════════════════════════════════════════════════════════
+   РАЗМЕРЫ
+   ═══════════════════════════════════════════════════════════ */
+function resize(){
+  const rect = boardEl.getBoundingClientRect();
+  const size = rect.width;
+  GAP = Math.round(size * 0.026);
+  CELL = (size - 5 * GAP) / 4;
+  boardEl.style.setProperty('--gap', GAP + 'px');
+  boardEl.style.setProperty('--cell', CELL + 'px');
+  // Переставляем все плитки
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++){
+      const t = board[r] && board[r][c];
+      if (t) applyTilePos(t);
+    }
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 200));
+
+/* ═══════════════════════════════════════════════════════════
+   ПОЗИЦИИ
+   ═══════════════════════════════════════════════════════════ */
+function posX(col){ return GAP + col * (CELL + GAP); }
+function posY(row){ return GAP + row * (CELL + GAP); }
+
+function applyTilePos(tile){
+  const x = posX(tile.col);
+  const y = posY(tile.row);
+  tile.el.style.setProperty('--tx', x + 'px');
+  tile.el.style.setProperty('--ty', y + 'px');
+  tile.el.style.transform = `translate(${x}px, ${y}px)`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   СОЗДАНИЕ ПЛИТОК
+   ═══════════════════════════════════════════════════════════ */
+function createTileEl(value){
+  const el = document.createElement('div');
+  el.className = 'tile tile-' + value;
+  const data = TILE_DATA[value] || { emoji: '✨' };
+  const len = String(value).length;
+  el.setAttribute('data-len', String(len));
+  el.innerHTML =
+    '<span class="tile-emoji">' + data.emoji + '</span>' +
+    '<span class="tile-num">' + value + '</span>';
+  return el;
+}
+
+function createTile(row, col, value, spawnAnim){
+  const el = createTileEl(value);
+  tilesLayer.appendChild(el);
+  const tile = { value, row, col, el, mergedThisTurn: false };
+  applyTilePos(tile);
+  if (spawnAnim){
+    el.classList.add('spawn');
+    setTimeout(() => el.classList.remove('spawn'), 200);
+  }
+  board[row][col] = tile;
+  return tile;
+}
+
+function addRandomTile(){
+  const empty = [];
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++)
+      if (!board[r][c]) empty.push([r, c]);
+  if (!empty.length) return null;
+  const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+  const value = Math.random() < NEW_TILE_4_CHANCE ? 4 : 2;
+  const tile = createTile(r, c, value, true);
+  SFX.spawn();
+  return tile;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   НОВАЯ ИГРА
+   ═══════════════════════════════════════════════════════════ */
+function newGame(){
+  if (!scheduleOpen){ checkScheduleStatus(); return; }
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+  tilesLayer.innerHTML = '';
+  board = [];
+  for (let r = 0; r < SIZE; r++) board.push(new Array(SIZE).fill(null));
+  score = 0;
+  reached2048 = false;
+  pendingMerges = [];
+  busy = false;
+  running = true;
+
+  updateScore();
+  resize();
+  setTimeout(() => {
+    addRandomTile();
+    addRandomTile();
+  }, 30);
+
+  startOv.classList.add('hide');
+  finishOv.classList.add('hide');
+  progressBlock.style.display = 'none';
+}
+
+function updateScore(bump){
+  scoreEl.textContent = score;
+  if (bump){
+    scoreEl.classList.remove('bump');
+    void scoreEl.offsetWidth;
+    scoreEl.classList.add('bump');
+  }
+  if (score > best){
+    best = score;
+    bestEl.textContent = best;
+    localStorage.setItem('mgsu_2048_best', String(best));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ДВИЖЕНИЕ
+   ═══════════════════════════════════════════════════════════ */
+const VECTORS = {
+  up:    [-1, 0],
+  down:  [ 1, 0],
+  left:  [ 0,-1],
+  right: [ 0, 1],
+};
+
+function move(dir){
+  if (!running || busy) return;
+  const [dr, dc] = VECTORS[dir];
+  if (!dr && !dc) return;
+
+  let moved = false;
+  let mergedAny = false;
+  pendingMerges = [];
+
+  // Сброс флагов
+  for (let r = 0; r < SIZE; r++)
+    for (let c = 0; c < SIZE; c++)
+      if (board[r][c]) board[r][c].mergedThisTurn = false;
+
+  // Порядок обхода: от той стороны, куда движемся
+  const rows = [...Array(SIZE).keys()];
+  const cols = [...Array(SIZE).keys()];
+  if (dr > 0) rows.reverse();
+  if (dc > 0) cols.reverse();
+
+  for (const r of rows){
+    for (const c of cols){
+      const tile = board[r][c];
+      if (!tile) continue;
+
+      let nr = r, nc = c;
+      let mergeTarget = null;
+
+      while (true){
+        const tr = nr + dr, tc = nc + dc;
+        if (tr < 0 || tr >= SIZE || tc < 0 || tc >= SIZE) break;
+        const t = board[tr][tc];
+        if (!t){
+          nr = tr; nc = tc;
+        } else if (t.value === tile.value && !t.mergedThisTurn){
+          nr = tr; nc = tc;
+          mergeTarget = t;
+          break;
+        } else {
+          break;
+        }
+      }
+
+      if (nr === r && nc === c) continue;
+      moved = true;
+
+      board[r][c] = null;
+
+      if (mergeTarget){
+        // Слияние
+        mergeTarget.value *= 2;
+        mergeTarget.mergedThisTurn = true;
+        score += mergeTarget.value;
+        mergedAny = true;
+
+        tile.row = nr; tile.col = nc;
+        applyTilePos(tile);
+        pendingMerges.push({ removed: tile, target: mergeTarget });
+
+        if (mergeTarget.value === 2048 && !reached2048){
+          reached2048 = true;
+          showAchieve();
+        }
+      } else {
+        // Обычное движение
+        board[nr][nc] = tile;
+        tile.row = nr; tile.col = nc;
+        applyTilePos(tile);
+      }
+    }
+  }
+
+  if (!moved) return;
+
+  SFX.move();
+  busy = true;
+
+  setTimeout(() => {
+    // Применяем отложенные слияния
+    for (const m of pendingMerges){
+      if (m.removed.el && m.removed.el.parentNode) m.removed.el.remove();
+      // Обновляем значение и классы у цели
+      const v = m.target.value;
+      const data = TILE_DATA[v] || { emoji: '✨' };
+      m.target.el.className = 'tile tile-' + v;
+      m.target.el.setAttribute('data-len', String(String(v).length));
+      m.target.el.innerHTML =
+        '<span class="tile-emoji">' + data.emoji + '</span>' +
+        '<span class="tile-num">' + v + '</span>';
+      applyTilePos(m.target);
+      // Pop
+      m.target.el.classList.remove('pop');
+      void m.target.el.offsetWidth;
+      m.target.el.classList.add('pop');
+    }
+    pendingMerges = [];
+
+    if (mergedAny) SFX.merge();
+    updateScore(mergedAny);
+
+    // Спавним новую плитку
+    setTimeout(() => {
+      addRandomTile();
+
+      // Проверяем game over
+      if (!canMove()){
+        setTimeout(() => gameOver(), 300);
+      }
+      busy = false;
+    }, 60);
+  }, 120);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ПРОВЕРКА ХОДОВ
+   ═══════════════════════════════════════════════════════════ */
+function canMove(){
+  for (let r = 0; r < SIZE; r++){
+    for (let c = 0; c < SIZE; c++){
+      const t = board[r][c];
+      if (!t) return true;
+      if (c < SIZE - 1){
+        const right = board[r][c + 1];
+        if (!right || right.value === t.value) return true;
+      }
+      if (r < SIZE - 1){
+        const down = board[r + 1][c];
+        if (!down || down.value === t.value) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   КОНЕЦ ИГРЫ
+   ═══════════════════════════════════════════════════════════ */
+function rankFor(s){
+  if (s < 400)   return { name:'Подмастерье',  emoji:'🧱' };
+  if (s < 1200)  return { name:'Каменщик',     emoji:'🧱' };
+  if (s < 3000)  return { name:'Прораб',       emoji:'👷' };
+  if (s < 6000)  return { name:'Инженер',      emoji:'🏗️' };
+  if (s < 12000) return { name:'Архитектор',   emoji:'📐' };
+  if (s < 25000) return { name:'Градостроитель', emoji:'🏙️' };
+  return { name:'Зодчий МГСУ', emoji:'👑' };
+}
+
+async function gameOver(){
+  running = false;
+  const r = rankFor(score);
+  finishEmoji.textContent = r.emoji;
+  finishScore.textContent = score;
+  finishRank.textContent = r.name;
+  finishOv.classList.remove('hide');
+  SFX.over();
+
+  const token = localStorage.getItem('mgsu_token') || '';
+  progressBlock.style.display = 'block';
+  progressBlock.textContent = 'Отправляю результат…';
+
+  try{
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch('/api/game/finish', {
+      method: 'POST', headers,
+      body: JSON.stringify({ game: '2048', raw_score: score })
+    });
+    const data = await res.json();
+    renderProgress(data);
+  }catch(e){
+    progressBlock.style.display = 'none';
+  }
+}
+
+function renderProgress(data){
+  if (!data.logged_in){
+    progressBlock.innerHTML = '💡 Хочешь монеты и топ? <a href="/auth">Создай аккаунт</a>';
+    return;
+  }
+  let html = '<div>🎯 Очков: <b>+' + data.points + '</b></div>';
+  if (data.daily_plays && data.daily_multiplier !== undefined && data.daily_multiplier < 1){
+    html += '<div style="color:#FFB347;">📉 ' + data.daily_plays + '-я партия — награда ×' + data.daily_multiplier + '</div>';
+  }
+  if (data.progress){
+    html += '<div>💰 Монет: <b>' + data.progress.coins + '</b></div>';
+    html += '<div>🔥 Серия: <b>' + data.progress.streak + '</b> дней';
+    if (data.progress.streak_changed) html += ' <span style="color:#4ADE80;">+1</span>';
+    html += '</div>';
+  }
+  if (data.tasks_completed && data.tasks_completed.length){
+    data.tasks_completed.forEach(t => { html += '<div style="color:#4ADE80;">✓ ' + t.text + ' (+' + t.reward + ')</div>'; });
+  }
+  html += '<div style="margin-top:8px;"><a href="/profile">Открыть профиль →</a></div>';
+  progressBlock.innerHTML = html;
+}
+
+function showAchieve(){
+  achieveToast.classList.add('show');
+  SFX.win();
+  setTimeout(() => achieveToast.classList.remove('show'), 3500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   УПРАВЛЕНИЕ
+   ═══════════════════════════════════════════════════════════ */
+// Клавиатура
+document.addEventListener('keydown', function(e){
+  if (!running) return;
+  if (e.code === 'ArrowLeft'){ e.preventDefault(); move('left'); }
+  else if (e.code === 'ArrowRight'){ e.preventDefault(); move('right'); }
+  else if (e.code === 'ArrowUp'){ e.preventDefault(); move('up'); }
+  else if (e.code === 'ArrowDown'){ e.preventDefault(); move('down'); }
+});
+
+// Свайпы
+let touchStartX = 0, touchStartY = 0, touchMoved = false;
+boardEl.addEventListener('touchstart', function(e){
+  if (!running) return;
+  const t = e.touches[0];
+  touchStartX = t.clientX;
+  touchStartY = t.clientY;
+  touchMoved = false;
+}, {passive: true});
+boardEl.addEventListener('touchmove', function(e){
+  if (!running || touchMoved) return;
+  const t = e.touches[0];
+  const dx = t.clientX - touchStartX;
+  const dy = t.clientY - touchStartY;
+  const THRESH = 24;
+  if (Math.abs(dx) > THRESH || Math.abs(dy) > THRESH){
+    touchMoved = true;
+    if (Math.abs(dx) > Math.abs(dy)){
+      move(dx > 0 ? 'right' : 'left');
+    } else {
+      move(dy > 0 ? 'down' : 'up');
+    }
+  }
+}, {passive: true});
+boardEl.addEventListener('touchend', () => { touchMoved = false; });
+
+// Мышь — drag
+let mouseDown = false, mouseStartX = 0, mouseStartY = 0;
+boardEl.addEventListener('mousedown', (e) => {
+  if (!running) return;
+  mouseDown = true;
+  mouseStartX = e.clientX;
+  mouseStartY = e.clientY;
+  e.preventDefault();
+});
+document.addEventListener('mouseup', (e) => {
+  if (!mouseDown) return;
+  mouseDown = false;
+  const dx = e.clientX - mouseStartX;
+  const dy = e.clientY - mouseStartY;
+  const THRESH = 24;
+  if (Math.abs(dx) > THRESH || Math.abs(dy) > THRESH){
+    if (Math.abs(dx) > Math.abs(dy)){
+      move(dx > 0 ? 'right' : 'left');
+    } else {
+      move(dy > 0 ? 'down' : 'up');
+    }
+  }
+});
+
+// Кнопки
+document.getElementById('startBtn').addEventListener('click', newGame);
+document.getElementById('againBtn').addEventListener('click', newGame);
+document.getElementById('btnNew').addEventListener('click', () => {
+  if (running) { if (!confirm('Начать заново? Прогресс потеряется.')) return; }
+  newGame();
+});
+document.getElementById('shareBtn').addEventListener('click', async () => {
+  const r = rankFor(score);
+  const text = `Я собрал ${score} очков в «2048 · Здания МГСУ» и стал ${r.name} ${r.emoji}. А ты?\nhttps://mgsu-wall.onrender.com/games/2048`;
+  try{
+    if (navigator.share) await navigator.share({ text });
+    else await navigator.clipboard.writeText(text);
+  }catch(e){}
+});
+
+/* ═══════════════════════════════════════════════════════════
+   ИНИЦИАЛИЗАЦИЯ
+   ═══════════════════════════════════════════════════════════ */
+board = [];
+for (let r = 0; r < SIZE; r++) board.push(new Array(SIZE).fill(null));
+
+window.addEventListener('load', () => setTimeout(resize, 100));
+setTimeout(resize, 200);
+resize();
+
+document.addEventListener('touchstart', initAudio, { once: true, passive: true });
+document.addEventListener('mousedown', initAudio, { once: true });
+</script>
+</body></html>

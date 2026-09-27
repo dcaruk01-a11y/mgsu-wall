@@ -343,36 +343,6 @@ async def apply_score_and_coins(uid: str, score: int, game: str, is_record: bool
         "games_played": row[5] or 0,
         "coins_added": coins,
     }
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
-            UPDATE users
-            SET total_score = total_score + ?,
-                coins = coins + ?,
-                games_played = games_played + 1,
-                last_seen = ?
-            WHERE uid = ?
-        """, (score, coins, time.time(), uid))
-        await db.commit()
-
-        cur = await db.execute("""
-            SELECT display_name, streak, best_streak, coins, total_score, games_played
-            FROM users WHERE uid = ?
-        """, (uid,))
-        row = await cur.fetchone()
-
-    if not row:
-        return {"ok": False}
-
-    return {
-        "ok": True,
-        "display_name": row[0],
-        "streak": row[1] or 0,
-        "best_streak": row[2] or 0,
-        "coins": row[3] or 0,
-        "total_score": row[4] or 0,
-        "games_played": row[5] or 0,
-        "coins_added": coins,
-    }
 
 
 async def add_coins(uid: str, amount: int, reason: str = "") -> dict:
@@ -388,6 +358,8 @@ async def add_coins(uid: str, amount: int, reason: str = "") -> dict:
         cur = await db.execute("SELECT coins FROM users WHERE uid = ?", (uid,))
         row = await cur.fetchone()
     return {"ok": True, "coins": row[0] if row else 0, "added": amount}
+
+
 # ═══════════════════════════════════════════════════════════
 # РАНГ АККАУНТА (общий уровень игрока)
 # ═══════════════════════════════════════════════════════════

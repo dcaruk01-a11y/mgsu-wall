@@ -11,6 +11,20 @@ body{
 }
 #siteFooter{flex-shrink:0;margin-top:auto;}
 
+/* PWA (полноэкранный режим на iPhone) — учитываем Dynamic Island */
+@media (display-mode: standalone){
+  body{
+    padding-top:calc(60px + env(safe-area-inset-top, 0px));
+  }
+  .site-header{
+    padding-top:env(safe-area-inset-top, 0px);
+    height:calc(60px + env(safe-area-inset-top, 0px));
+  }
+  .site-header-inner{
+    height:60px;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    ШАПКА
    ═══════════════════════════════════════════════════════════ */
@@ -71,22 +85,24 @@ body{
 }
 .site-header-label b{font-weight:700;opacity:1;}
 
-/* static/site-header.css */
-
-.site-header-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  /* ... другие свойства ... */
-  overflow-x: auto; /* <-- Добавляем это */
-  white-space: nowrap; /* <-- И это */
-  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+/* ─── НАВИГАЦИЯ (со скроллом) ─── */
+.site-header-nav{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-shrink:1;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  white-space:nowrap;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  /* мягкий fade по краям — чтобы было видно, что можно скроллить */
+  mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
 }
-
-/* Скрываем полосу прокрутки, чтобы она не портила вид */
-.site-header-nav::-webkit-scrollbar {
-  display: none;
-}
+.site-header-nav::-webkit-scrollbar{display:none;}
 
 .site-header-link{
   display:flex;align-items:center;gap:8px;
@@ -98,6 +114,7 @@ body{
   transition:background .12s, opacity .12s;
   white-space:nowrap;
   font-family:inherit;
+  flex-shrink:0;
 }
 .site-header-link:hover{background:var(--header-hover, rgba(128,128,128,0.15));opacity:1;}
 .site-header-link.active{background:var(--header-active, rgba(128,128,128,0.20));opacity:1;font-weight:800;}
@@ -107,6 +124,7 @@ body{
   width:1px;height:22px;
   background:var(--header-line, rgba(128,128,128,0.3));
   margin:0 6px;
+  flex-shrink:0;
 }
 
 /* ─── АВАТАР / ВОЙТИ ─── */
@@ -170,61 +188,61 @@ body{
 .site-footer-right a:hover{opacity:1;text-decoration:underline;}
 
 /* ═══════════════════════════════════════════════════════════
-   ТЕЛЕФОН / ТАЧ
-   Только слова, без иконок, 5 элементов аккуратно
+   МОБИЛЬНАЯ / ТАЧ
    ═══════════════════════════════════════════════════════════ */
 
-/* Тач-устройства — компактный режим */
+/* Тач-устройства */
 @media (pointer:coarse){
   body{padding-top:52px;}
   .site-header{height:52px;}
-  .site-header-inner{
-    padding:0 10px;
-    height:52px;
-    gap:6px;
-  }
+  .site-header-inner{padding:0 8px;height:52px;gap:6px;}
 
   .site-header-brand{gap:0;padding:4px;margin-left:0;}
   .site-header-logo{width:32px;height:32px;border-radius:7px;}
   .site-header-label{display:none;}
 
-  /* Иконки скрываем, оставляем ТОЛЬКО текст */
+  .site-header-link{padding:7px 10px;gap:0;font-size:13px;}
   .site-header-link-icon{display:none;}
-  .site-header-link{
-    padding:7px 10px;
-    font-size:13px;
-    gap:0;
-  }
   .site-header-link-label{font-size:13px;}
 
+  .site-header-login{padding:7px 12px;gap:0;font-size:13px;}
   .site-header-login-icon{display:none;}
-  .site-header-login{
-    padding:7px 12px;
-    font-size:13px;
-    gap:0;
-  }
   .site-header-login-label{font-size:13px;}
 
   .site-header-divider{margin:0 2px;height:18px;}
   .site-header-avatar{width:32px;height:32px;font-size:13px;}
+
+  /* в PWA на телефоне — тоже с учётом safe-area */
+  @media (display-mode: standalone){
+    body{
+      padding-top:calc(52px + env(safe-area-inset-top, 0px));
+    }
+    .site-header{
+      padding-top:env(safe-area-inset-top, 0px);
+      height:calc(52px + env(safe-area-inset-top, 0px));
+    }
+    .site-header-inner{
+      height:52px;
+    }
+  }
 }
 
-/* Страховка по ширине — если pointer:coarse не сработал */
+/* Страховка по ширине */
 @media (max-width:720px){
   body{padding-top:52px;}
   .site-header{height:52px;}
-  .site-header-inner{padding:0 10px;height:52px;gap:6px;}
+  .site-header-inner{padding:0 8px;height:52px;gap:6px;}
 
   .site-header-brand{gap:0;padding:4px;margin-left:0;}
   .site-header-logo{width:32px;height:32px;}
   .site-header-label{display:none;}
 
-  .site-header-link-icon{display:none;}
   .site-header-link{padding:7px 10px;font-size:13px;gap:0;}
+  .site-header-link-icon{display:none;}
   .site-header-link-label{font-size:13px;}
 
-  .site-header-login-icon{display:none;}
   .site-header-login{padding:7px 12px;font-size:13px;gap:0;}
+  .site-header-login-icon{display:none;}
   .site-header-login-label{font-size:13px;}
 
   .site-header-divider{margin:0 2px;height:18px;}
@@ -235,7 +253,7 @@ body{
   .site-footer-right{margin-left:0;gap:4px 8px;}
 }
 
-/* Совсем узкие экраны (iPhone SE и подобные, < 360px) */
+/* Очень узкие (iPhone SE и подобные) */
 @media (max-width:360px){
   .site-header-inner{padding:0 6px;gap:2px;}
   .site-header-link{padding:6px 7px;font-size:12px;}

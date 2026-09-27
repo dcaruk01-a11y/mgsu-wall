@@ -37,8 +37,6 @@ body{
 }
 .site-header.hidden{transform:translateY(-100%);}
 
-/* ★ УБИРАЕМ max-width — теперь .site-header-inner растягивается на всю ширину окна.
-   Это нужно, чтобы центр навигации был РОВНО центром экрана. */
 .site-header-inner{
   position:relative;
   width:100%;
@@ -63,10 +61,13 @@ body{
   flex-shrink:0;
   padding:6px 10px;
   border-radius:10px;
-  transition:background .15s;
+  transition:background .15s, transform .15s;
   z-index:2;
 }
-.site-header-brand:hover{background:var(--header-hover, rgba(15,23,42,0.05));}
+.site-header-brand:hover{
+  background:var(--header-hover, rgba(15,23,42,0.05));
+  transform:translateY(-2px);
+}
 
 .site-header-logo{
   width:36px;
@@ -83,11 +84,11 @@ body{
   font-weight:700;
   color:inherit;
   white-space:nowrap;
+  transition:transform .15s;
 }
-.site-header-label b{font-weight:800;}
 
 /* ═══════════════════════════════════════════════════════════
-   НАВИГАЦИЯ — РОВНО ПО ЦЕНТРУ ОКНА
+   НАВИГАЦИЯ — РОВНО ПО ЦЕНТРУ
    ═══════════════════════════════════════════════════════════ */
 .site-header-nav{
   position:absolute;
@@ -102,7 +103,7 @@ body{
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ЕДИНЫЙ СТИЛЬ КНОПОК
+   ЕДИНЫЙ СТИЛЬ КНОПОК + HOVER-ПОДЪЁМ
    ═══════════════════════════════════════════════════════════ */
 .site-header-link,
 .site-header-profile{
@@ -116,17 +117,29 @@ body{
   font-size:14px;
   font-weight:600;
   white-space:nowrap;
-  transition:background .15s;
+  /* ★ Плавный переход для ховер-подъёма */
+  transition:background .15s, transform .15s;
   flex-shrink:0;
   cursor:pointer;
   font-family:inherit;
   border:0;
   background:transparent;
+  position:relative;
 }
+
+/* ★ HOVER — приподнимается как кнопка «Создать аккаунт» */
 .site-header-link:hover,
 .site-header-profile:hover{
   background:var(--header-hover, rgba(15,23,42,0.06));
+  transform:translateY(-2px);
 }
+
+/* ★ ACTIVE (когда нажал) — лёгкое «вдавливание» */
+.site-header-link:active,
+.site-header-profile:active{
+  transform:translateY(0);
+}
+
 .site-header-link.active,
 .site-header-profile.active{
   background:var(--header-active, rgba(15,23,42,0.09));
@@ -166,12 +179,14 @@ body{
   text-decoration:none;
   flex-shrink:0;
   margin-left:auto;
-  transition:transform .12s;
+  transition:transform .15s;
   border:1.5px solid var(--header-line, rgba(15,23,42,0.15));
   cursor:pointer;
   z-index:2;
 }
-.site-header-avatar:hover{transform:scale(1.06);}
+.site-header-avatar:hover{
+  transform:translateY(-2px) scale(1.06);
+}
 .site-header-avatar.active{
   border-color:var(--accent, #ff7a2b);
   box-shadow:0 0 0 2px var(--accent, #ff7a2b);
@@ -204,7 +219,7 @@ body{
 .site-footer-right a:hover{opacity:1;text-decoration:underline;}
 
 /* ═══════════════════════════════════════════════════════════
-   ТЕЛЕФОН
+   ТЕЛЕФОН — только лого, без текста
    ═══════════════════════════════════════════════════════════ */
 @media (pointer:coarse), (max-width:720px){
   body{padding-top:56px;}
@@ -216,10 +231,21 @@ body{
     gap:8px;
   }
 
-  .site-header-brand{padding:4px 6px;gap:8px;}
-  .site-header-logo{width:32px;height:32px;border-radius:8px;}
-  .site-header-label{font-size:13px;}
+  /* ★ СКРЫВАЕМ ТЕКСТ ЛОГО — оставляем только иконку */
+  .site-header-brand{
+    padding:4px 6px;
+    gap:0;
+  }
+  .site-header-logo{
+    width:34px;
+    height:34px;
+    border-radius:8px;
+  }
+  .site-header-label{
+    display:none;
+  }
 
+  /* Навигация — только иконки */
   .site-header-nav{
     height:56px;
     gap:2px;
@@ -258,46 +284,34 @@ body{
 
 @media (max-width:480px){
   .site-header-inner{padding:0 8px;gap:4px;}
-  .site-header-brand{padding:3px 4px;gap:6px;}
-  .site-header-logo{width:30px;height:30px;}
-  .site-header-label{font-size:12px;}
+  .site-header-brand{padding:4px;}
+  .site-header-logo{width:32px;height:32px;}
   .site-header-link,
   .site-header-profile{padding:8px 8px;}
+  .site-header-link-icon,
+  .site-header-profile-icon{font-size:21px;}
+}
+
+@media (max-width:380px){
+  .site-header-brand{padding:3px;}
+  .site-header-logo{width:30px;height:30px;}
+  .site-header-link,
+  .site-header-profile{padding:8px 6px;}
   .site-header-link-icon,
   .site-header-profile-icon{font-size:20px;}
 }
 
-@media (max-width:380px){
-  .site-header-label{display:none;}
-  .site-header-brand{padding:4px;}
-  .site-header-link,
-  .site-header-profile{padding:8px 6px;}
-  .site-header-link-icon,
-  .site-header-profile-icon{font-size:19px;}
-}
 /* ═══════════════════════════════════════════════════════════
-   ФИКС: убираем подчёркивание у всех ссылок и кнопок
-   (кроме .underlined — если где-то понадобится)
+   ФИКС: убираем подчёркивание у ссылок
    ═══════════════════════════════════════════════════════════ */
 a,
 a:hover,
 a:focus,
 a:active,
 a:visited,
-button,
-.btn-play,
-.btn-hero,
-.mini-hero-kicker,
-.game-card,
 .site-header-brand,
 .site-header-link,
 .site-header-profile,
 .site-header-avatar{
   text-decoration: none !important;
-}
-
-/* Если где-то нужно подчёркивание — добавь класс .underlined */
-a.underlined,
-.underlined{
-  text-decoration: underline !important;
 }

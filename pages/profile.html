@@ -215,6 +215,14 @@
       </div>
     </div>
 
+        <!-- Мои позиции в рейтинге -->
+    <div class="card">
+      <h3>🏆 Мои позиции в рейтинге</h3>
+      <div id="myRatingsBox">
+        <div class="tasks-empty">Загрузка…</div>
+      </div>
+    </div>
+
     <div class="card">
       <h3>🎯 Задания на сегодня</h3>
       <div class="tasks-list" id="tasksList">
@@ -528,6 +536,50 @@ document.getElementById('btnLogout').onclick = async function(){
     e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);
   });
 });
+/* ═══════════════════════════════════════════════════════════
+   МОИ ПОЗИЦИИ В РЕЙТИНГЕ
+   ═══════════════════════════════════════════════════════════ */
+async function loadMyRatings(){
+  try{
+    const res = await api('/api/ratings');
+    if (res.status !== 200) return;
+    const data = res.data;
+    const me = data.me;
+    const box = document.getElementById('myRatingsBox');
+    if (!box) return;
+
+    if (!me){
+      box.innerHTML = '<div class="tasks-empty">Сыграй партию — увидишь свою позицию.</div>';
+      return;
+    }
+
+    const posData = [
+      {label: 'Сегодня',   pos: me.day ? me.day.pos : null},
+      {label: 'Неделя',    pos: me.week ? me.week.pos : null},
+      {label: 'Всё время', pos: me.all ? me.all.pos : null},
+    ];
+
+    let html = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">';
+    posData.forEach(p => {
+      const val = p.pos ? ('#' + p.pos) : '—';
+      const color = p.pos && p.pos <= 3 ? '#FFD700' : 'inherit';
+      html +=
+        '<div style="text-align:center;padding:14px 6px;border-radius:12px;background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.18);">' +
+          '<div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.6;margin-bottom:6px;">' + p.label + '</div>' +
+          '<div style="font-size:24px;font-weight:900;color:' + color + ';">' + val + '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    html += '<div style="margin-top:14px;text-align:center;">' +
+      '<a href="/ratings" style="color:#6FA8FF;text-decoration:none;font-size:13px;font-weight:700;">Смотреть весь рейтинг →</a>' +
+    '</div>';
+    box.innerHTML = html;
+  }catch(e){
+    const box = document.getElementById('myRatingsBox');
+    if (box) box.innerHTML = '<div class="tasks-empty">Не удалось загрузить</div>';
+  }
+}
+loadMyRatings();
 </script>
 
 </body></html>

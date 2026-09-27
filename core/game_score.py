@@ -23,6 +23,7 @@ GAME_WEIGHTS = {
     "campus":   50.0,
     "grable":   10.0,
     "tetris":   0.7,
+    "2048":     0.4,
 }
 
 GAME_LABELS = {

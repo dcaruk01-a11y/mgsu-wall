@@ -77,10 +77,11 @@ function renderSiteHeader(active, opts){
 
   var navHtml = '';
 
-  // ── Игры (на главной — скролл к секции) ──
+  // ── Игры ──
   var gamesHref = isHome ? '#games' : '/glavnaya#games';
   var gamesClick = isHome ? ' onclick="scrollToGames(event)"' : '';
-  navHtml += '<a href="' + gamesHref + '" data-key="games" class="site-header-link" title="Игры"' + gamesClick + '>'
+  var gamesActive = (active === 'games' && !isHome) ? ' active' : '';
+  navHtml += '<a href="' + gamesHref + '" data-key="games" class="site-header-link' + gamesActive + '" title="Игры"' + gamesClick + '>'
           +  '<span class="site-header-link-icon">🎮</span>'
           +  '<span class="site-header-link-label">Игры</span>'
           +  '</a>';
@@ -149,6 +150,7 @@ function renderSiteHeader(active, opts){
 
 /* ═══════════════════════════════════════════════════════════
    СКРОЛЛ-СПАЙ: шильдик ↔ игры
+   Работает при прокрутке в обе стороны
    ═══════════════════════════════════════════════════════════ */
 function setupScrollSpy(){
   var gamesSection = document.getElementById('games');
@@ -156,7 +158,7 @@ function setupScrollSpy(){
   var gamesLink = document.querySelector('.site-header-link[data-key="games"]');
   if (!gamesSection || !brand || !gamesLink) return;
 
-  // Сразу делаем активным бренд (главную)
+  // Сразу делаем активным бренд
   brand.classList.add('active');
   gamesLink.classList.remove('active');
 
@@ -164,22 +166,19 @@ function setupScrollSpy(){
 
   var observer = new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
-      // Если секция игр видна на экране
       if (entry.isIntersecting){
-        // Переключаем активный класс на "Игры"
+        // Секция игр видна — активна "Игры"
         brand.classList.remove('active');
         gamesLink.classList.add('active');
       } else {
-        // Как только секция игр уходит с экрана (вверх или вниз),
-        // возвращаем активный класс на "Главную"
+        // Секция игр ушла с экрана — активен бренд
         brand.classList.add('active');
         gamesLink.classList.remove('active');
       }
     });
   }, {
-    // Эта настройка важна: она срабатывает, когда секция появляется
-    // в центральной части экрана, а не только на самом верху.
-    rootMargin: '-50% 0px -50% 0px',
+    // Срабатывает, когда секция игр появилась в центральной части экрана
+    rootMargin: '-40% 0px -40% 0px',
     threshold: 0
   });
 
@@ -206,7 +205,7 @@ function scrollToTop(e){
 
 
 /* ═══════════════════════════════════════════════════════════
-   ФУТЕР (О проекте переехал сюда)
+   ФУТЕР (О проекте здесь)
    ═══════════════════════════════════════════════════════════ */
 function renderSiteFooter(){
   var container = document.getElementById('siteFooter');
@@ -229,30 +228,10 @@ function renderSiteFooter(){
 
 
 /* ═══════════════════════════════════════════════════════════
-   FAVICON
+   PWA — манифест + мета-теги
    ═══════════════════════════════════════════════════════════ */
 (function(){
-  document.querySelectorAll('link[rel*="icon"]').forEach(function(l){ l.remove(); });
-  var links = [
-    { rel: 'icon',             type: 'image/svg+xml', href: '/assets/icons/favicon.svg' },
-    { rel: 'alternate icon',   type: 'image/png',     href: '/assets/icons/favicon.svg' },
-    { rel: 'apple-touch-icon',                        href: '/assets/icons/favicon.svg' },
-    { rel: 'mask-icon',                               href: '/assets/icons/favicon.svg', color: '#0F3C73' }
-  ];
-  links.forEach(function(ic){
-    var link = document.createElement('link');
-    link.rel = ic.rel;
-    if (ic.type) link.type = ic.type;
-    if (ic.color) link.setAttribute('color', ic.color);
-    link.href = ic.href;
-    document.head.appendChild(link);
-  });
-})();
-/* ═══════════════════════════════════════════════════════════
-   PWA — манифест + мета-теги для полноэкранного режима
-   ═══════════════════════════════════════════════════════════ */
-(function(){
-  // 1. Подключаем манифест
+  // 1. Манифест
   if (!document.querySelector('link[rel="manifest"]')){
     var link = document.createElement('link');
     link.rel = 'manifest';
@@ -260,14 +239,14 @@ function renderSiteFooter(){
     document.head.appendChild(link);
   }
 
-  // 2. Мета-теги для iOS (работают при добавлении на домашний экран)
+  // 2. Мета-теги для iOS
   var metas = [
-    {name:'apple-mobile-web-app-capable',       content:'yes'},
-    {name:'apple-mobile-web-app-status-bar-style', content:'black-translucent'},
-    {name:'apple-mobile-web-app-title',         content:'МГСУ Игры'},
-    {name:'mobile-web-app-capable',             content:'yes'},
-    {name:'theme-color',                        content:'#0F3C73'},
-    {name:'format-detection',                   content:'telephone=no'}
+    {name:'apple-mobile-web-app-capable',           content:'yes'},
+    {name:'apple-mobile-web-app-status-bar-style',  content:'black-translucent'},
+    {name:'apple-mobile-web-app-title',             content:'МГСУ Игры'},
+    {name:'mobile-web-app-capable',                 content:'yes'},
+    {name:'theme-color',                            content:'#0F3C73'},
+    {name:'format-detection',                       content:'telephone=no'}
   ];
   metas.forEach(function(m){
     var existing = document.querySelector('meta[name="' + m.name + '"]');
@@ -281,11 +260,32 @@ function renderSiteFooter(){
     }
   });
 
-  // 3. Apple touch icon (iOS берёт его для иконки на домашнем экране)
+  // 3. Apple touch icon
   if (!document.querySelector('link[rel="apple-touch-icon"]')){
     var ati = document.createElement('link');
     ati.rel = 'apple-touch-icon';
     ati.href = '/assets/icons/logo-square.svg';
     document.head.appendChild(ati);
   }
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   FAVICON
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  document.querySelectorAll('link[rel*="icon"]:not([rel="apple-touch-icon"])').forEach(function(l){ l.remove(); });
+  var links = [
+    { rel: 'icon',             type: 'image/svg+xml', href: '/assets/icons/favicon.svg' },
+    { rel: 'alternate icon',   type: 'image/png',     href: '/assets/icons/favicon.svg' },
+    { rel: 'mask-icon',                               href: '/assets/icons/favicon.svg', color: '#0F3C73' }
+  ];
+  links.forEach(function(ic){
+    var link = document.createElement('link');
+    link.rel = ic.rel;
+    if (ic.type) link.type = ic.type;
+    if (ic.color) link.setAttribute('color', ic.color);
+    link.href = ic.href;
+    document.head.appendChild(link);
+  });
 })();

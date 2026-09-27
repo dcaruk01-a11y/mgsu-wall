@@ -12,12 +12,12 @@ router = APIRouter()
 
 CATALOG = [
     {"key": "student", "name": "Студент",       "emoji": "🎓", "price": 0,     "desc": "Обычный студент МГСУ. Начало пути."},
-    {"key": "sso",     "name": "ССОшник",        "emoji": "👷", "price": 500,   "desc": "Стройотрядовская куртка и боевой дух."},
-    {"key": "prorab",  "name": "Прораб",         "emoji": "📋", "price": 1500,  "desc": "Уже управляет стройкой."},
-    {"key": "builder", "name": "Строитель",      "emoji": "🏗️", "price": 3000,  "desc": "Руки в деле, каска на месте."},
-    {"key": "prof",    "name": "Преподаватель",  "emoji": "🧑‍🏫", "price": 5000,  "desc": "Ставит зачёты и раздаёт мудрость."},
-    {"key": "dean",    "name": "Декан",          "emoji": "🧑‍💼", "price": 10000, "desc": "Костюм, папка, полномочия."},
-    {"key": "legend",  "name": "Легенда МГСУ",   "emoji": "👑", "price": 20000, "desc": "Ты в истории университета."},
+    {"key": "sso",     "name": "ССОшник",        "emoji": "👷", "price": 800,   "desc": "Стройотрядовская куртка и боевой дух."},
+    {"key": "prorab",  "name": "Прораб",         "emoji": "📋", "price": 2500,  "desc": "Уже управляет стройкой."},
+    {"key": "builder", "name": "Строитель",      "emoji": "🏗️", "price": 6000,  "desc": "Руки в деле, каска на месте."},
+    {"key": "prof",    "name": "Преподаватель",  "emoji": "🧑‍🏫", "price": 12000, "desc": "Ставит зачёты и раздаёт мудрость."},
+    {"key": "dean",    "name": "Декан",          "emoji": "🧑‍💼", "price": 25000, "desc": "Костюм, папка, полномочия."},
+    {"key": "legend",  "name": "Легенда МГСУ",   "emoji": "👑", "price": 60000, "desc": "Ты в истории университета."},
 ]
 
 
@@ -66,7 +66,8 @@ async def shop_buy(payload: dict, authorization: str = Header(default="")):
     if key in user.get("owned_chars", []):
         raise HTTPException(status_code=400, detail="Уже куплен")
     if user["coins"] < item["price"]:
-        raise HTTPException(status_code=400, detail="Недостаточно монет")
+        need = item["price"] - user["coins"]
+        raise HTTPException(status_code=400, detail=f"Не хватает {need} монет")
 
     new_owned = list(user.get("owned_chars", ["student"]))
     new_owned.append(key)

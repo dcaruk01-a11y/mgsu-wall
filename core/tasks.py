@@ -4,7 +4,7 @@ from config import MSK
 import core.state as state
 import core.analytics as analytics
 import core.top as top
-from core.storage import load_today_strokes, make_snapshot, post_to_telegram, clear_today
+from core.storage import load_today_strokes, make_snapshot, clear_today
 from core.websocket import hub
 
 
@@ -19,15 +19,14 @@ async def daily_loop():
         await asyncio.sleep(wait)
 
         try:
-            # === Снимок стены ===
+            # === Снимок стены (создаём файл — публикация делается content_publisher в 17:10) ===
             strokes = await load_today_strokes()
             if strokes:
                 print("Снимок дня...")
-                path = await make_snapshot()
-                await post_to_telegram(path)
+                await make_snapshot()
                 await clear_today()
                 await hub.broadcast({"type": "reset"})
-                print("Готово!")
+                print("Снимок создан, файл готов к публикации в 17:10")
             else:
                 print("Холст пустой — снимок не делаем")
 
@@ -50,7 +49,8 @@ async def daily_loop():
                 print("login_attempts очищены")
             except Exception as e:
                 print("login_guard cleanup error:", e)
-                        # === Очистка registration_attempts ===
+
+            # === Очистка registration_attempts ===
             try:
                 from core.registration_guard import cleanup_old as rg_cleanup
                 await rg_cleanup()

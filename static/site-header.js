@@ -137,7 +137,7 @@ function renderSiteHeader(active, opts){
       // ЛОГО (слева)
       '<a href="' + brandHref + '" class="site-header-brand" id="siteBrand"' + brandClick + '>' +
         '<img src="/assets/icons/logo-square.svg" alt="Лого" class="site-header-logo">' +
-        '<span class="site-header-label"><b>НИУ МГСУ</b> · Игры</span>' +
+        '<span class="site-header-label"><b>Игры МГСУ</b></span>' +
       '</a>' +
 
       // НАВИГАЦИЯ (центр)

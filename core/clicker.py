@@ -1,6 +1,7 @@
-import time, asyncio
-from fastapi import APIRouter, Header
+import time, asyncio, aiosqlite
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
+from config import DB_PATH, today_str
 import core.state as state
 import core.analytics as analytics
 import core.users as users
@@ -14,10 +15,39 @@ class ClickerScore(BaseModel):
     nick: str = ""
     score: int = 0
     rank: str = ""
+    mode: str = "solo"   # "solo" | "duel"
 
 
 def _token(authorization: str) -> str:
     return authorization.replace("Bearer ", "").strip()
+
+
+async def _get_daily_plays(uid: str) -> int:
+    """Сколько раз играл в кликер сегодня."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("""
+            SELECT COUNT(*) FROM scores WHERE uid=? AND game='clicker' AND day=?
+        """, (uid, today_str()))
+        row = await cur.fetchone()
+        return row[0] if row else 0
+
+
+@router.get("/clicker/can-play")
+async def clicker_can_play(authorization: str = Header(default="")):
+    """Можно ли играть в кликер сегодня (одну партию в день)."""
+    token = _token(authorization)
+    user = await users.get_user_by_token(token) if token else None
+    if not user:
+        # Гость — без лимита
+        return {"ok": True, "can_play": True, "plays_today": 0, "is_guest": True}
+    uid = user["uid"]
+    plays = await _get_daily_plays(uid)
+    return {
+        "ok": True,
+        "can_play": plays == 0,
+        "plays_today": plays,
+        "is_guest": False,
+    }
 
 
 @router.post("/clicker/score")
@@ -30,6 +60,16 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
 
     score = max(0, min(int(payload.score or 0), 10000))
     rank = (payload.rank or "")[:30]
+    mode = (payload.mode or "solo").strip()
+
+    # ═══ ЛИМИТ 1 ПАРТИЯ В ДЕНЬ — только для соло ═══
+    if user and mode == "solo":
+        plays = await _get_daily_plays(user["uid"])
+        if plays >= 1:
+            raise HTTPException(
+                status_code=429,
+                detail="Одна партия в день. Возвращайся завтра!"
+            )
 
     if user:
         nick = user["display_name"]
@@ -39,7 +79,6 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
         is_record = False
         for e in state.clicker_top:
             if e.get("uid") == uid and e["score"] >= score:
-                is_record = False
                 break
         else:
             is_record = score > 0

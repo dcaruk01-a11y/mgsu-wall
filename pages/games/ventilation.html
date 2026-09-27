@@ -30,7 +30,6 @@ body.vent-page{
 .status-banner.show{display:block;}
 .status-banner small{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:2px;}
 
-/* ═══════════ СТЕЙДЖ ═══════════ */
 .vent-stage{
   flex:1 1 auto;
   display:flex;
@@ -40,7 +39,6 @@ body.vent-page{
   gap:8px;
 }
 
-/* ─── HUD ─── */
 .vent-hud{
   flex:0 0 auto;
   display:flex;
@@ -65,7 +63,6 @@ body.vent-page{
 .vent-hud-box .val{font-size:16px;font-weight:900;}
 .vent-hud-box .val.warn{color:#FFB347;}
 
-/* ─── Прогресс воздуха ─── */
 .vent-bar{
   flex:0 0 auto;
   height:8px;
@@ -84,7 +81,14 @@ body.vent-page{
   border-radius:4px;
 }
 
-/* ─── Canvas ─── */
+.vent-hint{
+  flex:0 0 auto;
+  text-align:center;
+  font-size:12px;
+  opacity:0.7;
+  padding:0 12px;
+}
+
 .vent-wrap{
   flex:1 1 auto;
   min-height:0;
@@ -102,9 +106,9 @@ canvas{
   max-width:100%;
   max-height:100%;
   touch-action:none;
+  cursor:crosshair;
 }
 
-/* ─── Управление ─── */
 .vent-controls{
   flex:0 0 auto;
   display:flex;
@@ -128,7 +132,6 @@ canvas{
 .vent-btn:active{transform:scale(0.96);background:rgba(128,128,128,0.25);}
 .vent-btn.primary{background:rgba(111,168,255,0.22);border-color:rgba(111,168,255,0.5);color:#fff;}
 
-/* ─── Оверлеи ─── */
 .vent-overlay{
   position:absolute;inset:0;
   background:rgba(5,14,31,0.94);
@@ -211,13 +214,16 @@ canvas{
 
   <div class="vent-bar"><div class="vent-bar-fill" id="airBar"></div></div>
 
+  <div class="vent-hint">👆 Тапни и веди пальцем по <b>коричневой земле</b>, чтобы копать</div>
+
   <div class="vent-wrap" id="canvasWrap">
     <canvas id="c"></canvas>
 
     <div class="vent-overlay" id="startOv">
       <div class="vent-overlay-emoji">💨</div>
       <h2>Вентиляция МГСУ</h2>
-      <p>Проведи <b>воздух</b> от вытяжки 🟢 до комнаты 🟡. Тапай и тяни пальцем по земле, чтобы прокапывать тоннели.</p>
+      <p>Проведи <b>воздух</b> от вытяжки 🟢 до комнаты 🟡.</p>
+      <p style="font-size:14px;opacity:0.9;">👆 <b>Тапни и веди пальцем</b> по коричневой земле, чтобы прокопать тоннель.</p>
       <button class="vent-ov-btn" id="startBtn" type="button">Начать смену →</button>
     </div>
 
@@ -258,87 +264,85 @@ renderSiteHeader('games');
 const COLS = 24;
 const ROWS = 16;
 
-// Типы клеток
 const C_EMPTY  = 0;
-const C_DIRT   = 1;  // можно копать
-const C_WALL   = 2;  // нельзя копать
-const C_SOURCE = 3;  // источник воздуха
-const C_TARGET = 4;  // цель
+const C_DIRT   = 1;
+const C_WALL   = 2;
+const C_SOURCE = 3;
+const C_TARGET = 4;
 
-// Скорость симуляции воздуха
-const AIR_STEP_MS = 60;   // раз в 60мс считаем один шаг
-const TARGET_FILL = 0.75; // нужно заполнить 75% цели
+const AIR_STEP_MS = 70;
+const TARGET_FILL = 0.60;   // 60% цели достаточно (было 75% — долго)
 
 /* ═══════════════════════════════════════════════════════════
    УРОВНИ
    S = источник, T = цель, D = копаемая земля, # = стена, . = пусто
    ═══════════════════════════════════════════════════════════ */
 const LEVELS = [
-  // Уровень 1 — простой, веди вниз-вправо
+  // Уровень 1 — простой: копай вниз от источника
   [
     "........................",
     "..SSSS..................",
     "..DDDD..................",
     "..DDDD..................",
     "..DDDD..................",
-    "..DDDD..DDDDDDDDDDDD....",
-    "..DDDD..DDDDDDDDDDDD....",
-    "..DDDD..DDDDDDDDDDDD....",
-    "..DDDD..DDDDDDDDDDDD....",
-    "..DDDD..DDDDDDDDDDDD....",
-    "..DDDD..DDDDDDDDDDDD....",
-    "..DDDD..DDDDDDDDDDDD....",
-    "..DDDD..DDDDDDDDDDDD....",
-    "..DDDD..DDDDDDDDTTTT....",
+    "..DDDD..................",
+    "..DDDD..................",
+    "..DDDD..................",
+    "..DDDD..................",
+    "..DDDD..................",
+    "..DDDD..................",
+    "..DDDDDDDDDDDDDDDD......",
+    "..DDDDDDDDDDDDDDDD......",
+    "..............DDDD......",
+    "..............TTTT......",
+    "..............TTTT......",
+  ],
+
+  // Уровень 2 — с препятствием
+  [
+    "........................",
+    "..SSSS..................",
+    "..DDDD..................",
+    "..DDDD....########......",
+    "..DDDD....#......#......",
+    "..DDDD....#......#......",
+    "..DDDD....#......#......",
+    "..DDDD....#......#......",
+    "..DDDD....#......#......",
+    "..DDDD....#......#......",
+    "..DDDD....########......",
+    "..DDDDDDDDDDDDDDDD......",
+    "..DDDDDDDDDDDDDDDD......",
+    "..DDDD..........DDDD....",
     "..DDDD..........TTTT....",
-    "................TTTT....",
+    "..DDDD..........TTTT....",
   ],
 
-  // Уровень 2 — вертикальный, есть стены
-  [
-    "........................",
-    "....SSSS................",
-    "....DDDD................",
-    "....DDDD....########....",
-    "....DDDD....#......#....",
-    "....DDDD....#......#....",
-    "....DDDD....#......#....",
-    "....DDDD....#......#....",
-    "....DDDD....#......#....",
-    "....DDDD....#......#....",
-    "....DDDD....#......#....",
-    "....DDDD....########....",
-    "....DDDD................",
-    "....DDDDDDDDDDDDDDDD....",
-    "................TTTT....",
-    "................TTTT....",
-  ],
-
-  // Уровень 3 — лабиринт
+  // Уровень 3 — длинный путь
   [
     "........................",
     "..SSSS..................",
     "..DDDD..................",
-    "..DDDD#######...........",
-    "..DDDD......#...........",
-    "..DDDD......#...........",
-    "..DDDD......#..########.",
-    "..DDDDDDDD..D..#......#.",
-    "..DDDDDDDD..D..#......#.",
-    "..DDDD......D..#......#.",
-    "..DDDD......D..#......#.",
-    "..DDDD......DDDD......#.",
-    "..DDDD######..........#.",
-    "..DDDD...............DDD",
-    "....................TTTT",
-    "....................TTTT",
+    "..DDDD..................",
+    "..DDDD..................",
+    "..DDDDDDDDDDDDDDDD......",
+    "..DDDDDDDDDDDDDDDD......",
+    "..DDDD..........DDDD....",
+    "..DDDD..........DDDD....",
+    "..DDDD..........DDDD....",
+    "..DDDD..........DDDD....",
+    "..DDDD..############....",
+    "..DDDD..############....",
+    "..DDDD....................",
+    "..DDDD....................",
+    "..DDDD....................",
   ],
 ];
 
 /* ═══════════════════════════════════════════════════════════
    СОСТОЯНИЕ
    ═══════════════════════════════════════════════════════════ */
-let grid = [];       // [{type, air}]
+let grid = [];
 let canvas, ctx;
 let CW = 0, CH = 0, CELL = 20;
 
@@ -401,7 +405,6 @@ function beep(freq, dur, type, vol, slideTo){
 let lastDigSound = 0;
 const SFX = {
   dig:   () => { const n = performance.now(); if (n - lastDigSound < 60) return; lastDigSound = n; beep(140 + Math.random()*80, 0.03, 'sawtooth', 0.05); },
-  drop:  () => beep(400, 0.05, 'sine', 0.04, 250),
   level: () => { [660, 880, 1100, 1400].forEach((f,i) => setTimeout(() => beep(f, 0.12, 'square', 0.09), i*90)); },
   finish:() => { [660, 880, 1100, 1400, 1800].forEach((f,i) => setTimeout(() => beep(f, 0.13, 'square', 0.10), i*100)); },
   reset: () => beep(300, 0.08, 'triangle', 0.06, 180),
@@ -464,44 +467,42 @@ function canHoldAir(cell){
 }
 
 function stepAir(){
-  // Обходим снизу вверх
+  // 1. Обнуляем источник — он будет наполнен заново и станет «вечным»
+  //    (устанавливаем в начале прохода, чтобы «свежий» воздух мог растекаться)
+  for (let y = 0; y < ROWS; y++){
+    for (let x = 0; x < COLS; x++){
+      if (grid[y][x].type === C_SOURCE) grid[y][x].air = 1;
+    }
+  }
+
+  // 2. Проходим снизу вверх, распределяем
   for (let y = ROWS - 2; y >= 0; y--){
     const ltr = Math.random() < 0.5;
     for (let i = 0; i < COLS; i++){
       const x = ltr ? i : COLS - 1 - i;
       const cell = grid[y][x];
-
-      // Источник всегда полный
-      if (cell.type === C_SOURCE){
-        cell.air = 1;
-        continue;
-      }
-
-      // Только пустота и цель могут содержать воздух
       if (!canHoldAir(cell)) continue;
       if (cell.air <= 0.02) continue;
 
-      // Цель — поглощает воздух и не отдаёт
-      if (cell.type === C_TARGET){
-        // Медленно впитывает, чтобы был виден прогресс
-        continue;
-      }
+      // Источник не отдаёт воздух «вниз» — только в стороны
+      const isSource = cell.type === C_SOURCE;
 
       // Пробуем течь вниз
-      const below = grid[y+1][x];
-      if (canHoldAir(below)){
-        const space = 1 - below.air;
-        if (space > 0.02){
-          const flow = Math.min(cell.air * 0.5, space * 0.5);
-          cell.air -= flow;
-          below.air += flow;
-          continue;
+      if (!isSource){
+        const below = grid[y+1] && grid[y+1][x];
+        if (below && canHoldAir(below)){
+          const space = 1 - below.air;
+          if (space > 0.02){
+            const flow = Math.min(cell.air * 0.5, space * 0.5);
+            cell.air -= flow;
+            below.air += flow;
+            continue;
+          }
         }
       }
 
       // Пробуем в стороны
       const dirs = Math.random() < 0.5 ? [1, -1] : [-1, 1];
-      let flowed = false;
       for (const dx of dirs){
         const nx = x + dx;
         if (nx < 0 || nx >= COLS) continue;
@@ -509,17 +510,16 @@ function stepAir(){
         if (!canHoldAir(side)) continue;
         const space = 1 - side.air;
         if (space > 0.05){
-          const flow = Math.min(cell.air * 0.3, space * 0.3);
+          const flow = Math.min(cell.air * 0.4, space * 0.4);
           cell.air -= flow;
           side.air += flow;
-          flowed = true;
           break;
         }
       }
     }
   }
 
-  // Проверка прогресса
+  // 3. Считаем прогресс цели
   let total = 0;
   for (const t of targetCells){
     total += grid[t.y][t.x].air;
@@ -564,9 +564,7 @@ function moveDig(e){
   digAt(p.clientX, p.clientY);
   e.preventDefault();
 }
-function endDig(){
-  digging = false;
-}
+function endDig(){ digging = false; }
 
 canvas.addEventListener('touchstart', startDig, {passive: false});
 canvas.addEventListener('touchmove', moveDig, {passive: false});
@@ -579,11 +577,9 @@ document.addEventListener('mouseup', endDig);
    РЕНДЕР
    ═══════════════════════════════════════════════════════════ */
 function draw(){
-  // Фон
   ctx.fillStyle = '#0a0f1e';
   ctx.fillRect(0, 0, CW, CH);
 
-  // Сетка
   ctx.strokeStyle = 'rgba(128,128,128,0.05)';
   ctx.lineWidth = 1;
   for (let x = 0; x <= COLS; x++){
@@ -599,7 +595,6 @@ function draw(){
     ctx.stroke();
   }
 
-  // Клетки
   for (let y = 0; y < ROWS; y++){
     for (let x = 0; x < COLS; x++){
       const cell = grid[y][x];
@@ -607,13 +602,10 @@ function draw(){
       const py = y * CELL;
 
       if (cell.type === C_DIRT){
-        // Земля — коричневая с текстурой
         ctx.fillStyle = '#5a3a22';
         ctx.fillRect(px, py, CELL, CELL);
-        // Крапинки
         ctx.fillStyle = 'rgba(0,0,0,0.20)';
         const dot = Math.max(1, Math.floor(CELL / 8));
-        // Детерминированные позиции на основе координат
         const seed = (x * 73856093) ^ (y * 19349663);
         for (let i = 0; i < 3; i++){
           const r = ((seed >> (i * 4)) & 0xF) / 15;
@@ -621,7 +613,6 @@ function draw(){
           ctx.fillRect(px + r * (CELL - dot), py + c * (CELL - dot), dot, dot);
         }
       } else if (cell.type === C_WALL){
-        // Стена — кирпичи
         ctx.fillStyle = '#3a2412';
         ctx.fillRect(px, py, CELL, CELL);
         ctx.strokeStyle = '#5a3a22';
@@ -646,12 +637,10 @@ function draw(){
           }
         }
       } else if (cell.type === C_SOURCE){
-        // Источник — зелёный
         ctx.fillStyle = 'rgba(74, 222, 128, 0.35)';
         ctx.fillRect(px, py, CELL, CELL);
         ctx.fillStyle = '#4ADE80';
         ctx.fillRect(px + CELL*0.2, py + CELL*0.2, CELL*0.6, CELL*0.6);
-        // Стрелка вниз
         ctx.fillStyle = 'rgba(10,15,30,0.8)';
         const cx = px + CELL/2, cy = py + CELL/2;
         ctx.beginPath();
@@ -661,13 +650,11 @@ function draw(){
         ctx.closePath();
         ctx.fill();
       } else if (cell.type === C_TARGET){
-        // Цель — золотая рамка
         ctx.fillStyle = 'rgba(255, 215, 0, 0.10)';
         ctx.fillRect(px, py, CELL, CELL);
         ctx.strokeStyle = '#FFD700';
         ctx.lineWidth = 2;
         ctx.strokeRect(px + 1, py + 1, CELL - 2, CELL - 2);
-        // Иконка домика
         ctx.fillStyle = 'rgba(255,215,0,0.6)';
         ctx.font = Math.floor(CELL * 0.6) + 'px serif';
         ctx.textAlign = 'center';
@@ -675,7 +662,7 @@ function draw(){
         ctx.fillText('🏠', px + CELL/2, py + CELL/2);
       }
 
-      // Воздух — рисуем поверх
+      // Воздух — поверх всего, кроме источника
       if (cell.air > 0.02 && canHoldAir(cell) && cell.type !== C_SOURCE){
         const a = Math.min(cell.air, 1);
         ctx.fillStyle = 'rgba(120, 180, 255, ' + (a * 0.75) + ')';
@@ -693,9 +680,9 @@ function updateHud(){
   const pct = Math.round(fillPercentage * 100);
   const airEl = document.getElementById('hudAir');
   airEl.textContent = pct + '%';
-  airEl.classList.toggle('warn', pct >= 50 && pct < 75);
+  airEl.classList.toggle('warn', pct >= Math.round(TARGET_FILL * 100 * 0.7));
   document.getElementById('hudScore').textContent = totalScore + levelScore;
-  document.getElementById('airBar').style.width = Math.min(100, pct * (100 / (TARGET_FILL * 100))) + '%';
+  document.getElementById('airBar').style.width = Math.min(100, pct / (TARGET_FILL * 100) * 100) + '%';
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -708,7 +695,6 @@ function loop(now){
   requestAnimationFrame(loop);
   const dt = now - lastFrame;
   lastFrame = now;
-
   if (!running) return;
 
   lastAirStep += dt;
@@ -717,8 +703,8 @@ function loop(now){
     stepAir();
     airSteps++;
 
-    // Очки за «стабильность» — поощряем медленное течение
-    if (airSteps % 20 === 0 && fillPercentage < TARGET_FILL){
+    // Очки за «эффективность»
+    if (airSteps % 25 === 0 && fillPercentage < TARGET_FILL){
       levelScore += 1;
     }
 
@@ -763,17 +749,14 @@ function retryLevel(){
 }
 
 function onLevelComplete(){
-  // Очки за уровень
   const bonus = 500 + Math.max(0, 200 - airSteps);
   levelScore += bonus;
   totalScore += levelScore;
   updateHud();
 
   if (currentLevel + 1 >= LEVELS.length){
-    // Финальный экран
     showFinish();
   } else {
-    // Промежуточный экран
     document.getElementById('levelEmoji').textContent = '✅';
     document.getElementById('levelTitle').textContent = 'Уровень ' + (currentLevel + 1) + ' пройден!';
     document.getElementById('levelDesc').textContent = 'Очков за уровень: +' + levelScore + ' · Всего: ' + totalScore;
@@ -869,9 +852,6 @@ document.getElementById('shareBtn').onclick = async () => {
   }catch(e){}
 };
 
-/* ═══════════════════════════════════════════════════════════
-   СТАРТ
-   ═══════════════════════════════════════════════════════════ */
 window.addEventListener('load', () => setTimeout(resize, 100));
 setTimeout(resize, 200);
 resize();

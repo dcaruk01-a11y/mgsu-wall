@@ -71,12 +71,21 @@ body{
 }
 .site-header-label b{font-weight:700;opacity:1;}
 
-/* ─── НАВИГАЦИЯ ─── */
-.site-header-nav{
-  display:flex;
-  align-items:center;
-  gap:4px;
-  flex-shrink:0;
+/* static/site-header.css */
+
+.site-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  /* ... другие свойства ... */
+  overflow-x: auto; /* <-- Добавляем это */
+  white-space: nowrap; /* <-- И это */
+  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+}
+
+/* Скрываем полосу прокрутки, чтобы она не портила вид */
+.site-header-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .site-header-link{

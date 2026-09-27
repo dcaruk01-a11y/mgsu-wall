@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Лабиринт МГСУ · Игры</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/static/site-header.css">
+<style>
+html,body{height:100%;}
+body.adv-page{
+  height:100vh;
+  height:100dvh;
+  max-height:100dvh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+.status-banner{
+  position:fixed;top:0;left:0;right:0;z-index:99;
+  background:#AC1422;color:#fff;padding:12px 20px;
+  text-align:center;font-size:13px;font-weight:600;display:none;
+}
+.status-banner.show{display:block;}
+.status-banner small{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:2px;}
+
+.adv-stage{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  padding:8px max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  gap:8px;
+}
+
+/* ─── HUD ─── */
+.adv-hud{
+  flex:0 0 auto;
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.adv-hud-box{
+  padding:6px 12px;
+  border-radius:10px;
+  background:rgba(128,128,128,0.12);
+  border:1px solid rgba(128,128,128,0.22);
+  font-size:15px;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:inherit;
+}
+.adv-hud-box .lbl{opacity:0.55;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;}
+.adv-hud-box .val{font-size:16px;font-weight:900;}
+
+/* ─── Canvas ─── */
+.adv-wrap{
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+canvas{
+  display:block;
+  background:#0a0f1e;
+  border-radius:12px;
+  border:1px solid rgba(128,128,128,0.25);
+  box-shadow:0 12px 32px rgba(0,0,0,0.35);
+  max-width:100%;
+  max-height:100%;
+  touch-action:none;
+}
+
+/* ─── Управление крестовиной ─── */
+.adv-pad{
+  flex:0 0 auto;
+  display:grid;
+  grid-template-columns:repeat(3, 60px);
+  grid-template-rows:repeat(3, 60px);
+  gap:6px;
+  justify-content:center;
+  align-content:center;
+  margin:0 auto;
+}
+.adv-pad button{
+  border-radius:12px;
+  border:1px solid rgba(128,128,128,0.3);
+  background:rgba(128,128,128,0.12);
+  color:inherit;
+  font-family:inherit;
+  font-size:22px;
+  font-weight:800;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  transition:transform .08s, background .15s;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.adv-pad button:active{transform:scale(0.92);background:rgba(128,128,128,0.3);}
+.adv-pad .empty{visibility:hidden;}
+.adv-pad .up   {grid-column:2;grid-row:1;}
+.adv-pad .left {grid-column:1;grid-row:2;}
+.adv-pad .right{grid-column:3;grid-row:2;}
+.adv-pad .down {grid-column:2;grid-row:3;}
+
+/* ─── Оверлеи ─── */
+.adv-overlay{
+  position:absolute;inset:0;
+  background:rgba(5,14,31,0.94);
+  backdrop-filter:blur(10px);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:14px;padding:22px;text-align:center;
+  z-index:20;transition:opacity .3s;
+  border-radius:12px;
+}
+.adv-overlay.hide{opacity:0;pointer-events:none;}
+.adv-overlay-emoji{font-size:64px;margin-bottom:2px;filter:drop-shadow(0 8px 24px rgba(255,180,80,0.4));}
+.adv-overlay h2{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.adv-overlay p{font-size:13px;color:rgba(255,255,255,0.75);max-width:340px;line-height:1.55;}
+.adv-overlay p b{color:#FFD700;}
+
+.adv-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 28px;border-radius:999px;
+  background:#fff;color:#0F3C73;
+  font-family:inherit;font-size:14px;font-weight:700;
+  border:0;cursor:pointer;
+  box-shadow:0 12px 30px rgba(0,0,0,0.3);
+  transition:transform .1s;
+}
+.adv-btn:active{transform:scale(0.97);}
+.adv-btn-ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);box-shadow:none;}
+
+.adv-finish-score{font-size:52px;font-weight:900;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;color:#fff;}
+.adv-finish-label{font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
+.adv-finish-rank{font-size:20px;font-weight:800;color:#fff;}
+.adv-finish-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+
+#progressBlock{
+  display:none;width:100%;max-width:380px;
+  padding:12px 16px;border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  font-size:13px;text-align:left;line-height:1.5;
+  color:#fff;
+}
+#progressBlock a{color:#4ADE80;text-decoration:none;font-weight:700;}
+
+@media(max-width:520px){
+  .adv-hud-box{padding:5px 9px;font-size:13px;}
+  .adv-hud-box .val{font-size:14px;}
+  .adv-pad{grid-template-columns:repeat(3, 54px);grid-template-rows:repeat(3, 54px);}
+  .adv-pad button{font-size:20px;}
+  .adv-overlay-emoji{font-size:52px;}
+  .adv-overlay h2{font-size:19px;}
+  .adv-finish-score{font-size:42px;}
+  .adv-finish-rank{font-size:17px;}
+}
+@media(max-height:700px){
+  .adv-pad{grid-template-columns:repeat(3, 48px);grid-template-rows:repeat(3, 48px);}
+  .adv-pad button{font-size:18px;}
+}
+</style>
+</head><body class="adv-page">
+
+<div class="status-banner" id="statusBanner">
+  🔒 Технический перерыв
+  <small id="statusBannerSub">Игры доступны только в учебное время</small>
+</div>
+
+<div id="siteHeader"></div>
+
+<div class="adv-stage">
+
+  <div class="adv-hud">
+    <div class="adv-hud-box">
+      <span class="lbl">Жизни</span>
+      <span class="val" id="hudLives">❤❤❤</span>
+    </div>
+    <div class="adv-hud-box">
+      <span class="lbl">Ключи</span>
+      <span class="val" id="hudKeys">0/3</span>
+    </div>
+    <div class="adv-hud-box">
+      <span class="lbl">Меч</span>
+      <span class="val" id="hudSword">—</span>
+    </div>
+    <div class="adv-hud-box">
+      <span class="lbl">Очки</span>
+      <span class="val" id="hudScore">0</span>
+    </div>
+  </div>
+
+  <div class="adv-wrap" id="canvasWrap">
+    <canvas id="c"></canvas>
+
+    <div class="adv-overlay" id="startOv">
+      <div class="adv-overlay-emoji">🗺️</div>
+      <h2>Лабиринт МГСУ</h2>
+      <p>Собери <b>3 ключа</b> 🔑, найди <b>шпаргалку</b> ⚔️ чтобы отбиваться от злых преподов 👺. Дойди до выхода 🚪.</p>
+      <button class="adv-btn" id="startBtn" type="button">В подземелье →</button>
+    </div>
+
+    <div class="adv-overlay hide" id="finishOv">
+      <div class="adv-overlay-emoji" id="finishEmoji">🏆</div>
+      <div class="adv-finish-score" id="finishScore">0</div>
+      <div class="adv-finish-label">очков</div>
+      <div class="adv-finish-rank" id="finishRank">Первокурсник</div>
+      <div id="progressBlock"></div>
+      <div class="adv-finish-actions">
+        <button class="adv-btn" id="shareBtn" type="button">Показать другу</button>
+        <button class="adv-btn adv-btn-ghost" id="againBtn" type="button">Ещё раз</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="adv-pad">
+    <button class="up"    id="padUp">↑</button>
+    <button class="left"  id="padLeft">←</button>
+    <button class="right" id="padRight">→</button>
+    <button class="down"  id="padDown">↓</button>
+  </div>
+
+</div>
+
+<script src="/static/site-header.js"></script>
+<script>
+renderSiteHeader('games');
+
+/* ═══════════════════════════════════════════════════════════
+   КАРТА
+   # = стена, . = пол
+   S = старт игрока, X = выход, K = ключ, M = меч (шпаргалка),
+   E = враг
+   ═══════════════════════════════════════════════════════════ */
+const MAP = [
+  "####################",
+  "#S................K#",
+  "#..................#",
+  "#####.####.####.####",
+  "#..................#",
+  "#.K.............E..#",
+  "#..................#",
+  "####.####.####.#####",
+  "#..................#",
+  "#..M...............#",
+  "#..................#",
+  "#####.####.####.####",
+  "#..................#",
+  "#E................X#",
+  "####################",
+];
+
+const MAP_W = MAP[0].length;
+const MAP_H = MAP.length;
+
+/* ═══════════════════════════════════════════════════════════
+   КОНСТАНТЫ ИГРЫ
+   ═══════════════════════════════════════════════════════════ */
+const START_LIVES = 3;
+const PLAYER_MOVE_MS = 140;   // сколько миллисекунд игрок едет между клетками
+const ENEMY_MOVE_MS = 280;    // медленнее игрока
+const ENEMY_THINK_MS = 700;   // как часто враги принимают решение (раз в 700мс)
+const SCORE_KEY = 100;
+const SCORE_SWORD = 150;
+const SCORE_KILL = 200;
+const SCORE_WIN = 500;
+
+/* ═══════════════════════════════════════════════════════════
+   СОСТОЯНИЕ
+   ═══════════════════════════════════════════════════════════ */
+let walls = [];
+let keys = [];
+let sword = null;
+let exitPos = null;
+let player = null;
+let enemies = [];
+let lives = START_LIVES;
+let score = 0;
+let keysCollected = 0;
+let totalKeys = 0;
+let running = false;
+let paused = false;
+let levelStartTime = 0;
+let enemyThinkTimer = 0;
+let invulnerableUntil = 0;
+
+/* ═══════════════════════════════════════════════════════════
+   CANVAS
+   ═══════════════════════════════════════════════════════════ */
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let CELL = 32;
+let CW = 0, CH = 0;
+
+function resize(){
+  const wrap = document.getElementById('canvasWrap');
+  if (!wrap) return;
+  const rect = wrap.getBoundingClientRect();
+  const availW = rect.width - 4;
+  const availH = rect.height - 4;
+  const cellW = Math.floor(availW / MAP_W);
+  const cellH = Math.floor(availH / MAP_H);
+  CELL = Math.max(14, Math.min(cellW, cellH, 42));
+  CW = MAP_W * CELL;
+  CH = MAP_H * CELL;
+  canvas.width = CW;
+  canvas.height = CH;
+  canvas.style.width = CW + 'px';
+  canvas.style.height = CH + 'px';
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 200));
+
+/* ═══════════════════════════════════════════════════════════
+   РАСПИСАНИЕ
+   ═══════════════════════════════════════════════════════════ */
+let scheduleOpen = true;
+async function checkScheduleStatus(){
+  try{
+    const r = await fetch('/status');
+    const s = await r.json();
+    scheduleOpen = !!s.open;
+    const banner = document.getElementById('statusBanner');
+    const sub = document.getElementById('statusBannerSub');
+    if (!scheduleOpen){
+      sub.textContent = 'Игры доступны только в учебное время: с ' + s.opens_at + ' до ' + s.closes_at;
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }catch(e){}
+}
+checkScheduleStatus();
+setInterval(checkScheduleStatus, 60000);
+
+/* ═══════════════════════════════════════════════════════════
+   ЗВУК
+   ═══════════════════════════════════════════════════════════ */
+let audioCtx = null;
+function initAudio(){
+  if (audioCtx) return;
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }catch(e){}
+}
+function beep(freq, dur, type, vol, slideTo){
+  if (!audioCtx) return;
+  try{
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'square';
+    osc.frequency.setValueAtTime(freq, t);
+    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    gain.gain.setValueAtTime(vol || 0.06, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + dur + 0.02);
+  }catch(e){}
+}
+const SFX = {
+  step:   () => beep(240, 0.02, 'square', 0.03),
+  bump:   () => beep(120, 0.06, 'square', 0.05),
+  key:    () => { beep(880, 0.08, 'square', 0.09); setTimeout(() => beep(1200, 0.10, 'square', 0.09), 70); },
+  sword:  () => { beep(400, 0.10, 'triangle', 0.10, 900); setTimeout(() => beep(1400, 0.10, 'square', 0.08), 100); },
+  hit:    () => { beep(300, 0.10, 'sawtooth', 0.10, 80); setTimeout(() => beep(150, 0.20, 'sawtooth', 0.10, 60), 100); },
+  kill:   () => { beep(900, 0.06, 'square', 0.09); setTimeout(() => beep(700, 0.06, 'square', 0.09), 50); setTimeout(() => beep(400, 0.12, 'square', 0.09), 100); },
+  die:    () => { [300, 250, 200, 150, 100].forEach((f,i) => setTimeout(() => beep(f, 0.16, 'triangle', 0.10), i*120)); },
+  win:    () => { [660, 880, 1100, 1500, 1800, 2200].forEach((f,i) => setTimeout(() => beep(f, 0.14, 'square', 0.10), i*90)); },
+  lose:   () => { [400, 350, 300, 250, 200, 150].forEach((f,i) => setTimeout(() => beep(f, 0.18, 'triangle', 0.10), i*130)); },
+};
+
+/* ═══════════════════════════════════════════════════════════
+   ИНИЦИАЛИЗАЦИЯ УРОВНЯ
+   ═══════════════════════════════════════════════════════════ */
+function buildLevel(){
+  walls = [];
+  for (let y = 0; y < MAP_H; y++){
+    walls.push(new Array(MAP_W).fill(false));
+  }
+  keys = [];
+  sword = null;
+  exitPos = null;
+  enemies = [];
+  player = null;
+
+  for (let y = 0; y < MAP_H; y++){
+    for (let x = 0; x < MAP_W; x++){
+      const ch = MAP[y][x];
+      if (ch === '#') walls[y][x] = true;
+      else if (ch === 'S'){
+        player = makeEntity(x, y, PLAYER_MOVE_MS);
+      } else if (ch === 'X'){
+        exitPos = { x, y };
+      } else if (ch === 'K'){
+        keys.push({ x, y, taken: false });
+      } else if (ch === 'M'){
+        sword = { x, y, taken: false };
+      } else if (ch === 'E'){
+        enemies.push(makeEntity(x, y, ENEMY_MOVE_MS));
+      }
+    }
+  }
+  totalKeys = keys.length;
+  keysCollected = 0;
+}
+
+function makeEntity(x, y, moveMs){
+  return {
+    x, y,
+    fromX: x, fromY: y,
+    toX: x, toY: y,
+    moving: false,
+    progress: 0,
+    moveMs: moveMs,
+    alive: true,
+  };
+}
+
+function isWall(x, y){
+  if (x < 0 || x >= MAP_W || y < 0 || y >= MAP_H) return true;
+  return walls[y][x];
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ДВИЖЕНИЕ ИГРОКА
+   ═══════════════════════════════════════════════════════════ */
+function tryPlayerMove(dx, dy){
+  if (!running || paused || !player) return;
+  if (player.moving) return;
+  const nx = player.x + dx;
+  const ny = player.y + dy;
+  if (isWall(nx, ny)){
+    SFX.bump();
+    return;
+  }
+  player.fromX = player.x;
+  player.fromY = player.y;
+  player.toX = nx;
+  player.toY = ny;
+  player.progress = 0;
+  player.moving = true;
+  SFX.step();
+}
+
+function finishPlayerMove(){
+  player.x = player.toX;
+  player.y = player.toY;
+  player.moving = false;
+  onPlayerArrived();
+}
+
+function onPlayerArrived(){
+  // Ключ?
+  for (const k of keys){
+    if (!k.taken && k.x === player.x && k.y === player.y){
+      k.taken = true;
+      keysCollected++;
+      score += SCORE_KEY;
+      SFX.key();
+      updateHud();
+      break;
+    }
+  }
+  // Меч?
+  if (sword && !sword.taken && sword.x === player.x && sword.y === player.y){
+    sword.taken = true;
+    player.hasSword = true;
+    score += SCORE_SWORD;
+    SFX.sword();
+    updateHud();
+  }
+  // Контакт с врагами?
+  for (const e of enemies){
+    if (!e.alive) continue;
+    if (e.x === player.x && e.y === player.y){
+      handleEnemyContact(e);
+      return;
+    }
+  }
+  // Выход?
+  if (exitPos && player.x === exitPos.x && player.y === exitPos.y){
+    if (keysCollected >= totalKeys){
+      win();
+    }
+  }
+}
+
+function handleEnemyContact(enemy){
+  if (Date.now() < invulnerableUntil) return;
+  if (player.hasSword){
+    // Убиваем врага
+    enemy.alive = false;
+    score += SCORE_KILL;
+    SFX.kill();
+    updateHud();
+  } else {
+    // Теряем жизнь
+    lives--;
+    SFX.hit();
+    updateHud();
+    invulnerableUntil = Date.now() + 1500;
+    if (lives <= 0){
+      lose();
+    } else {
+      // Респавн игрока на старт
+      respawnPlayer();
+    }
+  }
+}
+
+function respawnPlayer(){
+  // Ищем в карте точку S
+  for (let y = 0; y < MAP_H; y++){
+    for (let x = 0; x < MAP_W; x++){
+      if (MAP[y][x] === 'S'){
+        player.x = x; player.y = y;
+        player.fromX = x; player.fromY = y;
+        player.toX = x; player.toY = y;
+        player.moving = false;
+        player.progress = 0;
+        return;
+      }
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ВРАГИ
+   ═══════════════════════════════════════════════════════════ */
+function enemyThink(){
+  for (const e of enemies){
+    if (!e.alive || e.moving) continue;
+    chooseEnemyDirection(e);
+  }
+}
+
+function chooseEnemyDirection(e){
+  const dx = Math.sign(player.x - e.x);
+  const dy = Math.sign(player.y - e.y);
+
+  // Приоритет — по большей разнице
+  const dirs = [];
+  const absX = Math.abs(player.x - e.x);
+  const absY = Math.abs(player.y - e.y);
+
+  if (absX >= absY){
+    if (dx) dirs.push([dx, 0]);
+    if (dy) dirs.push([0, dy]);
+  } else {
+    if (dy) dirs.push([0, dy]);
+    if (dx) dirs.push([dx, 0]);
+  }
+  // Добавим случайные направления как резерв
+  const all = [[1,0],[-1,0],[0,1],[0,-1]];
+  for (const d of all){
+    if (!dirs.find(x => x[0] === d[0] && x[1] === d[1])) dirs.push(d);
+  }
+
+  for (const [ddx, ddy] of dirs){
+    const nx = e.x + ddx;
+    const ny = e.y + ddy;
+    if (isWall(nx, ny)) continue;
+    // Не идём в сторону, откуда пришли (лёгкое правило)
+    e.fromX = e.x; e.fromY = e.y;
+    e.toX = nx; e.toY = ny;
+    e.progress = 0;
+    e.moving = true;
+    return;
+  }
+}
+
+function finishEnemyMove(e){
+  e.x = e.toX;
+  e.y = e.toY;
+  e.moving = false;
+  // Касание игрока?
+  if (e.x === player.x && e.y === player.y){
+    handleEnemyContact(e);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   РЕНДЕР
+   ═══════════════════════════════════════════════════════════ */
+function drawFloor(){
+  ctx.fillStyle = '#0a0f1e';
+  ctx.fillRect(0, 0, CW, CH);
+  // Шахматная подложка
+  for (let y = 0; y < MAP_H; y++){
+    for (let x = 0; x < MAP_W; x++){
+      if (walls[y][x]) continue;
+      if ((x + y) % 2 === 0){
+        ctx.fillStyle = 'rgba(255,255,255,0.015)';
+        ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+      }
+    }
+  }
+}
+
+function drawWall(x, y){
+  const px = x * CELL;
+  const py = y * CELL;
+  // Основа
+  ctx.fillStyle = '#3a2412';
+  ctx.fillRect(px, py, CELL, CELL);
+  // Кирпичики
+  ctx.fillStyle = '#6B4A2B';
+  const brickH = Math.max(3, Math.floor(CELL / 3));
+  const brickW = Math.max(6, Math.floor(CELL / 2));
+  for (let r = 0; r < Math.ceil(CELL / brickH); r++){
+    const offsetX = (r % 2) * Math.floor(brickW / 2);
+    for (let c = -1; c < Math.ceil(CELL / brickW) + 1; c++){
+      const bx = px + c * brickW + offsetX + 1;
+      const by = py + r * brickH + 1;
+      const bw = brickW - 2;
+      const bh = brickH - 2;
+      // Отсекаем всё за пределами клетки
+      if (bx + bw <= px || bx >= px + CELL) continue;
+      if (by + bh <= py || by >= py + CELL) continue;
+      const cxb = Math.max(bx, px);
+      const cyb = Math.max(by, py);
+      const cwb = Math.min(bx + bw, px + CELL) - cxb;
+      const chb = Math.min(by + bh, py + CELL) - cyb;
+      if (cwb > 0 && chb > 0){
+        ctx.fillRect(cxb, cyb, cwb, chb);
+      }
+    }
+  }
+  // Тёмная рамка по краю клетки
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(px + 0.5, py + 0.5, CELL - 1, CELL - 1);
+}
+
+function drawEmoji(emoji, cx, cy, size){
+  ctx.font = size + 'px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(emoji, cx, cy);
+}
+
+function drawEmojiTile(emoji, x, y, sizeRatio){
+  const cx = x * CELL + CELL / 2;
+  const cy = y * CELL + CELL / 2;
+  drawEmoji(emoji, cx, cy, CELL * (sizeRatio || 0.75));
+}
+
+function lerp(a, b, t){ return a + (b - a) * t; }
+
+function drawEntity(entity, emoji, scaleRatio){
+  let ex = entity.x;
+  let ey = entity.y;
+  if (entity.moving){
+    ex = lerp(entity.fromX, entity.toX, entity.progress);
+    ey = lerp(entity.fromY, entity.toY, entity.progress);
+  }
+  const cx = ex * CELL + CELL / 2;
+  const cy = ey * CELL + CELL / 2;
+  drawEmoji(emoji, cx, cy, CELL * (scaleRatio || 0.75));
+}
+
+function draw(){
+  drawFloor();
+
+  // Выход
+  if (exitPos){
+    const ready = keysCollected >= totalKeys;
+    if (ready){
+      // Пульсирующий золотой круг
+      const t = performance.now() / 500;
+      const r = 0.7 + Math.sin(t) * 0.1;
+      ctx.fillStyle = 'rgba(255,215,0,0.25)';
+      ctx.beginPath();
+      ctx.arc(exitPos.x * CELL + CELL/2, exitPos.y * CELL + CELL/2, CELL * r, 0, Math.PI * 2);
+      ctx.fill();
+      drawEmojiTile('🚪', exitPos.x, exitPos.y, 0.85);
+    } else {
+      drawEmojiTile('🔒', exitPos.x, exitPos.y, 0.7);
+    }
+  }
+
+  // Ключи
+  for (const k of keys){
+    if (k.taken) continue;
+    const t = performance.now() / 400 + k.x;
+    const bob = Math.sin(t) * CELL * 0.06;
+    const cx = k.x * CELL + CELL/2;
+    const cy = k.y * CELL + CELL/2 + bob;
+    // Подсветка
+    ctx.fillStyle = 'rgba(255,215,0,0.15)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, CELL * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+    drawEmoji('🔑', cx, cy, CELL * 0.7);
+  }
+
+  // Меч
+  if (sword && !sword.taken){
+    const t = performance.now() / 400;
+    const bob = Math.sin(t) * CELL * 0.06;
+    const cx = sword.x * CELL + CELL/2;
+    const cy = sword.y * CELL + CELL/2 + bob;
+    ctx.fillStyle = 'rgba(120,180,255,0.20)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, CELL * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    drawEmoji('⚔️', cx, cy, CELL * 0.75);
+  }
+
+  // Стены
+  for (let y = 0; y < MAP_H; y++){
+    for (let x = 0; x < MAP_W; x++){
+      if (walls[y][x]) drawWall(x, y);
+    }
+  }
+
+  // Враги
+  for (const e of enemies){
+    if (!e.alive) continue;
+    drawEntity(e, '👺', 0.75);
+  }
+
+  // Игрок (с невидимостью — мигает)
+  if (player){
+    let px = player.x;
+    let py = player.y;
+    if (player.moving){
+      px = lerp(player.fromX, player.toX, player.progress);
+      py = lerp(player.fromY, player.toY, player.progress);
+    }
+    const cx = px * CELL + CELL/2;
+    const cy = py * CELL + CELL/2;
+    if (player.hasSword){
+      // Меч рядом
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-Math.PI / 4);
+      ctx.font = Math.round(CELL * 0.5) + 'px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('⚔️', CELL * 0.55, -CELL * 0.2);
+      ctx.restore();
+    }
+    // Мигание при неуязвимости
+    if (Date.now() < invulnerableUntil){
+      if (Math.floor(Date.now() / 150) % 2 === 0){
+        // пропускаем кадр
+      } else {
+        drawEmoji('🧑‍🎓', cx, cy, CELL * 0.8);
+      }
+    } else {
+      drawEmoji('🧑‍🎓', cx, cy, CELL * 0.8);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ЦИКЛ
+   ═══════════════════════════════════════════════════════════ */
+let lastFrame = 0;
+function loop(now){
+  requestAnimationFrame(loop);
+  if (!running || paused) { lastFrame = now; return; }
+  const dt = Math.min(60, now - lastFrame);
+  lastFrame = now;
+
+  // Игрок
+  if (player && player.moving){
+    player.progress += dt / player.moveMs;
+    if (player.progress >= 1){
+      player.progress = 1;
+      finishPlayerMove();
+    }
+  }
+
+  // Враги
+  for (const e of enemies){
+    if (!e.alive) continue;
+    if (e.moving){
+      e.progress += dt / e.moveMs;
+      if (e.progress >= 1){
+        e.progress = 1;
+        finishEnemyMove(e);
+      }
+    }
+  }
+
+  // Тик ИИ врагов
+  enemyThinkTimer += dt;
+  if (enemyThinkTimer >= ENEMY_THINK_MS){
+    enemyThinkTimer = 0;
+    enemyThink();
+  }
+
+  draw();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HUD
+   ═══════════════════════════════════════════════════════════ */
+function updateHud(){
+  document.getElementById('hudLives').textContent = '❤'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, START_LIVES - lives));
+  document.getElementById('hudKeys').textContent = keysCollected + '/' + totalKeys;
+  document.getElementById('hudSword').textContent = player && player.hasSword ? '⚔️' : '—';
+  document.getElementById('hudScore').textContent = score;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   СТАРТ / КОНЕЦ
+   ═══════════════════════════════════════════════════════════ */
+function startGame(){
+  if (!scheduleOpen){ checkScheduleStatus(); return; }
+
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+  buildLevel();
+  lives = START_LIVES;
+  score = 0;
+  keysCollected = 0;
+  running = true;
+  paused = false;
+  invulnerableUntil = 0;
+  enemyThinkTimer = 0;
+  updateHud();
+  resize();
+
+  document.getElementById('startOv').classList.add('hide');
+  document.getElementById('finishOv').classList.add('hide');
+  document.getElementById('progressBlock').style.display = 'none';
+
+  lastFrame = performance.now();
+  draw();
+}
+
+async function sendResult(win_){
+  const token = localStorage.getItem('mgsu_token') || '';
+  const block = document.getElementById('progressBlock');
+  if (block){ block.style.display = 'block'; block.textContent = 'Отправляю результат…'; }
+  const raw = score + (win_ ? SCORE_WIN : 0);
+  try{
+    const headers = {'Content-Type':'application/json'};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch('/api/game/finish', {
+      method:'POST', headers,
+      body: JSON.stringify({game: 'adventure', raw_score: raw, extra: {win: !!win_}})
+    });
+    const data = await res.json();
+    renderProgress(data);
+  }catch(e){ if (block) block.style.display = 'none'; }
+}
+
+function renderProgress(data){
+  const block = document.getElementById('progressBlock');
+  if (!block) return;
+  if (!data.logged_in){
+    block.innerHTML = '💡 Хочешь монеты и топ? <a href="/auth">Создай аккаунт</a>';
+    return;
+  }
+  let html = '<div>🎯 Очков: <b>+' + data.points + '</b></div>';
+  if (data.daily_plays && data.daily_multiplier !== undefined && data.daily_multiplier < 1){
+    html += '<div style="color:#FFB347;">📉 ' + data.daily_plays + '-я партия — награда ×' + data.daily_multiplier + '</div>';
+  }
+  if (data.progress){
+    html += '<div>💰 Монет: <b>' + data.progress.coins + '</b></div>';
+    html += '<div>🔥 Серия: <b>' + data.progress.streak + '</b> дней';
+    if (data.progress.streak_changed) html += ' <span style="color:#4ADE80;">+1</span>';
+    html += '</div>';
+  }
+  if (data.tasks_completed && data.tasks_completed.length){
+    data.tasks_completed.forEach(t => { html += '<div style="color:#4ADE80;">✓ ' + t.text + ' (+' + t.reward + ')</div>'; });
+  }
+  html += '<div style="margin-top:8px;"><a href="/profile">Открыть профиль →</a></div>';
+  block.innerHTML = html;
+}
+
+function rankFor(win, s){
+  if (win){
+    if (s >= 900) return { name:'Легенда МГСУ', emoji:'👑' };
+    if (s >= 700) return { name:'Магистр лабиринта', emoji:'🎓' };
+    return { name:'Победитель', emoji:'🏆' };
+  }
+  if (s >= 400) return { name:'Опытный студент', emoji:'🧑‍🎓' };
+  if (s >= 150) return { name:'Первокурсник', emoji:'📚' };
+  return { name:'Новичок', emoji:'🐣' };
+}
+
+function win(){
+  running = false;
+  const totalScore = score + SCORE_WIN;
+  score = totalScore;
+  const r = rankFor(true, totalScore);
+  document.getElementById('finishEmoji').textContent = '🏆';
+  document.getElementById('finishScore').textContent = totalScore;
+  document.getElementById('finishRank').textContent = r.name + ' ' + r.emoji;
+  document.getElementById('finishOv').classList.remove('hide');
+  SFX.win();
+  sendResult(true);
+}
+
+function lose(){
+  running = false;
+  const r = rankFor(false, score);
+  document.getElementById('finishEmoji').textContent = '💀';
+  document.getElementById('finishScore').textContent = score;
+  document.getElementById('finishRank').textContent = r.name + ' ' + r.emoji;
+  document.getElementById('finishOv').classList.remove('hide');
+  SFX.lose();
+  sendResult(false);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   УПРАВЛЕНИЕ
+   ═══════════════════════════════════════════════════════════ */
+document.getElementById('padUp').onclick = () => tryPlayerMove(0, -1);
+document.getElementById('padDown').onclick = () => tryPlayerMove(0, 1);
+document.getElementById('padLeft').onclick = () => tryPlayerMove(-1, 0);
+document.getElementById('padRight').onclick = () => tryPlayerMove(1, 0);
+
+document.addEventListener('keydown', function(e){
+  if (!running) return;
+  if (e.code === 'ArrowUp' || e.code === 'KeyW'){ e.preventDefault(); tryPlayerMove(0, -1); }
+  else if (e.code === 'ArrowDown' || e.code === 'KeyS'){ e.preventDefault(); tryPlayerMove(0, 1); }
+  else if (e.code === 'ArrowLeft' || e.code === 'KeyA'){ e.preventDefault(); tryPlayerMove(-1, 0); }
+  else if (e.code === 'ArrowRight' || e.code === 'KeyD'){ e.preventDefault(); tryPlayerMove(1, 0); }
+});
+
+// Свайпы
+let touchStartX = 0, touchStartY = 0, touchFired = false;
+canvas.addEventListener('touchstart', function(e){
+  if (!running) return;
+  const t = e.touches[0];
+  touchStartX = t.clientX;
+  touchStartY = t.clientY;
+  touchFired = false;
+}, {passive: true});
+canvas.addEventListener('touchmove', function(e){
+  if (!running || touchFired) return;
+  const t = e.touches[0];
+  const dx = t.clientX - touchStartX;
+  const dy = t.clientY - touchStartY;
+  const TH = 18;
+  if (Math.abs(dx) > TH || Math.abs(dy) > TH){
+    touchFired = true;
+    if (Math.abs(dx) > Math.abs(dy)) tryPlayerMove(dx > 0 ? 1 : -1, 0);
+    else tryPlayerMove(0, dy > 0 ? 1 : -1);
+  }
+}, {passive: true});
+canvas.addEventListener('touchend', () => { touchFired = false; });
+
+// Клик по canvas на десктопе — фокус для клавы
+canvas.addEventListener('click', (e) => { e.preventDefault(); });
+
+document.getElementById('startBtn').onclick = startGame;
+document.getElementById('againBtn').onclick = startGame;
+document.getElementById('shareBtn').onclick = async () => {
+  const text = `Прошёл Лабиринт МГСУ с ${score} очков! А ты?\nhttps://mgsu-wall.onrender.com/games/adventure`;
+  try{
+    if (navigator.share) await navigator.share({text});
+    else await navigator.clipboard.writeText(text);
+  }catch(e){}
+};
+
+window.addEventListener('load', () => setTimeout(resize, 100));
+setTimeout(resize, 200);
+resize();
+buildLevel();
+updateHud();
+draw();
+requestAnimationFrame(loop);
+</script>
+</body></html>

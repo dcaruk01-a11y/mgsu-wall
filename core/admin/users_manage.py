@@ -85,6 +85,10 @@ async def admin_user_detail(uid: str, token: str = Header(default="", alias="aut
     except Exception:
         owned = ["student"]
 
+    # Убеждаемся что student всегда в списке
+    if "student" not in owned:
+        owned.insert(0, "student")
+
     return {
         "uid": row[0],
         "display_name": row[1],
@@ -139,63 +143,120 @@ async def admin_user_set(payload: dict, token: str = Header(default="", alias="a
 ALL_CHARS = ["student", "sso", "prorab", "builder", "prof", "dean", "legend"]
 
 
+async def _get_user_chars(db, uid: str):
+    cur = await db.execute(
+        "SELECT COALESCE(owned_chars, '[\"student\"]'), COALESCE(active_char, 'student') FROM users WHERE uid=?",
+        (uid,)
+    )
+    row = await cur.fetchone()
+    if not row:
+        return None
+    try:
+        owned = json.loads(row[0] or '["student"]')
+    except Exception:
+        owned = ["student"]
+    if "student" not in owned:
+        owned.insert(0, "student")
+    return {"owned": owned, "active": row[1] or "student"}
+
+
 @router.post("/admin/api/user/give-char")
 async def admin_user_give_char(payload: dict, token: str = Header(default="", alias="authorization")):
+    """Выдать персонажа. Если make_active — сразу сделать активным."""
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     uid = str(payload.get("uid", "")).strip().upper()
     char = str(payload.get("char", "")).strip()
+    make_active = bool(payload.get("make_active", False))
+
     if char not in ALL_CHARS:
         raise HTTPException(status_code=400, detail="Неизвестный персонаж")
 
     async with aiosqlite.connect(DB_PATH) as db:
-        cur = await db.execute(
-            "SELECT COALESCE(owned_chars, '[\"student\"]') FROM users WHERE uid=?",
-            (uid,)
-        )
-        row = await cur.fetchone()
-        if not row:
+        data = await _get_user_chars(db, uid)
+        if data is None:
             raise HTTPException(status_code=404, detail="Игрок не найден")
-        try:
-            owned = json.loads(row[0] or '["student"]')
-        except Exception:
-            owned = ["student"]
+
+        owned = data["owned"]
+        active = data["active"]
+
         if char not in owned:
             owned.append(char)
+
+        if make_active:
+            active = char
+
         await db.execute(
-            "UPDATE users SET owned_chars=? WHERE uid=?",
-            (json.dumps(owned), uid)
+            "UPDATE users SET owned_chars=?, active_char=? WHERE uid=?",
+            (json.dumps(owned), active, uid)
         )
         await db.commit()
 
-    await log_action("give_char", uid, char)
-    return {"ok": True, "owned": owned}
+    await log_action("give_char", uid, char + (" + active" if make_active else ""))
+    return {"ok": True, "owned": owned, "active_char": active}
+
+
+@router.post("/admin/api/user/revoke-char")
+async def admin_user_revoke_char(payload: dict, token: str = Header(default="", alias="authorization")):
+    """Забрать персонажа у игрока. Если он был активным — сбросит на student."""
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    uid = str(payload.get("uid", "")).strip().upper()
+    char = str(payload.get("char", "")).strip()
+
+    if char not in ALL_CHARS:
+        raise HTTPException(status_code=400, detail="Неизвестный персонаж")
+    if char == "student":
+        raise HTTPException(status_code=400, detail="Нельзя забрать базового Студента")
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        data = await _get_user_chars(db, uid)
+        if data is None:
+            raise HTTPException(status_code=404, detail="Игрок не найден")
+
+        owned = data["owned"]
+        active = data["active"]
+
+        if char not in owned:
+            raise HTTPException(status_code=400, detail="У игрока нет этого персонажа")
+
+        owned.remove(char)
+        # Если забирали активного — сбрасываем на student
+        if active == char:
+            active = "student"
+
+        await db.execute(
+            "UPDATE users SET owned_chars=?, active_char=? WHERE uid=?",
+            (json.dumps(owned), active, uid)
+        )
+        await db.commit()
+
+    await log_action("revoke_char", uid, char)
+    return {"ok": True, "owned": owned, "active_char": active}
 
 
 @router.post("/admin/api/user/set-active-char")
 async def admin_user_set_active_char(payload: dict, token: str = Header(default="", alias="authorization")):
+    """Сделать персонажа активным. Если не куплен — сначала выдаст."""
     if not check_admin(token.replace("Bearer ", "").strip()):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     uid = str(payload.get("uid", "")).strip().upper()
     char = str(payload.get("char", "")).strip()
+
     if char not in ALL_CHARS:
         raise HTTPException(status_code=400, detail="Неизвестный персонаж")
 
     async with aiosqlite.connect(DB_PATH) as db:
-        cur = await db.execute(
-            "SELECT COALESCE(owned_chars, '[\"student\"]') FROM users WHERE uid=?",
-            (uid,)
-        )
-        row = await cur.fetchone()
-        if not row:
+        data = await _get_user_chars(db, uid)
+        if data is None:
             raise HTTPException(status_code=404, detail="Игрок не найден")
-        try:
-            owned = json.loads(row[0] or '["student"]')
-        except Exception:
-            owned = ["student"]
 
+        owned = data["owned"]
+
+        # Автоматически выдаём, если не куплен
         if char not in owned:
             owned.append(char)
 
@@ -206,7 +267,49 @@ async def admin_user_set_active_char(payload: dict, token: str = Header(default=
         await db.commit()
 
     await log_action("set_active_char", uid, char)
-    return {"ok": True, "active": char, "owned": owned}
+    return {"ok": True, "active_char": char, "owned": owned}
+
+
+@router.post("/admin/api/user/reset-char")
+async def admin_user_reset_char(payload: dict, token: str = Header(default="", alias="authorization")):
+    """Сбросить активного на Студента. Купленные персонажи остаются."""
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    uid = str(payload.get("uid", "")).strip().upper()
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("SELECT 1 FROM users WHERE uid=?", (uid,))
+        if not await cur.fetchone():
+            raise HTTPException(status_code=404, detail="Игрок не найден")
+
+        await db.execute("UPDATE users SET active_char='student' WHERE uid=?", (uid,))
+        await db.commit()
+
+    await log_action("reset_active_char", uid, "сброшено на Студента")
+    return {"ok": True, "active_char": "student"}
+
+
+@router.post("/admin/api/user/clear-chars")
+async def admin_user_clear_chars(payload: dict, token: str = Header(default="", alias="authorization")):
+    """Забрать ВСЕХ персонажей кроме Студента."""
+    if not check_admin(token.replace("Bearer ", "").strip()):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    uid = str(payload.get("uid", "")).strip().upper()
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("SELECT 1 FROM users WHERE uid=?", (uid,))
+        if not await cur.fetchone():
+            raise HTTPException(status_code=404, detail="Игрок не найден")
+
+        await db.execute("""
+            UPDATE users SET owned_chars='["student"]', active_char='student' WHERE uid=?
+        """, (uid,))
+        await db.commit()
+
+    await log_action("clear_all_chars", uid, "все скины убраны")
+    return {"ok": True, "owned": ["student"], "active_char": "student"}
 
 
 @router.post("/admin/api/user/reset-pin")

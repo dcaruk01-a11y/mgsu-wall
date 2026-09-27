@@ -216,6 +216,7 @@
 <script>
 renderSiteHeader('home');
 renderSiteFooter();
+
 const GAMES_INFO = {
   broadway: { title: 'Бродвей', rules: `<p class="rule-text">Пробеги по коридору, собирай кофе и монеты.</p>`, playUrl: '/games/broadway', playLabel: 'Играть' },
   campus: { title: 'Построй кампус', rules: `<p class="rule-text">Голосуй за улучшения МГСУ.</p>`, playUrl: '/games/campus', playLabel: 'Играть' },
@@ -224,10 +225,10 @@ const GAMES_INFO = {
   clicker: { title: 'Кликер', rules: `<p class="rule-text">30 секунд, 7 рангов от Студента до Легенды МГСУ.</p>`, playUrl: '/games/clicker', playLabel: 'Играть' },
   tetris: { title: 'Тетрис · Здания', rules: `<p class="rule-text">Складывай дома и башни МГСУ. Полные линии сгорают, скорость растёт.</p>`, playUrl: '/games/tetris', playLabel: 'Играть' },
   "2048": { title: '2048 Здания', rules: `<p class="rule-text">Свайпай плитки-домики. Одинаковые сливаются. Собери 2048!</p>`, playUrl: '/games/2048', playLabel: 'Играть' },
-  snake: { title:'Змейка', rules:`<p class="rule-text">Игра в разработке.</p>`, playUrl:null, playLabel:'Скоро' },
-  poll:  { title:'Опрос дня', rules:`<p class="rule-text">Игра в разработке.</p>`, playUrl:null, playLabel:'Скоро' },
-  click: { title:'Гонка кликов', rules:`<p class="rule-text">Игра в разработке.</p>`, playUrl:null, playLabel:'Скоро' }
-    adventure: { title: 'Лабиринт МГСУ', rules: `<p class="rule-text">Собери 3 ключа, найди шпаргалку ⚔️ и отбейся от злых преподов 👺. Дойди до выхода 🚪.</p>`, playUrl: '/games/adventure', playLabel: 'Играть' },
+  adventure: { title: 'Лабиринт МГСУ', rules: `<p class="rule-text">Собери 3 ключа, найди шпаргалку ⚔️ и отбейся от злых преподов 👺. Дойди до выхода 🚪.</p>`, playUrl: '/games/adventure', playLabel: 'Играть' },
+  snake: { title: 'Змейка', rules: `<p class="rule-text">Игра в разработке.</p>`, playUrl: null, playLabel: 'Скоро' },
+  poll: { title: 'Опрос дня', rules: `<p class="rule-text">Игра в разработке.</p>`, playUrl: null, playLabel: 'Скоро' },
+  click: { title: 'Гонка кликов', rules: `<p class="rule-text">Игра в разработке.</p>`, playUrl: null, playLabel: 'Скоро' }
 };
 
 async function loadGames(){

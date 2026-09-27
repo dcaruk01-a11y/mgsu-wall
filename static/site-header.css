@@ -259,3 +259,115 @@ body{
   .site-header-avatar{width:28px;height:28px;font-size:11px;}
   .site-header-divider{display:none;}
 }
+/* ═══════════════════════════════════════════════════════════
+   FEEDBACK POPUP — обратная связь от игроков
+   ═══════════════════════════════════════════════════════════ */
+.mgsu-fb-overlay{
+  position:fixed;inset:0;z-index:3000;
+  background:rgba(5,14,31,0.88);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:none;align-items:center;justify-content:center;
+  padding:18px;
+}
+.mgsu-fb-overlay.show{display:flex;animation:mgsuFbIn .35s ease;}
+@keyframes mgsuFbIn{from{opacity:0;}to{opacity:1;}}
+
+.mgsu-fb-card{
+  max-width:420px;width:100%;
+  background:linear-gradient(180deg, rgba(30,40,64,0.98), rgba(15,22,40,0.98));
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:24px;
+  padding:28px 24px 22px;
+  text-align:center;
+  color:#fff;
+  box-shadow:0 30px 80px rgba(0,0,0,0.6);
+  animation:mgsuFbUp .4s cubic-bezier(.2,1.2,.4,1);
+  max-height:92vh;
+  overflow-y:auto;
+  box-sizing:border-box;
+}
+@keyframes mgsuFbUp{
+  from{transform:translateY(30px) scale(0.96);opacity:0;}
+  to{transform:translateY(0) scale(1);opacity:1;}
+}
+
+.mgsu-fb-emoji{
+  font-size:56px;line-height:1;
+  margin-bottom:12px;
+  filter:drop-shadow(0 8px 20px rgba(255,180,80,0.4));
+}
+.mgsu-fb-card h2{
+  font-size:22px;font-weight:900;
+  margin:0 0 10px;
+  letter-spacing:-0.02em;
+}
+.mgsu-fb-card .mgsu-fb-text{
+  font-size:14px;color:rgba(255,255,255,0.75);
+  line-height:1.55;margin:0 0 20px;
+  text-align:left;
+}
+.mgsu-fb-card .mgsu-fb-text b{color:#fff;font-weight:700;}
+
+.mgsu-fb-stars{
+  display:flex;justify-content:center;gap:8px;
+  margin-bottom:20px;
+}
+.mgsu-fb-star{
+  font-size:40px;line-height:1;cursor:pointer;
+  filter:grayscale(1) brightness(0.6);
+  transition:transform .12s, filter .15s;
+  background:transparent;border:0;padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.mgsu-fb-star:hover{transform:scale(1.15);}
+.mgsu-fb-star.active{filter:none;transform:scale(1.1);}
+.mgsu-fb-star.pulse{animation:mgsuStarPulse .35s ease;}
+@keyframes mgsuStarPulse{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.3);}
+  100%{transform:scale(1.1);}
+}
+
+.mgsu-fb-textarea{
+  width:100%;min-height:80px;padding:12px 14px;border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.15);
+  color:#fff;font-family:inherit;font-size:14px;line-height:1.5;
+  outline:none;resize:vertical;box-sizing:border-box;
+  margin-bottom:16px;
+}
+.mgsu-fb-textarea:focus{border-color:rgba(255,180,80,0.6);}
+.mgsu-fb-textarea::placeholder{color:rgba(255,255,255,0.4);}
+
+.mgsu-fb-actions{display:flex;flex-direction:column;gap:8px;}
+.mgsu-fb-send{
+  padding:14px;border-radius:999px;border:0;cursor:pointer;
+  background:linear-gradient(135deg,#FFB347,#FF7A2B);
+  color:#1a0e05;font-family:inherit;font-size:15px;font-weight:900;
+  box-shadow:0 10px 26px rgba(255,140,50,0.4);
+  transition:transform .12s, background .2s;
+}
+.mgsu-fb-send:active{transform:scale(0.97);}
+.mgsu-fb-send:disabled{opacity:0.6;cursor:not-allowed;}
+
+.mgsu-fb-later{
+  padding:12px;border-radius:999px;
+  background:transparent;border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.7);font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;transition:background .15s;
+}
+.mgsu-fb-later:hover{background:rgba(255,255,255,0.06);}
+
+.mgsu-fb-hint{
+  font-size:12px;color:rgba(255,255,255,0.4);
+  margin-top:12px;line-height:1.5;
+}
+
+@media(max-width:520px){
+  .mgsu-fb-card{padding:22px 18px 18px;border-radius:20px;}
+  .mgsu-fb-emoji{font-size:46px;margin-bottom:8px;}
+  .mgsu-fb-card h2{font-size:19px;}
+  .mgsu-fb-card .mgsu-fb-text{font-size:13px;}
+  .mgsu-fb-star{font-size:34px;}
+  .mgsu-fb-send{font-size:14px;padding:13px;}
+}

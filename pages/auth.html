@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Вход · Игры МГСУ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -119,34 +119,43 @@
     <div class="auth-sub">Создай аккаунт, чтобы попасть в рейтинг и копить монеты</div>
 
     <div class="tabs">
-      <button class="tab active" id="tabRegister">Создать</button>
-      <button class="tab" id="tabLogin">Войти</button>
+      <button class="tab active" id="tabRegister" type="button">Создать</button>
+      <button class="tab" id="tabLogin" type="button">Войти</button>
     </div>
 
-    <div id="formRegister">
+    <!-- ═════ ФОРМА РЕГИСТРАЦИИ ═════ -->
+    <form id="formRegister" autocomplete="on" novalidate>
       <div class="field">
         <label>Как тебя зовут</label>
-        <input type="text" id="regName" placeholder="Например, Дима" maxlength="20" autocomplete="off">
+        <input type="text" id="regName" name="display_name" placeholder="Например, Дима" maxlength="20"
+               autocomplete="username" autocapitalize="words" autofocus>
       </div>
       <div class="field">
         <label>Придумай PIN (4 цифры)</label>
-        <input type="tel" id="regPin" class="pin" placeholder="••••" maxlength="4" inputmode="numeric" autocomplete="off">
+        <input type="password" id="regPin" name="new_pin" class="pin"
+               placeholder="••••" maxlength="4" inputmode="numeric"
+               pattern="\d{4}" autocomplete="new-password">
       </div>
-      <button class="btn" id="btnRegister">Создать аккаунт</button>
-    </div>
+      <button class="btn" type="submit">Создать аккаунт</button>
+    </form>
 
-    <div id="formLogin" class="hide">
+    <!-- ═════ ФОРМА ВХОДА ═════ -->
+    <form id="formLogin" class="hide" autocomplete="on" novalidate>
       <div class="field">
         <label>Твой ID</label>
-        <input type="text" id="logUid" placeholder="MGSU-XXXXX" maxlength="12" autocomplete="off" style="text-transform:uppercase;">
+        <input type="text" id="logUid" name="username" placeholder="MGSU-XXXXX"
+               maxlength="12" autocomplete="username"
+               autocapitalize="characters" style="text-transform:uppercase;">
       </div>
       <div class="field">
         <label>PIN (4 цифры)</label>
-        <input type="tel" id="logPin" class="pin" placeholder="••••" maxlength="4" inputmode="numeric" autocomplete="off">
+        <input type="password" id="logPin" name="password" class="pin"
+               placeholder="••••" maxlength="4" inputmode="numeric"
+               pattern="\d{4}" autocomplete="current-password">
       </div>
-      <button class="btn" id="btnLogin">Войти</button>
+      <button class="btn" type="submit">Войти</button>
       <a class="forgot-link" href="https://t.me/mgsu_feedback_bot?start=forgot_pin" target="_blank" rel="noopener">Забыл PIN? → Написать в бот</a>
-    </div>
+    </form>
 
     <div class="error" id="err"></div>
 
@@ -164,8 +173,8 @@
     <div class="uid-title">Ты в игре!</div>
     <div class="uid-sub">Это твой ID. По нему можно войти с любого устройства.<br>Сохрани его — как пароль.</div>
     <div class="uid-value" id="uidValue">—</div>
-    <button class="uid-copy" id="uidCopy">📋 Скопировать ID</button>
-    <button class="uid-continue" id="uidContinue">Продолжить →</button>
+    <button class="uid-copy" id="uidCopy" type="button">📋 Скопировать ID</button>
+    <button class="uid-continue" id="uidContinue" type="button">Продолжить →</button>
     <div class="uid-hint">Если потеряешь ID — восстановить аккаунт не получится.</div>
   </div>
 </div>
@@ -190,16 +199,16 @@ const formReg = document.getElementById('formRegister');
 const formLog = document.getElementById('formLogin');
 const errEl = document.getElementById('err');
 
-tabReg.onclick = function(){
+tabReg.addEventListener('click', function(){
   tabReg.classList.add('active'); tabLog.classList.remove('active');
   formReg.classList.remove('hide'); formLog.classList.add('hide');
   errEl.textContent = '';
-};
-tabLog.onclick = function(){
+});
+tabLog.addEventListener('click', function(){
   tabLog.classList.add('active'); tabReg.classList.remove('active');
   formLog.classList.remove('hide'); formReg.classList.add('hide');
   errEl.textContent = '';
-};
+});
 
 function saveAuth(data, showUid){
   localStorage.setItem(LS_TOKEN, data.token);
@@ -236,7 +245,9 @@ function showUidModal(uid){
   };
 }
 
-document.getElementById('btnRegister').onclick = async function(){
+/* ═════ РЕГИСТРАЦИЯ ═════ */
+formReg.addEventListener('submit', async function(e){
+  e.preventDefault();
   const name = document.getElementById('regName').value.trim();
   const pin = document.getElementById('regPin').value.trim();
   errEl.textContent = '';
@@ -244,7 +255,7 @@ document.getElementById('btnRegister').onclick = async function(){
   if (name.length > 20){ errEl.textContent = 'Имя — до 20 символов'; return; }
   if (!/^\d{4}$/.test(pin)){ errEl.textContent = 'PIN — 4 цифры'; return; }
 
-  const btn = document.getElementById('btnRegister');
+  const btn = formReg.querySelector('button[type=submit]');
   btn.disabled = true;
   try{
     const r = await fetch('/api/auth/register', {
@@ -255,21 +266,23 @@ document.getElementById('btnRegister').onclick = async function(){
     const data = await r.json();
     if (!r.ok){ errEl.textContent = data.detail || 'Ошибка'; return; }
     saveAuth(data, true);
-  }catch(e){
+  }catch(err){
     errEl.textContent = 'Ошибка соединения';
   }finally{
     btn.disabled = false;
   }
-};
+});
 
-document.getElementById('btnLogin').onclick = async function(){
+/* ═════ ВХОД ═════ */
+formLog.addEventListener('submit', async function(e){
+  e.preventDefault();
   const uid = document.getElementById('logUid').value.trim();
   const pin = document.getElementById('logPin').value.trim();
   errEl.textContent = '';
   if (!uid){ errEl.textContent = 'Введи ID'; return; }
   if (!/^\d{4}$/.test(pin)){ errEl.textContent = 'PIN — 4 цифры'; return; }
 
-  const btn = document.getElementById('btnLogin');
+  const btn = formLog.querySelector('button[type=submit]');
   btn.disabled = true;
   try{
     const r = await fetch('/api/auth/login', {
@@ -279,23 +292,25 @@ document.getElementById('btnLogin').onclick = async function(){
     });
     const data = await r.json();
     if (!r.ok){ errEl.textContent = data.detail || 'Ошибка'; return; }
+    // Браузер увидит успешный submit формы с авторизацией
+    // и предложит сохранить пароль (если разрешено в настройках)
     saveAuth(data, false);
-  }catch(e){
+  }catch(err){
     errEl.textContent = 'Ошибка соединения';
   }finally{
     btn.disabled = false;
   }
-};
+});
 
-function forgotPin(){
-  alert('Если ты забыл PIN:\n\n1. Открой бота @mgsu_feedback_bot\n2. Напиши «Забыл PIN от [твой UID]»\n3. Мы сбросим его и пришлём новый.');
-}
-
+/* Автоформат полей */
 document.getElementById('regPin').addEventListener('input', function(e){
-  e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
 });
 document.getElementById('logPin').addEventListener('input', function(e){
-  e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+});
+document.getElementById('logUid').addEventListener('input', function(e){
+  e.target.value = e.target.value.toUpperCase().replace(/\s/g, '');
 });
 </script>
 

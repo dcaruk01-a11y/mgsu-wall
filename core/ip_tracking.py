@@ -1,7 +1,7 @@
 """
 Сбор IP, visitor_id, подсети и часов активности.
 visitor_id — анонимный ID браузера (в localStorage).
-Именно он используется для подсчёта ЛЮДЕЙ, а не IP.
+Старые заходы БЕЗ visitor_id тоже учитываются через COALESCE.
 """
 import time, aiosqlite
 from datetime import datetime, timedelta
@@ -39,7 +39,6 @@ def classify_device(user_agent: str) -> str:
 
 
 def classify_device_brand(user_agent: str) -> str:
-    """iPhone / Android / Windows / Mac / Linux / другое"""
     ua = (user_agent or "").lower()
     if "iphone" in ua:
         return "iPhone"
@@ -58,7 +57,6 @@ def classify_device_brand(user_agent: str) -> str:
 
 async def db_init_ip():
     async with aiosqlite.connect(DB_PATH) as db:
-        # ═══ Таблица visits ═══
         await db.execute("""
             CREATE TABLE IF NOT EXISTS visits (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,7 +69,6 @@ async def db_init_ip():
             )
         """)
 
-        # ═══ Миграции visits ═══
         try:
             cur = await db.execute("PRAGMA table_info(visits)")
             existing = {row[1] for row in await cur.fetchall()}
@@ -91,7 +88,6 @@ async def db_init_ip():
                 except Exception as e:
                     print("visits migration:", e)
 
-        # ═══ Таблица visitors — реестр уникальных посетителей ═══
         await db.execute("""
             CREATE TABLE IF NOT EXISTS visitors (
                 visitor_id TEXT PRIMARY KEY,
@@ -105,7 +101,6 @@ async def db_init_ip():
             )
         """)
 
-        # ═══ Индексы ═══
         await db.execute("""
             CREATE INDEX IF NOT EXISTS idx_visits_day_hour
             ON visits (hour, ts)
@@ -148,7 +143,6 @@ async def db_init_ip():
 async def track_visit(ip: str, user_agent: str, uid: str = "",
                       page: str = "", action: str = "visit",
                       visitor_id: str = "", source: str = ""):
-    """Сохраняет заход. visitor_id — главный идентификатор человека."""
     ip = normalize_ip(ip)
     subnet = get_subnet(ip)
     device = classify_device(user_agent)
@@ -166,7 +160,6 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
     uid = (uid or "")[:64]
 
     async with aiosqlite.connect(DB_PATH) as db:
-        # 1. Пишем заход
         await db.execute("""
             INSERT INTO visits
             (uid, ip, subnet, device, hour, ts, page, action, user_agent, visitor_id, source)
@@ -174,7 +167,6 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
         """, (uid, ip, subnet, device, hour, now_ts, page, action,
               user_agent, visitor_id, source))
 
-        # 2. Обновляем реестр visitors
         if visitor_id:
             cur = await db.execute(
                 "SELECT visitor_id, is_admin, linked_uid FROM visitors WHERE visitor_id=?",
@@ -182,7 +174,6 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
             )
             row = await cur.fetchone()
             if row:
-                # уже есть — обновляем last_seen и linked_uid
                 new_linked = row[2] or uid
                 await db.execute("""
                     UPDATE visitors SET last_seen=?, linked_uid=?, device_brand=?, device_type=?
@@ -195,7 +186,6 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
                     VALUES (?,?,?,?,0,?,?,?)
                 """, (visitor_id, now_ts, now_ts, source, uid, device_brand, device))
 
-        # 3. Агрегат по часам
         cur = await db.execute(
             "SELECT visits FROM daily_hours WHERE day=? AND hour=?",
             (day, hour)
@@ -211,7 +201,6 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
                 VALUES (?,?,?,?)
             """, (day, hour, 1, 0))
 
-        # 4. IP-тег
         cur = await db.execute("SELECT subnet FROM ip_tags WHERE subnet=?", (subnet,))
         if await cur.fetchone():
             await db.execute("""
@@ -227,7 +216,6 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
 
 
 async def mark_admin_visitor(visitor_id: str):
-    """Помечает visitor_id как админский — исключается из статистики."""
     if not visitor_id:
         return
     async with aiosqlite.connect(DB_PATH) as db:
@@ -249,7 +237,6 @@ async def mark_admin_visitor(visitor_id: str):
 
 
 async def link_visitor_to_uid(visitor_id: str, uid: str):
-    """Связывает visitor_id с uid после регистрации/логина."""
     if not visitor_id or not uid:
         return
     async with aiosqlite.connect(DB_PATH) as db:
@@ -260,86 +247,91 @@ async def link_visitor_to_uid(visitor_id: str, uid: str):
 
 
 # ═══════════════════════════════════════════════════════════
-# ОБЗОР — главные цифры
+# ОБЗОР
 # ═══════════════════════════════════════════════════════════
 async def get_overview(days: int = 7):
-    """Главные цифры за период."""
     days = max(1, min(days, 90))
     now_ts = time.time()
     cutoff = now_ts - days * 86400
     prev_cutoff = cutoff - days * 86400
 
     async with aiosqlite.connect(DB_PATH) as db:
-        # 1. Уникальные посетители за период (не админы)
+        # Уникальные посетители: по visitor_id если есть, иначе по subnet (грубо)
         cur = await db.execute("""
-            SELECT COUNT(DISTINCT v.visitor_id)
+            SELECT COUNT(DISTINCT
+                CASE
+                  WHEN v.visitor_id != '' THEN 'v:' || v.visitor_id
+                  WHEN v.uid != '' THEN 'u:' || v.uid
+                  ELSE 's:' || v.subnet || ':' || CAST(v.hour AS TEXT)
+                END)
             FROM visits v
-            JOIN visitors vi ON vi.visitor_id = v.visitor_id
-            WHERE v.ts > ? AND v.visitor_id != '' AND vi.is_admin = 0
+            LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+            WHERE v.ts > ? AND COALESCE(vi.is_admin, 0) = 0
         """, (cutoff,))
         visitors_now = (await cur.fetchone())[0] or 0
 
-        # 2. То же за прошлый период (для сравнения)
         cur = await db.execute("""
-            SELECT COUNT(DISTINCT v.visitor_id)
+            SELECT COUNT(DISTINCT
+                CASE
+                  WHEN v.visitor_id != '' THEN 'v:' || v.visitor_id
+                  WHEN v.uid != '' THEN 'u:' || v.uid
+                  ELSE 's:' || v.subnet || ':' || CAST(v.hour AS TEXT)
+                END)
             FROM visits v
-            JOIN visitors vi ON vi.visitor_id = v.visitor_id
-            WHERE v.ts > ? AND v.ts <= ? AND v.visitor_id != '' AND vi.is_admin = 0
+            LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+            WHERE v.ts > ? AND v.ts <= ? AND COALESCE(vi.is_admin, 0) = 0
         """, (prev_cutoff, cutoff))
         visitors_prev = (await cur.fetchone())[0] or 0
 
-        # 3. Новые (first_seen в этом периоде)
+        # Новые = те visitor_id, у которых first_seen в этом периоде
+        # (для старых заходов без visitor_id — не считаем "новыми")
         cur = await db.execute("""
             SELECT COUNT(*) FROM visitors
             WHERE first_seen > ? AND visitor_id != '' AND is_admin = 0
         """, (cutoff,))
         new_visitors = (await cur.fetchone())[0] or 0
 
-        # 4. Вернувшиеся = всего - новые
         returning = max(0, visitors_now - new_visitors)
 
-        # 5. Зарегистрированные uid (всего)
-        cur = await db.execute("""
-            SELECT COUNT(*) FROM users WHERE created_at > ?
-        """, (cutoff,))
+        cur = await db.execute(
+            "SELECT COUNT(*) FROM users WHERE created_at > ?", (cutoff,)
+        )
         registered_now = (await cur.fetchone())[0] or 0
 
-        cur = await db.execute("""
-            SELECT COUNT(*) FROM users WHERE created_at > ? AND created_at <= ?
-        """, (prev_cutoff, cutoff))
+        cur = await db.execute(
+            "SELECT COUNT(*) FROM users WHERE created_at > ? AND created_at <= ?",
+            (prev_cutoff, cutoff)
+        )
         registered_prev = (await cur.fetchone())[0] or 0
 
-        # 6. Играли хотя бы раз (уникальные uid в scores)
-        cur = await db.execute("""
-            SELECT COUNT(DISTINCT uid) FROM scores WHERE ts > ?
-        """, (cutoff,))
+        cur = await db.execute(
+            "SELECT COUNT(DISTINCT uid) FROM scores WHERE ts > ?", (cutoff,)
+        )
         played_now = (await cur.fetchone())[0] or 0
 
-        cur = await db.execute("""
-            SELECT COUNT(DISTINCT uid) FROM scores WHERE ts > ? AND ts <= ?
-        """, (prev_cutoff, cutoff))
+        cur = await db.execute(
+            "SELECT COUNT(DISTINCT uid) FROM scores WHERE ts > ? AND ts <= ?",
+            (prev_cutoff, cutoff)
+        )
         played_prev = (await cur.fetchone())[0] or 0
 
-        # 7. Всего партий
-        cur = await db.execute("""
-            SELECT COUNT(*) FROM scores WHERE ts > ?
-        """, (cutoff,))
+        cur = await db.execute(
+            "SELECT COUNT(*) FROM scores WHERE ts > ?", (cutoff,)
+        )
         games_now = (await cur.fetchone())[0] or 0
 
-        cur = await db.execute("""
-            SELECT COUNT(*) FROM scores WHERE ts > ? AND ts <= ?
-        """, (prev_cutoff, cutoff))
+        cur = await db.execute(
+            "SELECT COUNT(*) FROM scores WHERE ts > ? AND ts <= ?",
+            (prev_cutoff, cutoff)
+        )
         games_prev = (await cur.fetchone())[0] or 0
 
-        # 8. D1 retention — из тех, кто зарегался за период, кто вернулся на след. день
+        # D1: из зарегавшихся за период — сколько вернулись на следующий день
         cur = await db.execute("""
-            SELECT u.uid, u.created_at
-            FROM users u
-            WHERE u.created_at > ?
+            SELECT uid, created_at FROM users WHERE created_at > ?
         """, (cutoff,))
         reg_rows = await cur.fetchall()
 
-    # D1 считаем в Python (Turso не умеет date arithmetic в SQL)
     d1_count = 0
     d1_total = 0
     for uid, created in reg_rows:
@@ -348,7 +340,6 @@ async def get_overview(days: int = 7):
         d1_total += 1
         next_day_start = created + 86400
         next_day_end = created + 2 * 86400
-        # Отдельный запрос — но их немного, только для D1
         async with aiosqlite.connect(DB_PATH) as db:
             cur = await db.execute("""
                 SELECT 1 FROM visits
@@ -384,40 +375,47 @@ async def get_overview(days: int = 7):
 
 
 # ═══════════════════════════════════════════════════════════
-# ВОРОНКА v2 — чистая, без дублей
+# ВОРОНКА
 # ═══════════════════════════════════════════════════════════
 async def get_funnel_v2(days: int = 7):
     days = max(1, min(days, 90))
     cutoff = time.time() - days * 86400
 
     async with aiosqlite.connect(DB_PATH) as db:
-        # 1. Посетители
         cur = await db.execute("""
-            SELECT COUNT(DISTINCT v.visitor_id)
+            SELECT COUNT(DISTINCT
+                CASE
+                  WHEN v.visitor_id != '' THEN 'v:' || v.visitor_id
+                  WHEN v.uid != '' THEN 'u:' || v.uid
+                  ELSE 's:' || v.subnet || ':' || CAST(v.hour AS TEXT)
+                END)
             FROM visits v
-            JOIN visitors vi ON vi.visitor_id = v.visitor_id
-            WHERE v.ts > ? AND v.visitor_id != '' AND vi.is_admin = 0
+            LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+            WHERE v.ts > ? AND COALESCE(vi.is_admin, 0) = 0
         """, (cutoff,))
         step1 = (await cur.fetchone())[0] or 0
 
-        # 2. Зарегались
         cur = await db.execute("SELECT COUNT(*) FROM users WHERE created_at > ?", (cutoff,))
         step2 = (await cur.fetchone())[0] or 0
 
-        # 3. Сыграли
         cur = await db.execute(
             "SELECT COUNT(DISTINCT uid) FROM scores WHERE ts > ?", (cutoff,)
         )
         step3 = (await cur.fetchone())[0] or 0
 
-        # 4. Вернулись (2+ заходов)
         cur = await db.execute("""
             SELECT COUNT(*) FROM (
-                SELECT v.visitor_id, COUNT(*) as cnt
+                SELECT
+                    CASE
+                      WHEN v.visitor_id != '' THEN 'v:' || v.visitor_id
+                      WHEN v.uid != '' THEN 'u:' || v.uid
+                      ELSE 's:' || v.subnet || ':' || CAST(v.hour AS TEXT)
+                    END as key,
+                    COUNT(*) as cnt
                 FROM visits v
-                JOIN visitors vi ON vi.visitor_id = v.visitor_id
-                WHERE v.ts > ? AND v.visitor_id != '' AND vi.is_admin = 0
-                GROUP BY v.visitor_id
+                LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+                WHERE v.ts > ? AND COALESCE(vi.is_admin, 0) = 0
+                GROUP BY key
                 HAVING cnt >= 2
             )
         """, (cutoff,))
@@ -477,45 +475,36 @@ async def get_live_feed(limit: int = 60, days: int = 7, include_admin: bool = Fa
     for r in rows:
         ts, ip, subnet, device, uid, page, action, nick, active_char, is_admin = r
         result.append({
-            "ts": ts,
-            "ip": ip,
-            "subnet": subnet,
-            "device": device or "desktop",
-            "uid": uid or "",
-            "nick": nick or "",
-            "active_char": active_char or "student",
-            "page": page or "",
-            "action": action or "visit",
-            "logged_in": bool(uid),
-            "is_admin": bool(is_admin),
+            "ts": ts, "ip": ip, "subnet": subnet, "device": device or "desktop",
+            "uid": uid or "", "nick": nick or "", "active_char": active_char or "student",
+            "page": page or "", "action": action or "visit",
+            "logged_in": bool(uid), "is_admin": bool(is_admin),
         })
     return result
 
 
 # ═══════════════════════════════════════════════════════════
-# УСТРОЙСТВА — агрегация по брендам
+# УСТРОЙСТВА
 # ═══════════════════════════════════════════════════════════
 async def get_devices(days: int = 7):
     days = max(1, min(days, 90))
     cutoff = time.time() - days * 86400
 
     async with aiosqlite.connect(DB_PATH) as db:
-        # По типу устройства
         cur = await db.execute("""
             SELECT
                 SUM(CASE WHEN v.device = 'mobile' THEN 1 ELSE 0 END) as mobile,
                 SUM(CASE WHEN v.device = 'desktop' THEN 1 ELSE 0 END) as desktop,
                 SUM(CASE WHEN v.device = 'tablet' THEN 1 ELSE 0 END) as tablet
             FROM visits v
-            JOIN visitors vi ON vi.visitor_id = v.visitor_id
-            WHERE v.ts > ? AND vi.is_admin = 0
+            LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+            WHERE v.ts > ? AND COALESCE(vi.is_admin, 0) = 0
         """, (cutoff,))
         r = await cur.fetchone()
         mobile = r[0] or 0
         desktop = r[1] or 0
         tablet = r[2] or 0
 
-        # По бренду
         cur = await db.execute("""
             SELECT device_brand, COUNT(*) as cnt
             FROM visitors
@@ -534,7 +523,7 @@ async def get_devices(days: int = 7):
 
 
 # ═══════════════════════════════════════════════════════════
-# ЧАСЫ С РАЗБИВКОЙ ПО УСТРОЙСТВАМ
+# ЧАСЫ
 # ═══════════════════════════════════════════════════════════
 async def get_hourly_full(days: int = 7):
     days = max(1, min(days, 90))
@@ -548,8 +537,8 @@ async def get_hourly_full(days: int = 7):
                    SUM(CASE WHEN v.device = 'desktop' THEN 1 ELSE 0 END) as desktop,
                    SUM(CASE WHEN v.device = 'tablet' THEN 1 ELSE 0 END) as tablet
             FROM visits v
-            JOIN visitors vi ON vi.visitor_id = v.visitor_id
-            WHERE v.ts > ? AND vi.is_admin = 0
+            LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+            WHERE v.ts > ? AND COALESCE(vi.is_admin, 0) = 0
             GROUP BY v.hour
         """, (cutoff,))
         rows = await cur.fetchall()
@@ -574,7 +563,7 @@ async def get_hourly_stats(days: int = 1):
 
 
 # ═══════════════════════════════════════════════════════════
-# СВОДКА (для совместимости)
+# СВОДКА (старая, для совместимости)
 # ═══════════════════════════════════════════════════════════
 async def get_summary(days: int = 7):
     days = max(1, min(days, 90))
@@ -583,13 +572,13 @@ async def get_summary(days: int = 7):
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("""
             SELECT COUNT(*) as visits,
-                   COUNT(DISTINCT v.visitor_id) as uniq_visitors,
+                   COUNT(DISTINCT v.subnet) as uniq_ips,
                    COUNT(DISTINCT CASE WHEN v.uid != '' THEN v.uid END) as uniq_users,
                    SUM(CASE WHEN v.device = 'mobile' THEN 1 ELSE 0 END) as mobile,
                    SUM(CASE WHEN v.device = 'desktop' THEN 1 ELSE 0 END) as desktop
             FROM visits v
-            JOIN visitors vi ON vi.visitor_id = v.visitor_id
-            WHERE v.ts > ? AND vi.is_admin = 0
+            LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+            WHERE v.ts > ? AND COALESCE(vi.is_admin, 0) = 0
         """, (cutoff,))
         r = await cur.fetchone()
 
@@ -603,7 +592,7 @@ async def get_summary(days: int = 7):
 
 
 # ═══════════════════════════════════════════════════════════
-# ЗОНЫ IP — упрощённая версия
+# ЗОНЫ IP
 # ═══════════════════════════════════════════════════════════
 async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
     days = max(1, min(days, 90))
@@ -625,8 +614,8 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
                    MIN(v.ts) as first_seen,
                    MAX(v.ts) as last_seen
             FROM visits v
-            JOIN visitors vi ON vi.visitor_id = v.visitor_id
-            WHERE v.ts > ? AND v.subnet != 'unknown' AND vi.is_admin = 0
+            LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+            WHERE v.ts > ? AND v.subnet != 'unknown' AND COALESCE(vi.is_admin, 0) = 0
             GROUP BY v.subnet
             ORDER BY {order}
             LIMIT 40
@@ -642,11 +631,7 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
         cur = await db.execute(f"""
             SELECT DISTINCT v.subnet, v.uid
             FROM visits v
-            JOIN visitors vi ON vi.visitor_id = v.visitor_id
-            WHERE v.subnet IN ({placeholders})
-              AND v.uid != ''
-              AND v.ts > ?
-              AND vi.is_admin = 0
+            WHERE v.subnet IN ({placeholders}) AND v.uid != '' AND v.ts > ?
         """, subnets + [cutoff])
         uid_rows = await cur.fetchall()
 
@@ -673,20 +658,11 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
         subnet = r[0]
         uids = subnet_uids.get(subnet, [])
         users = [{"uid": u, "nick": nick_map.get(u, "?")} for u in uids]
-
         zones.append({
-            "subnet": subnet,
-            "visits": r[1] or 0,
-            "users_count": r[2] or 0,
-            "mobile_count": r[3] or 0,
-            "first_seen": r[4],
-            "last_seen": r[5],
-            "tag": "unknown",
-            "label": "",
-            "users": users,
-            "devices": [],
+            "subnet": subnet, "visits": r[1] or 0, "users_count": r[2] or 0,
+            "mobile_count": r[3] or 0, "first_seen": r[4], "last_seen": r[5],
+            "tag": "unknown", "label": "", "users": users, "devices": [],
         })
-
     return zones
 
 
@@ -695,12 +671,9 @@ async def set_ip_tag(subnet: str, tag: str, label: str = ""):
         tag = "unknown"
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("SELECT subnet FROM ip_tags WHERE subnet=?", (subnet,))
-        row = await cur.fetchone()
-        if row:
-            await db.execute(
-                "UPDATE ip_tags SET tag=?, label=? WHERE subnet=?",
-                (tag, label[:60], subnet)
-            )
+        if await cur.fetchone():
+            await db.execute("UPDATE ip_tags SET tag=?, label=? WHERE subnet=?",
+                             (tag, label[:60], subnet))
         else:
             await db.execute(
                 "INSERT INTO ip_tags (subnet, tag, label, first_seen, last_seen, visits) "
@@ -711,9 +684,6 @@ async def set_ip_tag(subnet: str, tag: str, label: str = ""):
     return {"ok": True}
 
 
-# ═══════════════════════════════════════════════════════════
-# СТАРЫЕ ФУНКЦИИ (совместимость)
-# ═══════════════════════════════════════════════════════════
 async def get_ip_summary():
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("""

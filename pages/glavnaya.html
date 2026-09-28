@@ -588,55 +588,16 @@
   </a>
 </section>
 
-/* ═══════════════════════════════════════════════════════════
-   ИНСТИТУТ ВПЕРЕДИ — только отрисовка
-   ═══════════════════════════════════════════════════════════ */
-function renderTopInstitute(top){
-  const section = document.getElementById('miniInstSection');
-  const list = document.getElementById('miniInstList');
-  if (!section || !list) return;
-
-  if (!top || !top.length){
-    section.style.display = 'none';
-    return;
-  }
-
-  const first = top[0];
-  section.style.display = 'block';
-  list.innerHTML = '';
-
-  const el = document.createElement('span');
-  el.className = 'mini-top-player';
-  el.innerHTML =
-    '<span class="emoji">' + (first.emoji || '🏛') + '</span>' +
-    '<span class="nick"></span>' +
-    '<span class="score">' + first.total + '</span>';
-  el.querySelector('.nick').textContent = first.short || '';
-  list.appendChild(el);
-
-  // Если есть второй — покажем маленько
-  if (top.length > 1){
-    const el2 = document.createElement('span');
-    el2.className = 'mini-top-player';
-    el2.style.opacity = '0.6';
-    el2.style.fontSize = '11px';
-    el2.innerHTML =
-      '<span class="emoji" style="font-size:13px;">' + (top[1].emoji || '🏛') + '</span>' +
-      '<span class="nick"></span>' +
-      '<span class="score" style="color:#6FA8FF;">' + top[1].total + '</span>';
-    el2.querySelector('.nick').textContent = top[1].short || '';
-    list.appendChild(el2);
-  }
-}
-
-// Fallback — если /api/home/init упал, грузим отдельно
-async function loadTopInstitute(){
-  try{
-    const r = await fetch('/api/institutes/top');
-    const data = await r.json();
-    renderTopInstitute(data.top || []);
-  }catch(e){}
-}
+<!-- ══════════ ИНСТИТУТ ВПЕРЕДИ ══════════ -->
+<section class="mini-top" id="miniInstSection" style="display:none;">
+  <a href="/ratings" class="mini-top-inner inst">
+    <span class="mini-top-label">🏛 Впереди</span>
+    <div class="mini-top-players" id="miniInstList">
+      <span class="mini-top-empty">Загрузка…</span>
+    </div>
+    <span class="mini-top-arrow">→</span>
+  </a>
+</section>
 
 <!-- ══════════ ИГРЫ ══════════ -->
 <section id="games">
@@ -707,6 +668,9 @@ async function loadTopInstitute(){
 
 <script src="/static/site-header.js"></script>
 <script>
+/* ═══════════════════════════════════════════════════════════
+   БАЗОВАЯ ИНИЦИАЛИЗАЦИЯ ШАПКИ И ФУТЕРА
+   ═══════════════════════════════════════════════════════════ */
 renderSiteHeader('home');
 renderSiteFooter();
 
@@ -760,7 +724,7 @@ document.getElementById('startPlayingBtn').addEventListener('click', function(){
 });
 
 /* ═══════════════════════════════════════════════════════════
-   ПРОФИЛЬ
+   ПРОФИЛЬ — куда ведёт кнопка
    ═══════════════════════════════════════════════════════════ */
 (function(){
   var btn = document.getElementById('profileCta');
@@ -776,68 +740,28 @@ document.getElementById('startPlayingBtn').addEventListener('click', function(){
 })();
 
 /* ═══════════════════════════════════════════════════════════
-   ИГРЫ
+   ОПИСАНИЯ ИГР
    ═══════════════════════════════════════════════════════════ */
 const GAMES_INFO = {
-  broadway: { title: 'Бродвей', rules: `<p class="rule-text">Пробеги по коридору, собирай кофе и монеты.</p>`, playUrl: '/games/broadway', playLabel: 'Играть' },
-  campus: { title: 'Построй кампус', rules: `<p class="rule-text">Голосуй за улучшения МГСУ.</p>`, playUrl: '/games/campus', playLabel: 'Играть' },
-  grable: { title: 'Столовая МГСУ', rules: `<p class="rule-text">Собери комплексный обед по заказу. Гарнир, мясо, суп, напиток.</p>`, playUrl: '/games/grable', playLabel: 'Играть' },
-  wall: { title: 'Стена', rules: `<p class="rule-text">Рисуй с телефона — твой штрих мгновенно появляется на большом экране.</p>`, playUrl: '/games/wall', playLabel: 'Играть' },
-  clicker: { title: 'Кликер', rules: `<p class="rule-text">30 секунд, 7 рангов от Студента до Легенды МГСУ. Одна партия в день.</p>`, playUrl: '/games/clicker', playLabel: 'Играть' },
-  tetris: { title: 'Тетрис · Здания', rules: `<p class="rule-text">Складывай дома и башни МГСУ. Полные линии сгорают, скорость растёт.</p>`, playUrl: '/games/tetris', playLabel: 'Играть' },
-  "2048": { title: '2048 Здания', rules: `<p class="rule-text">Свайпай плитки-домики. Одинаковые сливаются. Собери 2048!</p>`, playUrl: '/games/2048', playLabel: 'Играть' },
-  adventure: { title: 'Лабиринт МГСУ', rules: `<p class="rule-text">Собери 3 ключа, найди шпаргалку ⚔️ и отбейся от злых преподов 👺. Дойди до выхода 🚪.</p>`, playUrl: '/games/adventure', playLabel: 'Играть' },
-  ventilation: { title: 'Вентиляция МГСУ', rules: `<p class="rule-text">Проведи воздух от вытяжки 🟢 до комнаты 🟡. Тяни пальцем по земле — копай тоннели!</p>`, playUrl: '/games/ventilation', playLabel: 'Играть' },
-  snake: { title: 'Змейка', rules: `<p class="rule-text">Игра в разработке.</p>`, playUrl: null, playLabel: 'Скоро' },
-  poll: { title: 'Опрос дня', rules: `<p class="rule-text">Игра в разработке.</p>`, playUrl: null, playLabel: 'Скоро' },
-  click: { title: 'Гонка кликов', rules: `<p class="rule-text">Игра в разработке.</p>`, playUrl: null, playLabel: 'Скоро' }
+  broadway: { title: 'Бродвей', rules: '<p class="rule-text">Пробеги по коридору, собирай кофе и монеты.</p>', playUrl: '/games/broadway', playLabel: 'Играть' },
+  campus: { title: 'Построй кампус', rules: '<p class="rule-text">Голосуй за улучшения МГСУ.</p>', playUrl: '/games/campus', playLabel: 'Играть' },
+  grable: { title: 'Столовая МГСУ', rules: '<p class="rule-text">Собери комплексный обед по заказу. Гарнир, мясо, суп, напиток.</p>', playUrl: '/games/grable', playLabel: 'Играть' },
+  wall: { title: 'Стена', rules: '<p class="rule-text">Рисуй с телефона — твой штрих мгновенно появляется на большом экране.</p>', playUrl: '/games/wall', playLabel: 'Играть' },
+  clicker: { title: 'Кликер', rules: '<p class="rule-text">30 секунд, 7 рангов от Студента до Легенды МГСУ. Одна партия в день.</p>', playUrl: '/games/clicker', playLabel: 'Играть' },
+  tetris: { title: 'Тетрис · Здания', rules: '<p class="rule-text">Складывай дома и башни МГСУ. Полные линии сгорают, скорость растёт.</p>', playUrl: '/games/tetris', playLabel: 'Играть' },
+  "2048": { title: '2048 Здания', rules: '<p class="rule-text">Свайпай плитки-домики. Одинаковые сливаются. Собери 2048!</p>', playUrl: '/games/2048', playLabel: 'Играть' },
+  adventure: { title: 'Лабиринт МГСУ', rules: '<p class="rule-text">Собери 3 ключа, найди шпаргалку ⚔️ и отбейся от злых преподов 👺. Дойди до выхода 🚪.</p>', playUrl: '/games/adventure', playLabel: 'Играть' },
+  ventilation: { title: 'Вентиляция МГСУ', rules: '<p class="rule-text">Проведи воздух от вытяжки 🟢 до комнаты 🟡. Тяни пальцем по земле — копай тоннели!</p>', playUrl: '/games/ventilation', playLabel: 'Играть' },
+  snake: { title: 'Змейка', rules: '<p class="rule-text">Игра в разработке.</p>', playUrl: null, playLabel: 'Скоро' },
+  poll: { title: 'Опрос дня', rules: '<p class="rule-text">Игра в разработке.</p>', playUrl: null, playLabel: 'Скоро' },
+  click: { title: 'Гонка кликов', rules: '<p class="rule-text">Игра в разработке.</p>', playUrl: null, playLabel: 'Скоро' }
 };
 
 let gameTasksCache = {};
 
-async function loadGames(){
-  try{
-    const r = await fetch('/api/games');
-    const data = await r.json();
-    const enabled = (data.games || []).filter(g => g.enabled);
-    renderTiles(enabled);
-  }catch(e){
-    const all = Object.keys(GAMES_INFO).map(k => ({key:k, title:GAMES_INFO[k].title, enabled:true, status: GAMES_INFO[k].playUrl ? 'available':'soon'}));
-    renderTiles(all);
-  }
-}
-
-async function loadGameTasks(){
-  const token = localStorage.getItem('mgsu_token') || '';
-  if (!token) return;
-  try{
-    const r = await fetch('/api/tasks', {headers:{'Authorization': 'Bearer ' + token}});
-    const data = await r.json();
-    if (!data.logged_in || !data.tasks) return;
-
-    gameTasksCache = {};
-    data.tasks.forEach(t => {
-      const g = t.game;
-      if (!gameTasksCache[g]) gameTasksCache[g] = [];
-      gameTasksCache[g].push(t);
-    });
-
-    document.querySelectorAll('.game-card').forEach(card => {
-      const key = card.dataset.gameKey;
-      if (!key) return;
-      if (gameTasksCache[key] && gameTasksCache[key].length){
-        card.classList.add('has-task');
-        const badge = card.querySelector('.game-card-task');
-        if (badge){
-          const doneCount = gameTasksCache[key].filter(t => t.done).length;
-          badge.textContent = '🎯 ' + gameTasksCache[key].length +
-            (doneCount ? ' (' + doneCount + '✓)' : '');
-        }
-      }
-    });
-  }catch(e){}
-}
-
+/* ═══════════════════════════════════════════════════════════
+   ОТРИСОВКА ПЛИТОК ИГР
+   ═══════════════════════════════════════════════════════════ */
 function renderTiles(games){
   const box = document.getElementById('gamesGrid');
   box.innerHTML = '';
@@ -865,10 +789,32 @@ function renderTiles(games){
     if (isAvailable) btn.onclick = () => openGame(g.key);
     box.appendChild(btn);
   });
-
-  loadGameTasks();
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ЗАДАНИЯ НА КАРТОЧКАХ (из /api/home/init)
+   ═══════════════════════════════════════════════════════════ */
+function applyGameTasks(tasksMap){
+  gameTasksCache = tasksMap;
+  document.querySelectorAll('.game-card').forEach(card => {
+    const key = card.dataset.gameKey;
+    if (!key) return;
+    const list = gameTasksCache[key];
+    if (list && list.length){
+      card.classList.add('has-task');
+      const badge = card.querySelector('.game-card-task');
+      if (badge){
+        const doneCount = list.filter(t => t.done).length;
+        badge.textContent = '🎯 ' + list.length +
+          (doneCount ? ' (' + doneCount + '✓)' : '');
+      }
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   МОДАЛКА ИГРЫ
+   ═══════════════════════════════════════════════════════════ */
 function openGame(key){
   const info = GAMES_INFO[key];
   if (!info) return;
@@ -931,22 +877,14 @@ function unlockScroll(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ТОП-3 ДНЯ
+   ТОП-3 ДНЯ — отрисовка
    ═══════════════════════════════════════════════════════════ */
-async function loadMiniTop(){
-  try{
-    const r = await fetch('/api/top-day');
-    const data = await r.json();
-    renderMiniTop(data.top || []);
-  }catch(e){}
-}
-
 function renderMiniTop(top){
   const section = document.getElementById('miniTopSection');
   const list = document.getElementById('miniTopList');
   if (!section || !list) return;
 
-  if (!top.length){
+  if (!top || !top.length){
     section.style.display = 'none';
     return;
   }
@@ -966,54 +904,66 @@ function renderMiniTop(top){
   });
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ИНСТИТУТ ВПЕРЕДИ — ОДИН, БЕЗ МЕДАЛЬОНОВ
-   ═══════════════════════════════════════════════════════════ */
-async function loadTopInstitute(){
+/* Fallback — если /api/home/init не сработал */
+async function loadMiniTop(){
   try{
-    const r = await fetch('/api/institutes/top');
+    const r = await fetch('/api/top-day');
     const data = await r.json();
-    const top = data.top || [];
-    const section = document.getElementById('miniInstSection');
-    const list = document.getElementById('miniInstList');
-    if (!section || !list) return;
-
-    if (!top.length){
-      section.style.display = 'none';
-      return;
-    }
-
-    const first = top[0];
-    section.style.display = 'block';
-    list.innerHTML = '';
-
-    const el = document.createElement('span');
-    el.className = 'mini-top-player';
-    el.innerHTML =
-      '<span class="emoji">' + (first.emoji || '🏛') + '</span>' +
-      '<span class="nick"></span>' +
-      '<span class="score">' + first.total + '</span>';
-    el.querySelector('.nick').textContent = first.short || '';
-    list.appendChild(el);
-
-    // Если есть второй — покажем маленько
-    if (top.length > 1){
-      const el2 = document.createElement('span');
-      el2.className = 'mini-top-player';
-      el2.style.opacity = '0.6';
-      el2.style.fontSize = '11px';
-      el2.innerHTML =
-        '<span class="emoji" style="font-size:13px;">' + (top[1].emoji || '🏛') + '</span>' +
-        '<span class="nick"></span>' +
-        '<span class="score" style="color:#6FA8FF;">' + top[1].total + '</span>';
-      el2.querySelector('.nick').textContent = top[1].short || '';
-      list.appendChild(el2);
-    }
+    renderMiniTop(data.top || []);
   }catch(e){}
 }
 
 /* ═══════════════════════════════════════════════════════════
-   БЛОК РАЗРАБОТЧИКОВ — только отрисовка
+   ИНСТИТУТ ВПЕРЕДИ — отрисовка
+   ═══════════════════════════════════════════════════════════ */
+function renderTopInstitute(top){
+  const section = document.getElementById('miniInstSection');
+  const list = document.getElementById('miniInstList');
+  if (!section || !list) return;
+
+  if (!top || !top.length){
+    section.style.display = 'none';
+    return;
+  }
+
+  const first = top[0];
+  section.style.display = 'block';
+  list.innerHTML = '';
+
+  const el = document.createElement('span');
+  el.className = 'mini-top-player';
+  el.innerHTML =
+    '<span class="emoji">' + (first.emoji || '🏛') + '</span>' +
+    '<span class="nick"></span>' +
+    '<span class="score">' + first.total + '</span>';
+  el.querySelector('.nick').textContent = first.short || '';
+  list.appendChild(el);
+
+  if (top.length > 1){
+    const el2 = document.createElement('span');
+    el2.className = 'mini-top-player';
+    el2.style.opacity = '0.6';
+    el2.style.fontSize = '11px';
+    el2.innerHTML =
+      '<span class="emoji" style="font-size:13px;">' + (top[1].emoji || '🏛') + '</span>' +
+      '<span class="nick"></span>' +
+      '<span class="score" style="color:#6FA8FF;">' + top[1].total + '</span>';
+    el2.querySelector('.nick').textContent = top[1].short || '';
+    list.appendChild(el2);
+  }
+}
+
+/* Fallback */
+async function loadTopInstitute(){
+  try{
+    const r = await fetch('/api/institutes/top');
+    const data = await r.json();
+    renderTopInstitute(data.top || []);
+  }catch(e){}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   БЛОК РАЗРАБОТЧИКОВ — отрисовка
    ═══════════════════════════════════════════════════════════ */
 function renderDevCredits(cfg){
   const section = document.getElementById('devCreditsSection');
@@ -1046,7 +996,7 @@ function renderDevCredits(cfg){
   section.style.display = 'block';
 }
 
-// Fallback — если /api/home/init упал, грузим отдельно
+/* Fallback */
 async function loadDevCredits(){
   try{
     const r = await fetch('/api/dev-credits');
@@ -1056,7 +1006,53 @@ async function loadDevCredits(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ИНИЦИАЛИЗАЦИЯ — всё грузим одним запросом
+   ГЛАВНЫЙ ЗАГРУЗЧИК — один запрос вместо четырёх
+   ═══════════════════════════════════════════════════════════ */
+async function loadHome(){
+  const headers = {};
+  const token = localStorage.getItem('mgsu_token') || '';
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+
+  try{
+    const r = await fetch('/api/home/init', {headers: headers});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+
+    const enabled = (data.games || []).filter(g => g.enabled);
+    renderTiles(enabled);
+
+    if (data.game_tasks && Object.keys(data.game_tasks).length){
+      applyGameTasks(data.game_tasks);
+    }
+
+    renderMiniTop(data.top_day || []);
+    renderTopInstitute(data.top_institutes || []);
+    renderDevCredits(data.dev_credits || {enabled: false});
+
+  }catch(e){
+    console.warn('home/init failed, fallback:', e);
+    loadGames();
+    loadMiniTop();
+    loadTopInstitute();
+    loadDevCredits();
+  }
+}
+
+/* Старый fallback-загрузчик игр (оставлен на всякий) */
+async function loadGames(){
+  try{
+    const r = await fetch('/api/games');
+    const data = await r.json();
+    const enabled = (data.games || []).filter(g => g.enabled);
+    renderTiles(enabled);
+  }catch(e){
+    const all = Object.keys(GAMES_INFO).map(k => ({key:k, title:GAMES_INFO[k].title, enabled:true, status: GAMES_INFO[k].playUrl ? 'available':'soon'}));
+    renderTiles(all);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ИНИЦИАЛИЗАЦИЯ
    ═══════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function(){
   ['gameModal','privacyModal'].forEach(function(id){
@@ -1072,129 +1068,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
   loadHome();
 });
-
-/* ═══════════════════════════════════════════════════════════
-   ГЛАВНЫЙ ЗАГРУЗЧИК — один запрос вместо пяти
-   ═══════════════════════════════════════════════════════════ */
-async function loadHome(){
-  const headers = {};
-  const token = localStorage.getItem('mgsu_token') || '';
-  if (token) headers['Authorization'] = 'Bearer ' + token;
-
-  try{
-    const r = await fetch('/api/home/init', {headers: headers});
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-
-    // ─── Игры ───
-    const enabled = (data.games || []).filter(g => g.enabled);
-    renderTiles(enabled);
-
-    // ─── Задания по играм (бейджики 🎯) ───
-    if (data.game_tasks && Object.keys(data.game_tasks).length){
-      applyGameTasks(data.game_tasks);
-    }
-
-    // ─── Топ дня ───
-    renderMiniTop(data.top_day || []);
-
-    // ─── Топ институтов ───
-    renderTopInstitute(data.top_institutes || []);
-
-    // ─── Блок разработчиков ───
-    renderDevCredits(data.dev_credits || {enabled: false});
-
-  }catch(e){
-    console.warn('home/init failed, fallback:', e);
-    loadGames();
-    loadMiniTop();
-    loadTopInstitute();
-    loadDevCredits();
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ЗАДАНИЯ НА КАРТОЧКАХ — из данных init
-   ═══════════════════════════════════════════════════════════ */
-function applyGameTasks(tasksMap){
-  gameTasksCache = tasksMap;
-  document.querySelectorAll('.game-card').forEach(card => {
-    const key = card.dataset.gameKey;
-    if (!key) return;
-    const list = gameTasksCache[key];
-    if (list && list.length){
-      card.classList.add('has-task');
-      const badge = card.querySelector('.game-card-task');
-      if (badge){
-        const doneCount = list.filter(t => t.done).length;
-        badge.textContent = '🎯 ' + list.length +
-          (doneCount ? ' (' + doneCount + '✓)' : '');
-      }
-    }
-  });
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ГЛАВНЫЙ ЗАГРУЗЧИК — один запрос вместо пяти
-   ═══════════════════════════════════════════════════════════ */
-async function loadHome(){
-  const headers = {};
-  const token = localStorage.getItem('mgsu_token') || '';
-  if (token) headers['Authorization'] = 'Bearer ' + token;
-
-  try{
-    const r = await fetch('/api/home/init', {headers: headers});
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-
-    // ─── Игры ───
-    const enabled = (data.games || []).filter(g => g.enabled);
-    renderTiles(enabled);
-
-    // ─── Задания по играм (если пришли) ───
-    if (data.game_tasks && Object.keys(data.game_tasks).length){
-      applyGameTasks(data.game_tasks);
-    }
-
-    // ─── Топ дня ───
-    renderMiniTop(data.top_day || []);
-
-    // ─── Топ институтов ───
-    renderTopInstitute(data.top_institutes || []);
-
-    // ─── Блок разработчиков ───
-    renderDevCredits(data.dev_credits || {enabled: false});
-
-  }catch(e){
-    console.warn('home/init failed, fallback:', e);
-    // Fallback — старый способ, по кусочкам
-    loadGames();
-    loadMiniTop();
-    loadTopInstitute();
-    loadDevCredits();
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ЗАДАНИЯ НА КАРТОЧКАХ — из данных init
-   ═══════════════════════════════════════════════════════════ */
-function applyGameTasks(tasksMap){
-  gameTasksCache = tasksMap;
-  document.querySelectorAll('.game-card').forEach(card => {
-    const key = card.dataset.gameKey;
-    if (!key) return;
-    const list = gameTasksCache[key];
-    if (list && list.length){
-      card.classList.add('has-task');
-      const badge = card.querySelector('.game-card-task');
-      if (badge){
-        const doneCount = list.filter(t => t.done).length;
-        badge.textContent = '🎯 ' + list.length +
-          (doneCount ? ' (' + doneCount + '✓)' : '');
-      }
-    }
-  });
-}
 </script>
 <script>
 (function(){

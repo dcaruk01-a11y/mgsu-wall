@@ -338,7 +338,8 @@ const token = localStorage.getItem(LS_TOKEN);
 
 if (!token) location.href = '/auth';
 
-const CHAR_EMOJI = {
+// ★ ПЕРЕИМЕНОВАНО чтобы не конфликтовать с site-header.js
+const P_CHAR_EMOJI = {
   student:'🎓', sso:'👷', prorab:'📋',
   builder:'🏗️', prof:'🧑‍🏫', dean:'🧑‍💼', legend:'👑'
 };
@@ -369,9 +370,6 @@ function escapeHtml(s){
   });
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ЗАГРУЗКА И ОТРИСОВКА ПРОФИЛЯ
-   ═══════════════════════════════════════════════════════════ */
 async function loadMe(){
   try{
     const res = await api('/api/auth/me');
@@ -381,13 +379,11 @@ async function loadMe(){
     document.getElementById('loading').classList.add('hide');
     document.getElementById('content').classList.remove('hide');
 
-    // Асинхронно — параллельно
     loadInstituteBlock();
     loadTasks();
     loadMyRatings();
   }catch(e){
     console.error('loadMe error:', e);
-    // Всё равно показываем контент, чтобы не было вечной загрузки
     document.getElementById('loading').classList.add('hide');
     document.getElementById('content').classList.remove('hide');
   }
@@ -401,19 +397,15 @@ function setUser(u){
   document.getElementById('pScore').textContent = u.total_score || 0;
   document.getElementById('pGames').textContent = u.games_played || 0;
 
-  // Аватар
   const av = document.getElementById('pAvatar');
-  if (av && u.active_char) av.textContent = CHAR_EMOJI[u.active_char] || '🎓';
+  if (av && u.active_char) av.textContent = P_CHAR_EMOJI[u.active_char] || '🎓';
 
-  // Сохраняем скин
   if (u.active_char){
     try{ localStorage.setItem('mgsu_active_char', u.active_char); }catch(e){}
   }
 
-  // Институт — сохраняем в переменную
   myInstitute = u.institute || '';
 
-  // Ранг
   if (u.rank){
     const r = u.rank;
     document.getElementById('rankEmoji').textContent = r.emoji;
@@ -439,7 +431,6 @@ function setUser(u){
       txt.textContent = '👑 Ты — легенда';
     }
 
-    // Бонус ранга
     const bonusNow = r.bonus_pct || 0;
     const bonusEl = document.getElementById('rankBonusNow');
     if (bonusEl){
@@ -460,13 +451,11 @@ function setUser(u){
   localStorage.setItem('mgsu_nick', u.display_name);
   const headerAvatar = document.querySelector('.site-header-avatar span');
   if (headerAvatar){
-    headerAvatar.textContent = CHAR_EMOJI[u.active_char] || '🎓';
+    headerAvatar.textContent = P_CHAR_EMOJI[u.active_char] || '🎓';
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ИНСТИТУТ — загрузка + выбор
-   ═══════════════════════════════════════════════════════════ */
+/* ИНСТИТУТ */
 async function loadInstituteBlock(){
   try{
     const r = await api('/api/institutes');
@@ -483,8 +472,7 @@ function renderInstituteBlock(){
   if (!box) return;
 
   if (myInstitute){
-    // Уже выбран
-    const inst = allInstitutes.find(i => i.key === myInstitute);
+    const inst = allInstitutes.find(function(i){ return i.key === myInstitute; });
     const emoji = inst ? inst.emoji : '🏛';
     const short = inst ? inst.short : myInstitute;
     const fullName = inst ? inst.name : '';
@@ -578,9 +566,7 @@ async function chooseInstitute(key){
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ЗАДАНИЯ
-   ═══════════════════════════════════════════════════════════ */
+/* ЗАДАНИЯ */
 async function loadTasks(){
   try{
     const res = await api('/api/tasks');
@@ -618,9 +604,7 @@ function renderTasks(data){
   });
 }
 
-/* ═══════════════════════════════════════════════════════════
-   МОИ ПОЗИЦИИ В РЕЙТИНГЕ
-   ═══════════════════════════════════════════════════════════ */
+/* МОИ ПОЗИЦИИ */
 async function loadMyRatings(){
   try{
     const res = await api('/api/ratings');
@@ -662,9 +646,7 @@ async function loadMyRatings(){
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   КОПИРОВАНИЕ UID
-   ═══════════════════════════════════════════════════════════ */
+/* КОПИРОВАНИЕ UID */
 document.getElementById('pUid').addEventListener('click', async function(){
   try{
     const uid = document.getElementById('pUidText').textContent;
@@ -676,9 +658,7 @@ document.getElementById('pUid').addEventListener('click', async function(){
   }catch(e){}
 });
 
-/* ═══════════════════════════════════════════════════════════
-   МОДАЛКА НАСТРОЕК
-   ═══════════════════════════════════════════════════════════ */
+/* МОДАЛКА НАСТРОЕК */
 const settingsModal = document.getElementById('settingsModal');
 
 document.getElementById('editNameBtn').onclick = function(){
@@ -783,9 +763,6 @@ document.getElementById('btnLogout').onclick = async function(){
   });
 });
 
-/* ═══════════════════════════════════════════════════════════
-   СТАРТ
-   ═══════════════════════════════════════════════════════════ */
 loadMe();
 </script>
 

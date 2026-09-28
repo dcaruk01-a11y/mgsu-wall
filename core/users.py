@@ -6,7 +6,7 @@ from config import DB_PATH, MSK, today_str
 COINS_PER_GAME = 20
 COINS_PER_VISIT = 5
 COINS_PER_RECORD = 200
-SESSION_TTL = 30 * 24 * 3600  # 30 дней
+SESSION_TTL = 30 * 24 * 3600
 
 
 def _hash_pin(pin: str, uid: str) -> str:
@@ -64,6 +64,7 @@ async def db_init_users():
             ("ban_reason", "ALTER TABLE users ADD COLUMN ban_reason TEXT DEFAULT ''"),
             ("feedback_request_at", "ALTER TABLE users ADD COLUMN feedback_request_at REAL DEFAULT 0"),
             ("feedback_seen_at", "ALTER TABLE users ADD COLUMN feedback_seen_at REAL DEFAULT 0"),
+            ("institute", "ALTER TABLE users ADD COLUMN institute TEXT DEFAULT ''"),
         ]
         for col, ddl in migrations:
             if col not in existing:
@@ -193,7 +194,8 @@ async def get_user_by_token(token: str):
             SELECT uid, display_name, created_at, last_seen,
                    streak, best_streak, coins, total_score, games_played,
                    COALESCE(owned_chars, '["student"]'),
-                   COALESCE(active_char, 'student')
+                   COALESCE(active_char, 'student'),
+                   COALESCE(institute, '')
             FROM users WHERE uid=?
         """, (uid,))
         urow = await cur.fetchone()
@@ -219,6 +221,7 @@ async def get_user_by_token(token: str):
         "games_played": urow[8] or 0,
         "owned_chars": owned,
         "active_char": urow[10] or "student",
+        "institute": urow[11] or "",
     }
 
 
@@ -298,11 +301,6 @@ async def apply_streak(uid: str) -> dict:
 
 async def apply_score_and_coins(uid: str, score: int, game: str, is_record: bool = False,
                                 daily_mult: float = 1.0, rank_bonus_pct: int = 0) -> dict:
-    """
-    daily_mult — дневной множитель (1.0 / 0.7 / 0.4 / 0.2).
-    rank_bonus_pct — бонус к монетам по рангу (0 / 5 / 10 / 15 / 20 / 30 / 50).
-    Рекорд-бонус (200 монет) не режется.
-    """
     score = max(0, min(int(score), 100000))
     daily_mult = max(0.1, min(float(daily_mult or 1.0), 1.0))
 
@@ -364,7 +362,57 @@ async def add_coins(uid: str, amount: int, reason: str = "") -> dict:
 
 
 # ═══════════════════════════════════════════════════════════
-# РАНГ АККАУНТА
+# ИНСТИТУТ — привязка и смена
+# ═══════════════════════════════════════════════════════════
+async def set_institute(uid: str, institute: str) -> dict:
+    """
+    Привязать или сменить институт.
+    Смена = обнуление всего кроме имени, UID, PIN.
+    """
+    from core.institutes import INSTITUTES
+    valid_keys = {i["key"] for i in INSTITUTES}
+    if institute not in valid_keys:
+        return {"ok": False, "error": "Неизвестный институт"}
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("SELECT institute FROM users WHERE uid=?", (uid,))
+        row = await cur.fetchone()
+        if not row:
+            return {"ok": False, "error": "Игрок не найден"}
+
+        old_institute = (row[0] or "").strip()
+        is_change = bool(old_institute and old_institute != institute)
+
+        if is_change:
+            await db.execute("""
+                UPDATE users SET
+                    institute = ?,
+                    total_score = 0,
+                    coins = 0,
+                    streak = 0,
+                    best_streak = 0,
+                    games_played = 0,
+                    last_day_played = '',
+                    owned_chars = '["student"]',
+                    active_char = 'student'
+                WHERE uid = ?
+            """, (institute, uid))
+        else:
+            await db.execute(
+                "UPDATE users SET institute = ? WHERE uid = ?",
+                (institute, uid)
+            )
+        await db.commit()
+
+    return {
+        "ok": True,
+        "institute": institute,
+        "was_change": is_change,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# РАНГ
 # ═══════════════════════════════════════════════════════════
 
 ACCOUNT_RANKS = [
@@ -377,7 +425,6 @@ ACCOUNT_RANKS = [
     {"key":"legend",    "name":"Легенда МГСУ", "emoji":"👑", "min_score":200000, "min_games":400},
 ]
 
-# ★ Бонус монет по рангам
 RANK_BONUSES = {
     "freshman":  0,
     "student":   5,

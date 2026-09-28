@@ -325,3 +325,22 @@ a:visited,
   opacity:0.6;
   margin-left:4px;
 }
+/* Уведомление о новой ачивке */
+.ach-toast{
+  position:fixed;top:80px;left:50%;
+  transform:translateX(-50%) translateY(-40px);
+  background:linear-gradient(135deg,#FFB347,#FF7A2B);
+  color:#1a0e05;
+  padding:14px 24px;border-radius:14px;
+  font-size:14px;font-weight:900;
+  box-shadow:0 12px 40px rgba(255,140,50,0.5);
+  z-index:9999;opacity:0;
+  transition:all .4s cubic-bezier(.2,1.2,.4,1);
+  pointer-events:none;
+  display:flex;align-items:center;gap:10px;
+  max-width:90vw;
+}
+.ach-toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.ach-toast-emoji{font-size:28px;line-height:1;flex-shrink:0;}
+.ach-toast-text{font-weight:800;line-height:1.2;}
+.ach-toast-text small{display:block;font-size:10px;font-weight:700;opacity:0.7;margin-bottom:2px;letter-spacing:0.1em;text-transform:uppercase;}

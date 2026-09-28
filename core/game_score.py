@@ -1,7 +1,6 @@
 """
 Универсальный эндпоинт сохранения результата игры.
-Все игры вызывают его: /api/game/finish
-С дневными лимитами: чем больше партий в игру за день — тем меньше награда.
+С дневными лимитами и бонусом ранга к монетам.
 """
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
@@ -15,7 +14,6 @@ from config import DB_PATH, today_str
 router = APIRouter()
 
 
-# Веса очков за единицу для каждой игры
 GAME_WEIGHTS = {
     "wall":        0.5,
     "clicker":     1.0,
@@ -41,12 +39,6 @@ GAME_LABELS = {
 }
 
 
-# ── ДНЕВНЫЕ МНОЖИТЕЛИ ──
-# индекс = сколько партий в эту игру уже сыграно сегодня
-# 1-2 партии: полная награда
-# 3-4: 70%
-# 5-6: 40%
-# 7+: 20%
 DAILY_MULTIPLIERS = [1.0, 1.0, 0.7, 0.7, 0.4, 0.4, 0.2]
 
 
@@ -67,7 +59,6 @@ def _token(authorization: str) -> str:
 
 
 async def _get_daily_plays(uid: str, game: str) -> int:
-    """Сколько партий в эту игру сыграно сегодня."""
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("""
             SELECT COUNT(*) FROM scores WHERE uid=? AND game=? AND day=?
@@ -87,7 +78,6 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
 
     raw = max(0, min(int(payload.raw_score or 0), 100000))
 
-    # всегда пишем в аналитику
     analytics.track_game(game)
 
     if not user:
@@ -105,17 +95,24 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
     uid = user["uid"]
     nick = user["display_name"]
 
-    # 1. Считаем, сколько партий в эту игру за сегодня
+    # 1. Дневной множитель
     plays_today = await _get_daily_plays(uid, game)
     mult = daily_multiplier(plays_today)
 
-    # 2. Итоговые очки (с учётом дневного множителя)
+    # 2. Итоговые очки
     points = int(raw * GAME_WEIGHTS[game] * mult)
 
-    # 3. Streak
+    # ★ 3. Бонус ранга к монетам
+    rank_data = users.get_account_rank(
+        user.get("total_score", 0),
+        user.get("games_played", 0),
+    )
+    rank_bonus_pct = rank_data.get("bonus_pct", 0)
+
+    # 4. Streak
     streak_info = await users.apply_streak(uid)
 
-    # 4. Рекорд (для кликера — лучший за день)
+    # 5. Рекорд
     is_record = False
     if game == "clicker":
         async with aiosqlite.connect(DB_PATH) as db:
@@ -126,23 +123,27 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
             prev = row[0] or 0
         is_record = raw > prev
 
-    # 5. Начисляем очки и монеты
-    progress = await users.apply_score_and_coins(uid, points, game, is_record, daily_mult=mult)
+    # 6. Начисляем очки и монеты (+ бонус ранга)
+    progress = await users.apply_score_and_coins(
+        uid, points, game, is_record,
+        daily_mult=mult,
+        rank_bonus_pct=rank_bonus_pct,
+    )
 
-    # 6. Сохраняем в топы (сырые очки, чтобы рейтинг был честным)
+    # 7. Топы
     try:
         await top.save_score(uid, nick, game, points)
     except Exception as e:
         print("top save error:", e)
 
-    # 7. Ежедневные задания (считаются от raw — сырое значение)
+    # 8. Задания
     completed = []
     try:
         completed = await tasks.check_game_completion(uid, game, raw, payload.extra or {})
     except Exception as e:
         print("tasks error:", e)
 
-    # 8. Streak-бонусы
+    # 9. Streak-бонусы
     streak_bonus = 0
     if streak_info.get("ok") and streak_info.get("changed"):
         s = streak_info.get("streak", 0)
@@ -153,7 +154,6 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
         if streak_bonus:
             await users.add_coins(uid, streak_bonus, f"streak-{s}")
 
-    # Берём обновлённый профиль
     updated_user = await users.get_user_by_token(token)
 
     return {
@@ -163,15 +163,16 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
         "raw_score": raw,
         "points": points,
         "is_record": is_record,
-        "daily_plays": plays_today + 1,       # +1 — текущая только что сыграна
-        "daily_multiplier": mult,             # текущий множитель
-        "next_multiplier": daily_multiplier(plays_today + 1),  # что будет на следующей партии
+        "daily_plays": plays_today + 1,
+        "daily_multiplier": mult,
+        "next_multiplier": daily_multiplier(plays_today + 1),
         "progress": {
             "coins": updated_user["coins"] if updated_user else 0,
             "total_score": updated_user["total_score"] if updated_user else 0,
             "games_played": updated_user["games_played"] if updated_user else 0,
             "streak": streak_info.get("streak", 0),
             "streak_changed": streak_info.get("changed", False),
+            "rank_bonus_pct": rank_bonus_pct,
         },
         "streak_bonus": streak_bonus,
         "tasks_completed": completed,
@@ -180,7 +181,6 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
 
 @router.get("/api/game/info")
 async def game_info():
-    """Какие игры есть и за что сколько очков."""
     return {
         "games": [
             {"key": k, "label": GAME_LABELS[k], "weight": GAME_WEIGHTS[k]}

@@ -8,19 +8,16 @@
 .page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
 .page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
 
-/* Период-табы */
 .period-tabs{display:flex;gap:6px;background:rgba(255,255,255,0.05);border-radius:10px;padding:4px;}
 .period-tab{padding:8px 16px;border:0;background:transparent;color:rgba(255,255,255,0.6);font-family:inherit;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .period-tab:hover{color:#fff;}
 .period-tab.active{background:rgba(255,255,255,0.15);color:#fff;}
 
-/* Сводка */
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
 .sum-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
 .sum-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
 .sum-value{font-size:22px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1;}
 
-/* Воронка */
 .funnel{display:flex;flex-direction:column;gap:8px;padding:18px 20px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:20px;}
 .funnel-step{display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.04);position:relative;overflow:hidden;}
 .funnel-step-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(111,168,255,0.25),rgba(111,168,255,0.05));z-index:0;transition:width .5s;}
@@ -29,7 +26,6 @@
 .funnel-label{flex:1;font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);}
 .funnel-count{font-size:20px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;min-width:50px;text-align:right;}
 
-/* Живая лента */
 .feed-box{border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);overflow:hidden;}
 .feed-head{display:grid;grid-template-columns:80px 60px 130px 1fr 100px;gap:10px;padding:12px 16px;background:rgba(0,0,0,0.20);font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
 .feed-row{display:grid;grid-template-columns:80px 60px 130px 1fr 100px;gap:10px;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.05);font-size:13px;align-items:center;transition:background .15s;}
@@ -47,7 +43,6 @@
 .feed-action.login{background:rgba(180,120,255,0.18);color:#C0A0FF;}
 .feed-action.game{background:rgba(255,180,80,0.2);color:#FFB347;}
 
-/* По часам */
 .hours-chart{display:flex;align-items:flex-end;gap:3px;height:140px;padding:20px 4px 0;}
 .hour-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px;position:relative;}
 .hour-stack{width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:100%;}
@@ -58,14 +53,13 @@
 .hours-legend-item{display:flex;align-items:center;gap:6px;}
 .hours-legend-dot{width:10px;height:10px;border-radius:3px;}
 
-/* Зоны IP */
 .zones-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;}
 .sort-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.05);border-radius:8px;padding:3px;}
 .sort-tab{padding:6px 12px;border:0;background:transparent;color:rgba(255,255,255,0.55);font-family:inherit;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;transition:all .15s;}
 .sort-tab.active{background:rgba(255,255,255,0.15);color:#fff;}
 
-.zone-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;}
-.zone-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+.zone-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:10px;}
+.zone-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
 .zone-subnet{font-family:monospace;font-size:15px;font-weight:800;color:#fff;}
 .zone-tag-badge{padding:4px 10px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;}
 .zone-tag-badge.mgsu{background:rgba(74,222,128,0.2);color:#4ADE80;border:1px solid rgba(74,222,128,0.5);}
@@ -73,11 +67,45 @@
 .zone-tag-badge.mobile{background:rgba(111,168,255,0.2);color:#6FA8FF;border:1px solid rgba(111,168,255,0.5);}
 .zone-tag-badge.other{background:rgba(180,120,255,0.2);color:#C0A0FF;border:1px solid rgba(180,120,255,0.5);}
 .zone-tag-badge.unknown{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);}
-.zone-stats{display:flex;gap:16px;font-size:12px;color:rgba(255,255,255,0.7);flex-wrap:wrap;margin-bottom:8px;}
+.zone-stats{display:flex;gap:16px;font-size:12px;color:rgba(255,255,255,0.7);flex-wrap:wrap;margin-bottom:10px;}
 .zone-stats b{color:#fff;font-weight:800;}
-.zone-users{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
-.zone-user{padding:3px 9px;border-radius:999px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);font-size:11px;color:rgba(255,255,255,0.8);}
-.zone-actions{display:flex;gap:6px;flex-wrap:wrap;}
+
+.zone-section-label{
+  margin:10px 0 6px;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.4);
+}
+.zone-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.zone-pill{
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  font-size:11px;
+  color:rgba(255,255,255,0.85);
+}
+.zone-pill.device{
+  background:rgba(111,168,255,0.12);
+  border-color:rgba(111,168,255,0.35);
+  color:#8BC0FF;
+}
+.zone-pill.user{
+  background:rgba(74,222,128,0.10);
+  border-color:rgba(74,222,128,0.35);
+  color:#7FEFA0;
+  font-weight:700;
+}
+.zone-pill.empty{
+  background:transparent;
+  border-style:dashed;
+  color:rgba(255,255,255,0.35);
+  font-style:italic;
+}
+
+.zone-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
 .zone-btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.8);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
 .zone-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
 .zone-btn.active{background:#4ADE80;color:#0a1f0f;border-color:#4ADE80;}
@@ -89,6 +117,16 @@
 .block h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
 .block h2 small{font-size:12px;font-weight:500;color:rgba(255,255,255,0.4);}
 .empty{padding:40px;text-align:center;color:rgba(255,255,255,0.4);font-size:14px;}
+
+@media(max-width:720px){
+  .feed-head{display:none;}
+  .feed-row{grid-template-columns:60px 40px 1fr;grid-template-areas:"time device who" "subnet subnet action";gap:6px;padding:12px 14px;}
+  .feed-time{grid-area:time;}
+  .feed-device{grid-area:device;}
+  .feed-subnet{grid-area:subnet;font-size:11px;}
+  .feed-who{grid-area:who;}
+  .feed-action{grid-area:action;justify-self:flex-end;}
+}
 </style>
 </head><body class="admin-page">
 
@@ -108,16 +146,13 @@
       </div>
     </div>
 
-    <!-- Сводка -->
     <div class="summary-grid" id="summaryGrid"></div>
 
-    <!-- Воронка -->
     <div class="block">
       <h2>🎯 Воронка: что происходит с пользователем</h2>
       <div class="funnel" id="funnelBox"><div class="empty">Загрузка…</div></div>
     </div>
 
-    <!-- Живая лента -->
     <div class="block">
       <h2>📡 Живая лента заходов <small id="feedRangeLabel"></small></h2>
       <div class="feed-box">
@@ -132,7 +167,6 @@
       </div>
     </div>
 
-    <!-- По часам -->
     <div class="block">
       <h2>🕐 По часам — кто когда заходит</h2>
       <div style="padding:20px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
@@ -150,7 +184,6 @@
       </div>
     </div>
 
-    <!-- Зоны IP -->
     <div class="block">
       <h2>🌍 Зоны IP <small>(сгруппировано по подсетям)</small></h2>
       <div class="zones-toolbar">
@@ -190,8 +223,7 @@ function fmtTime(ts){
 }
 
 function deviceIcon(d){
-  if (d === 'mobile') return '📱';
-  if (d === 'tablet') return '📱';
+  if (d === 'mobile' || d === 'tablet') return '📱';
   return '💻';
 }
 
@@ -207,7 +239,6 @@ const CHAR_EMOJI = {
   prof:'🧑‍🏫', dean:'🧑‍💼', legend:'👑'
 };
 
-/* ═════ Период ═════ */
 document.querySelectorAll('.period-tab').forEach(t => {
   t.onclick = () => {
     document.querySelectorAll('.period-tab').forEach(x => x.classList.remove('active'));
@@ -217,7 +248,6 @@ document.querySelectorAll('.period-tab').forEach(t => {
   };
 });
 
-/* ═════ Сортировка зон ═════ */
 document.querySelectorAll('.sort-tab').forEach(t => {
   t.onclick = () => {
     document.querySelectorAll('.sort-tab').forEach(x => x.classList.remove('active'));
@@ -227,7 +257,6 @@ document.querySelectorAll('.sort-tab').forEach(t => {
   };
 });
 
-/* ═════ Сводка ═════ */
 async function loadSummary(){
   try{
     const s = await adminApi('/admin/api/summary?days=' + currentDays);
@@ -245,7 +274,6 @@ async function loadSummary(){
   }catch(e){ console.warn('summary:', e); }
 }
 
-/* ═════ Воронка ═════ */
 async function loadFunnel(){
   try{
     const f = await adminApi('/admin/api/funnel?days=' + currentDays);
@@ -275,7 +303,6 @@ async function loadFunnel(){
   }catch(e){ console.warn('funnel:', e); }
 }
 
-/* ═════ Живая лента ═════ */
 async function loadFeed(){
   try{
     const r = await adminApi('/admin/api/feed?days=' + currentDays + '&limit=60');
@@ -311,7 +338,6 @@ async function loadFeed(){
   }catch(e){ console.warn('feed:', e); }
 }
 
-/* ═════ Часы ═════ */
 async function loadHours(){
   try{
     const r = await adminApi('/admin/api/hours-full?days=' + currentDays);
@@ -339,7 +365,6 @@ async function loadHours(){
   }catch(e){ console.warn('hours:', e); }
 }
 
-/* ═════ Зоны IP ═════ */
 async function loadZones(){
   try{
     const r = await adminApi('/admin/api/zones?days=' + currentDays + '&sort=' + currentSort);
@@ -356,14 +381,22 @@ async function loadZones(){
       const el = document.createElement('div');
       el.className = 'zone-card';
 
-      const usersHtml = z.users.length
-        ? z.users.map(u => '<span class="zone-user">' + escapeHtml(u.nick) + '</span>').join('')
-        : '<span class="zone-user" style="opacity:0.5;">только гости</span>';
-
       const tagLabels = {
         mgsu: '🏛 МГСУ', dorm: '🛏 Общага',
         mobile: '📡 Мобильный', other: '❓ Другое', unknown: '— Не размечено'
       };
+
+      // Устройства
+      const devicesList = z.devices || [];
+      const devicesHtml = devicesList.length
+        ? devicesList.map(d => '<span class="zone-pill device">' + escapeHtml(d) + '</span>').join('')
+        : '<span class="zone-pill empty">устройства не записаны</span>';
+
+      // Игроки
+      const usersList = z.users || [];
+      const usersHtml = usersList.length
+        ? usersList.map(u => '<span class="zone-pill user">' + escapeHtml(u.nick) + '</span>').join('')
+        : '<span class="zone-pill empty">только гости</span>';
 
       el.innerHTML =
         '<div class="zone-head">' +
@@ -373,10 +406,12 @@ async function loadZones(){
         '<div class="zone-stats">' +
           '<span>📊 <b>' + z.visits + '</b> заходов</span>' +
           '<span>👤 <b>' + z.users_count + '</b> игроков</span>' +
-          '<span>📱 <b>' + z.mobile_count + '</b> с телефона</span>' +
           '<span>🕐 последний: <b>' + fmtTime(z.last_seen) + '</b></span>' +
         '</div>' +
-        '<div class="zone-users">' + usersHtml + '</div>' +
+        '<div class="zone-section-label">💻 Устройства</div>' +
+        '<div class="zone-pills">' + devicesHtml + '</div>' +
+        '<div class="zone-section-label">🎓 Игроки</div>' +
+        '<div class="zone-pills">' + usersHtml + '</div>' +
         '<div class="zone-actions">' +
           '<button class="zone-btn" data-tag="mgsu">🏛 МГСУ</button>' +
           '<button class="zone-btn dorm" data-tag="dorm">🛏 Общага</button>' +
@@ -390,7 +425,6 @@ async function loadZones(){
         if (b.dataset.tag === z.tag) b.classList.add('active');
       });
 
-      // Обработчики
       el.querySelectorAll('.zone-btn').forEach(b => {
         b.onclick = async () => {
           try{
@@ -412,7 +446,6 @@ async function loadZones(){
   }
 }
 
-/* ═════ Загрузка всего ═════ */
 function loadAll(){
   loadSummary();
   loadFunnel();

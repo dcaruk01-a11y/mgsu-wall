@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Header
 from datetime import datetime
 from config import MSK, TG_FEEDBACK_BOT_TOKEN, TG_ADMIN_ID
-import httpx
+import httpx, time, aiosqlite
+from config import DB_PATH
 import core.state as state
 import core.analytics as analytics
 from core.storage import make_snapshot, post_to_telegram
@@ -76,7 +77,6 @@ async def api_dev_credits():
 
 @router.get("/api/top-day")
 async def api_top_day():
-    """Топ-3 за сегодня — для блока на главной."""
     try:
         from core.top import top_day
         top = await top_day(3)
@@ -94,8 +94,68 @@ async def manual_snapshot():
 
 
 # ═══════════════════════════════════════════════════════════
-# FEEDBACK — обратная связь от игроков
+# FEEDBACK — обратная связь
 # ═══════════════════════════════════════════════════════════
+
+@router.get("/api/feedback/check")
+async def api_feedback_check(authorization: str = Header(default="")):
+    """Проверяет, есть ли у игрока активный запрос отзыва от админа."""
+    token = (authorization or "").replace("Bearer ", "").strip()
+    if not token:
+        return {"ok": True, "pending": False}
+
+    try:
+        import core.users as users
+        user = await users.get_user_by_token(token)
+        if not user:
+            return {"ok": True, "pending": False}
+
+        uid = user["uid"]
+        async with aiosqlite.connect(DB_PATH) as db:
+            cur = await db.execute("""
+                SELECT COALESCE(feedback_request_at, 0), COALESCE(feedback_seen_at, 0)
+                FROM users WHERE uid=?
+            """, (uid,))
+            row = await cur.fetchone()
+
+        if not row:
+            return {"ok": True, "pending": False}
+
+        req_at, seen_at = row[0] or 0, row[1] or 0
+        pending = req_at > 0 and seen_at < req_at
+        return {"ok": True, "pending": pending, "requested_at": req_at}
+    except Exception as e:
+        print("feedback check error:", e)
+        return {"ok": True, "pending": False}
+
+
+@router.post("/api/feedback/seen")
+async def api_feedback_seen(authorization: str = Header(default="")):
+    """Игрок увидел попап — помечаем."""
+    token = (authorization or "").replace("Bearer ", "").strip()
+    if not token:
+        return {"ok": False}
+
+    try:
+        import core.users as users
+        user = await users.get_user_by_token(token)
+        if not user:
+            return {"ok": False}
+
+        uid = user["uid"]
+        async with aiosqlite.connect(DB_PATH) as db:
+            await db.execute(
+                "UPDATE users SET feedback_seen_at=? WHERE uid=?",
+                (time.time(), uid)
+            )
+            await db.commit()
+
+        return {"ok": True}
+    except Exception as e:
+        print("feedback seen error:", e)
+        return {"ok": False}
+
+
 @router.post("/api/feedback/app")
 async def api_feedback_app(payload: dict, authorization: str = Header(default="")):
     """Приём обратной связи из попапа. Отправляет админу в Telegram."""
@@ -107,7 +167,6 @@ async def api_feedback_app(payload: dict, authorization: str = Header(default=""
     if stars <= 0:
         return {"ok": False, "error": "Нужна оценка"}
 
-    # Определяем игрока
     uid = ""
     nick = "Гость"
     token = (authorization or "").replace("Bearer ", "").strip()
@@ -118,6 +177,17 @@ async def api_feedback_app(payload: dict, authorization: str = Header(default=""
             if user:
                 uid = user["uid"]
                 nick = user["display_name"]
+        except Exception:
+            pass
+
+    # Сбрасываем pending-запрос
+    if uid:
+        try:
+            async with aiosqlite.connect(DB_PATH) as db:
+                await db.execute("""
+                    UPDATE users SET feedback_request_at=0, feedback_seen_at=? WHERE uid=?
+                """, (time.time(), uid))
+                await db.commit()
         except Exception:
             pass
 

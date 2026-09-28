@@ -50,7 +50,6 @@ async def db_init_ip():
                 ts REAL
             )
         """)
-        # Миграции: page, action, user_agent
         try:
             cur = await db.execute("PRAGMA table_info(visits)")
             existing = {row[1] for row in await cur.fetchall()}
@@ -100,7 +99,6 @@ async def db_init_ip():
 
 async def track_visit(ip: str, user_agent: str, uid: str = "",
                       page: str = "", action: str = "visit"):
-    """Сохраняет заход."""
     ip = normalize_ip(ip)
     subnet = get_subnet(ip)
     device = classify_device(user_agent)
@@ -119,7 +117,6 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
             VALUES (?,?,?,?,?,?,?,?,?)
         """, (uid or "", ip, subnet, device, hour, now_ts, page, action, user_agent))
 
-        # Агрегат по часам
         cur = await db.execute(
             "SELECT visits FROM daily_hours WHERE day=? AND hour=?",
             (day, hour)
@@ -135,7 +132,6 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
                 VALUES (?,?,?,?)
             """, (day, hour, 1, 0))
 
-        # IP-тег
         cur = await db.execute("SELECT subnet FROM ip_tags WHERE subnet=?", (subnet,))
         if await cur.fetchone():
             await db.execute("""
@@ -190,7 +186,7 @@ async def get_live_feed(limit: int = 60, days: int = 7):
 
 
 # ═══════════════════════════════════════════════════════════
-# ЗОНЫ IP — с устройствами и игроками
+# ЗОНЫ IP — ОПТИМИЗИРОВАНО (5 запросов вместо 230)
 # ═══════════════════════════════════════════════════════════
 async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
     days = max(1, min(days, 90))
@@ -204,7 +200,7 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
     order = order_map.get(sort_by, "visits DESC")
 
     async with aiosqlite.connect(DB_PATH) as db:
-        # ═══ 1. Основная агрегация по подсетям ═══
+        # 1. Агрегация по подсетям
         cur = await db.execute(f"""
             SELECT subnet,
                    COUNT(*) as visits,
@@ -226,7 +222,7 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
         subnets = [r[0] for r in rows]
         placeholders = ",".join("?" * len(subnets))
 
-        # ═══ 2. Игроки по ВСЕМ подсетям — один запрос ═══
+        # 2. Игроки по всем подсетям одним запросом
         cur = await db.execute(f"""
             SELECT DISTINCT subnet, uid
             FROM visits
@@ -239,11 +235,12 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
         subnet_uids = {}
         all_uids = set()
         for sub, uid in uid_rows:
-            if len(subnet_uids.get(sub, [])) < 10:
-                subnet_uids.setdefault(sub, []).append(uid)
+            lst = subnet_uids.setdefault(sub, [])
+            if len(lst) < 10:
+                lst.append(uid)
             all_uids.add(uid)
 
-        # ═══ 3. Ники по всем uid — один запрос ═══
+        # 3. Ники по всем uid
         nick_map = {}
         if all_uids:
             uid_list = list(all_uids)
@@ -254,7 +251,7 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
             )
             nick_map = {r[0]: r[1] for r in await cur.fetchall()}
 
-        # ═══ 4. User-Agent'ы по всем подсетям — один запрос ═══
+        # 4. User-Agent'ы по подсетям
         cur = await db.execute(f"""
             SELECT DISTINCT subnet, user_agent
             FROM visits
@@ -271,14 +268,13 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
             if len(s) < 30:
                 s.add(ua)
 
-        # ═══ 5. Теги по всем подсетям — один запрос ═══
+        # 5. Теги
         cur = await db.execute(f"""
             SELECT subnet, tag, label FROM ip_tags
             WHERE subnet IN ({placeholders})
         """, subnets)
         tag_map = {r[0]: (r[1], r[2]) for r in await cur.fetchall()}
 
-    # ═══ Собираем результат ═══
     zones = []
     for r in rows:
         subnet = r[0]
@@ -307,7 +303,6 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
 
 
 def _simplify_agents(agents: list) -> list:
-    """Превращает User-Agent в понятные названия устройств."""
     result = []
     seen = set()
     for ua in agents:
@@ -391,13 +386,12 @@ async def get_hourly_full(days: int = 7):
 
 
 async def get_hourly_stats(days: int = 1):
-    """Оставлено для совместимости."""
     hourly = await get_hourly_full(days)
     return [{"hour": h["hour"], "visits": h["visits"], "uniques": h["uniques"]} for h in hourly]
 
 
 # ═══════════════════════════════════════════════════════════
-# ВОРОНКА
+# ВОРОНКА — УБРАН date(ts, 'unixepoch') — Turso не поддерживает
 # ═══════════════════════════════════════════════════════════
 async def get_funnel(days: int = 7):
     days = max(1, min(days, 90))
@@ -428,13 +422,14 @@ async def get_funnel(days: int = 7):
         )
         played = (await cur.fetchone())[0] or 0
 
+        # Turso не умеет date(ts, 'unixepoch') — считаем по количеству заходов
         cur = await db.execute("""
             SELECT COUNT(*) FROM (
-                SELECT uid, COUNT(DISTINCT substr(date(ts, 'unixepoch'), 1, 10)) as days
+                SELECT uid, COUNT(*) as cnt
                 FROM visits
                 WHERE ts > ? AND uid != ''
                 GROUP BY uid
-                HAVING days >= 2
+                HAVING cnt >= 2
             )
         """, (cutoff,))
         returned = (await cur.fetchone())[0] or 0
@@ -476,7 +471,7 @@ async def get_summary(days: int = 7):
 
 
 # ═══════════════════════════════════════════════════════════
-# СТАРЫЕ ФУНКЦИИ (для совместимости)
+# СТАРЫЕ ФУНКЦИИ
 # ═══════════════════════════════════════════════════════════
 async def get_ip_summary():
     async with aiosqlite.connect(DB_PATH) as db:

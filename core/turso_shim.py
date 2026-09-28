@@ -1,6 +1,6 @@
 """
 Замена aiosqlite на Turso через HTTP API v2/pipeline.
-Переиспользует ОДИН httpx.AsyncClient на все запросы — экономит TCP-коннекты.
+Переиспользует ОДИН httpx.AsyncClient — экономит TCP-коннекты.
 """
 import os
 import httpx
@@ -19,7 +19,6 @@ else:
 
 PIPELINE_URL = BASE_URL.rstrip("/") + "/v2/pipeline"
 
-# ★ ОДИН глобальный клиент — переиспользуется всеми запросами
 _global_client: httpx.AsyncClient = None
 _headers = {
     "Authorization": f"Bearer {TURSO_TOKEN}",
@@ -117,7 +116,6 @@ class _Conn:
             ]
         }
 
-        # ★ Используем ОДИН глобальный клиент
         hc = _get_client()
         r = await hc.post(PIPELINE_URL, json=payload, headers=_headers)
 

@@ -1071,7 +1071,13 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
 <script>
 (function(){
-  try{ fetch('/api/visit', {method:'POST'}).catch(()=>{}); }catch(e){}
+  try{
+    fetch('/api/visit', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({page: location.pathname})
+    }).catch(()=>{});
+  }catch(e){}
 })();
 </script>
 </body></html>

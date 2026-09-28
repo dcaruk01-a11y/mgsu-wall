@@ -1,6 +1,6 @@
 """
-Замена aiosqlite на Turso через прямой HTTP API (v2/pipeline).
-Работает с любым Python, использует httpx (уже в проекте).
+Замена aiosqlite на Turso через HTTP API v2/pipeline.
+Переиспользует ОДИН httpx.AsyncClient на все запросы — экономит TCP-коннекты.
 """
 import os
 import httpx
@@ -8,7 +8,6 @@ import httpx
 TURSO_URL = os.environ.get("TURSO_DATABASE_URL", "").strip()
 TURSO_TOKEN = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
 
-# Приводим URL к виду https://xxx.turso.io
 if TURSO_URL.startswith("libsql://"):
     BASE_URL = "https://" + TURSO_URL[len("libsql://"):]
 elif TURSO_URL.startswith("turso://"):
@@ -20,9 +19,30 @@ else:
 
 PIPELINE_URL = BASE_URL.rstrip("/") + "/v2/pipeline"
 
+# ★ ОДИН глобальный клиент — переиспользуется всеми запросами
+_global_client: httpx.AsyncClient = None
+_headers = {
+    "Authorization": f"Bearer {TURSO_TOKEN}",
+    "Content-Type": "application/json",
+}
+
+
+def _get_client() -> httpx.AsyncClient:
+    global _global_client
+    if _global_client is None or _global_client.is_closed:
+        _global_client = httpx.AsyncClient(
+            timeout=20,
+            limits=httpx.Limits(
+                max_keepalive_connections=20,
+                max_connections=50,
+                keepalive_expiry=60,
+            ),
+            http2=False,
+        )
+    return _global_client
+
 
 def _to_turso_arg(v):
-    """Python-значение → формат аргумента Turso."""
     if v is None:
         return {"type": "null"}
     if isinstance(v, bool):
@@ -38,7 +58,6 @@ def _to_turso_arg(v):
 
 
 def _from_turso_cell(cell):
-    """Ячейка Turso → Python-значение."""
     if cell is None:
         return None
     t = cell.get("type")
@@ -97,13 +116,10 @@ class _Conn:
                 {"type": "close"},
             ]
         }
-        headers = {
-            "Authorization": f"Bearer {TURSO_TOKEN}",
-            "Content-Type": "application/json",
-        }
 
-        async with httpx.AsyncClient(timeout=30) as hc:
-            r = await hc.post(PIPELINE_URL, json=payload, headers=headers)
+        # ★ Используем ОДИН глобальный клиент
+        hc = _get_client()
+        r = await hc.post(PIPELINE_URL, json=payload, headers=_headers)
 
         if r.status_code != 200:
             print("Turso HTTP error:", r.status_code, r.text[:300])
@@ -125,11 +141,9 @@ class _Conn:
         response = first.get("response", {}) or {}
         result = response.get("result", {}) or {}
 
-        # rows — массив массивов ячеек
         raw_rows = result.get("rows", []) or []
         rows = [tuple(_from_turso_cell(cell) for cell in row) for row in raw_rows]
 
-        # lastrowid — приходит при INSERT
         lastrowid = result.get("last_insert_rowid")
         if lastrowid is not None:
             try:

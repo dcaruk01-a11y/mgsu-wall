@@ -176,7 +176,13 @@
         </div>
       </div>
     </div>
-
+    <!-- Институт -->
+    <div class="card" id="instituteCard" style="margin-bottom:20px;">
+      <h3>🏛 Мой институт</h3>
+      <div id="instituteBox">
+        <div class="tasks-empty">Загрузка…</div>
+      </div>
+    </div>
     <!-- Ранг аккаунта -->
     <div class="card" id="rankCard" style="margin-bottom:20px;">
       <h3>🏅 Твой ранг</h3>
@@ -618,6 +624,121 @@ document.getElementById('btnLogout').onclick = async function(){
     e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);
   });
 });
+/* ═══════════════════════════════════════════════════════════
+   ИНСТИТУТ
+   ═══════════════════════════════════════════════════════════ */
+let allInstitutes = [];
+let myInstitute = '';
+
+async function loadInstituteBlock(){
+  try{
+    const r = await api('/api/institutes');
+    allInstitutes = r.data.institutes || [];
+    myInstitute = (window.__user && window.__user.institute) || '';
+    renderInstituteBlock();
+  }catch(e){
+    const box = document.getElementById('instituteBox');
+    if (box) box.innerHTML = '<div class="tasks-empty">Не удалось загрузить</div>';
+  }
+}
+
+function renderInstituteBlock(){
+  const box = document.getElementById('instituteBox');
+  if (!box) return;
+
+  if (myInstitute){
+    const inst = allInstitutes.find(i => i.key === myInstitute);
+    if (!inst){
+      box.innerHTML = '<div class="tasks-empty">Институт не найден</div>';
+      return;
+    }
+    box.innerHTML =
+      '<div style="display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px;background:rgba(111,168,255,0.10);border:1px solid rgba(111,168,255,0.35);">' +
+        '<div style="font-size:36px;line-height:1;">' + inst.emoji + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:18px;font-weight:900;">' + inst.short + '</div>' +
+          '<div style="font-size:12px;opacity:0.65;margin-top:2px;">' + inst.name + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="margin-top:14px;font-size:12px;opacity:0.65;line-height:1.5;">' +
+        '💡 Все твои очки идут в копилку института.<br>' +
+        '⚠️ Смена института <b style="color:#FF8B8B;">обнулит весь прогресс</b> — очки, монеты, серию, скины.' +
+      '</div>' +
+      '<div style="margin-top:14px;text-align:center;">' +
+        '<button class="btn btn-danger" id="btnChangeInstitute" style="font-size:13px;padding:10px 20px;">Сменить институт</button>' +
+      '</div>';
+
+    document.getElementById('btnChangeInstitute').onclick = () => {
+      const warn = 'СМЕНА ИНСТИТУТА = ПОЛНОЕ ОБНУЛЕНИЕ:\n\n' +
+        '• Очки: 0\n' +
+        '• Монеты: 0\n' +
+        '• Серия дней: 0\n' +
+        '• Партии: 0\n' +
+        '• Скины: только Студент 🎓\n\n' +
+        'Имя, UID и PIN сохранятся.\n\n' +
+        'Точно сменить?';
+      if (!confirm(warn)) return;
+      myInstitute = '';
+      renderInstitutePicker();
+    };
+  } else {
+    renderInstitutePicker();
+  }
+}
+
+function renderInstitutePicker(){
+  const box = document.getElementById('instituteBox');
+  if (!box) return;
+
+  let html = '<div style="font-size:13px;opacity:0.75;margin-bottom:14px;line-height:1.5;">Выбери свой институт. После выбора все твои очки будут копиться в его копилку. Выбрать можно <b>только один раз</b>.</div>';
+  html += '<div id="instGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;">';
+  allInstitutes.forEach(i => {
+    html +=
+      '<button class="inst-item" data-key="' + i.key + '" type="button" style="padding:14px 10px;border-radius:12px;border:2px solid rgba(128,128,128,0.25);background:rgba(128,128,128,0.06);cursor:pointer;font-family:inherit;color:inherit;text-align:center;transition:transform .1s, background .15s;">' +
+        '<div style="font-size:28px;line-height:1;margin-bottom:6px;">' + i.emoji + '</div>' +
+        '<div style="font-size:14px;font-weight:900;">' + i.short + '</div>' +
+        '<div style="font-size:10px;opacity:0.6;margin-top:3px;line-height:1.3;">' + i.name.slice(0, 50) + '</div>' +
+      '</button>';
+  });
+  html += '</div>';
+  box.innerHTML = html;
+
+  document.querySelectorAll('.inst-item').forEach(b => {
+    b.onmouseenter = () => { b.style.background = 'rgba(111,168,255,0.15)'; b.style.borderColor = 'rgba(111,168,255,0.55)'; };
+    b.onmouseleave = () => { b.style.background = 'rgba(128,128,128,0.06)'; b.style.borderColor = 'rgba(128,128,128,0.25)'; };
+    b.onclick = () => chooseInstitute(b.dataset.key);
+  });
+}
+
+async function chooseInstitute(key){
+  const inst = allInstitutes.find(i => i.key === key);
+  if (!inst) return;
+  if (!confirm('Выбрать «' + inst.short + '»?\n\nВсе твои очки пойдут в копилку этого института.')) return;
+
+  try{
+    const r = await api('/api/institutes/set', {
+      method:'POST',
+      body: JSON.stringify({institute: key})
+    });
+    if (r.status !== 200){
+      alert(r.data.detail || 'Ошибка');
+      return;
+    }
+    myInstitute = key;
+    alert('Институт «' + inst.short + '» выбран!');
+    location.reload();
+  }catch(e){
+    alert('Ошибка соединения');
+  }
+}
+
+// Запускаем после того как пользователь загрузился
+const _origSetUser = setUser;
+setUser = function(u){
+  _origSetUser(u);
+  window.__user = u;
+  loadInstituteBlock();
+};
 </script>
 
 </body></html>

@@ -64,6 +64,19 @@ function isGamePage(){
   return location.pathname.indexOf('/games/') === 0;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   СКИНЫ ПЕРСОНАЖЕЙ
+   ═══════════════════════════════════════════════════════════ */
+var CHAR_EMOJI = {
+  student: '🎓',
+  sso: '👷',
+  prorab: '📋',
+  builder: '🏗️',
+  prof: '🧑‍🏫',
+  dean: '🧑‍💼',
+  legend: '👑'
+};
+
 
 /* ═══════════════════════════════════════════════════════════
    РЕНДЕР ШАПКИ
@@ -77,17 +90,17 @@ function renderSiteHeader(active, opts){
   var token = localStorage.getItem('mgsu_token') || '';
   var isLoggedIn = !!token;
   var nick = localStorage.getItem('mgsu_nick') || '';
-  var initial = nick ? nick.charAt(0).toUpperCase() : '👤';
+
+  // ★ Скин игрока
+  var activeChar = localStorage.getItem('mgsu_active_char') || 'student';
+  var avatarIcon = CHAR_EMOJI[activeChar] || '🎓';
 
   var onHome = isOnHomePage();
 
-  // Лого — на главную
   var brandHref = onHome ? '#' : '/glavnaya';
   var brandClick = onHome ? ' onclick="scrollToTop(event)"' : '';
 
-  /* ═══ НАВИГАЦИЯ ═══ */
-
-  // 🎮 Игры
+  /* 🎮 Игры */
   var gamesHref = onHome ? '#games' : '/glavnaya#games';
   var gamesClick = onHome ? ' onclick="scrollToGames(event)"' : '';
   var gamesActive = (onHome && active === 'games') ? ' active' : '';
@@ -97,7 +110,7 @@ function renderSiteHeader(active, opts){
       '<span class="site-header-link-label">Игры</span>' +
     '</a>';
 
-  // 🏆 Рейтинг
+  /* 🏆 Рейтинг */
   var rActive = (active === 'ratings') ? ' active' : '';
   var ratingsLink =
     '<a href="/ratings" data-key="ratings" class="site-header-link' + rActive + '" title="Рейтинг">' +
@@ -105,7 +118,7 @@ function renderSiteHeader(active, opts){
       '<span class="site-header-link-label">Рейтинг</span>' +
     '</a>';
 
-  // 🛍 Магазин
+  /* 🛍 Магазин */
   var sActive = (active === 'shop') ? ' active' : '';
   var shopLink =
     '<a href="/shop" data-key="shop" class="site-header-link' + sActive + '" title="Магазин">' +
@@ -113,16 +126,14 @@ function renderSiteHeader(active, opts){
       '<span class="site-header-link-label">Магазин</span>' +
     '</a>';
 
-  /* ═══ ПРАВАЯ ЧАСТЬ — профиль ═══ */
+  /* ПРАВАЯ ЧАСТЬ */
   var profileHtml = '';
   if (isLoggedIn){
-    // Аватарка
     profileHtml =
       '<a href="/profile" class="site-header-avatar' + (active==='profile'?' active':'') + '" title="' + (nick || 'Профиль') + '">' +
-        '<span>' + initial + '</span>' +
+        '<span>' + avatarIcon + '</span>' +
       '</a>';
   } else {
-    // Кнопка "Войти" — в том же стиле что и навигация
     profileHtml =
       '<a href="/auth" class="site-header-profile' + (active==='auth'?' active':'') + '" title="Войти">' +
         '<span class="site-header-profile-icon">👤</span>' +
@@ -133,39 +144,39 @@ function renderSiteHeader(active, opts){
   container.className = 'site-header';
   container.innerHTML =
     '<div class="site-header-inner">' +
-
-      // ЛОГО (слева)
       '<a href="' + brandHref + '" class="site-header-brand" id="siteBrand"' + brandClick + '>' +
         '<img src="/assets/icons/logo-square.svg" alt="Лого" class="site-header-logo">' +
-        '<span class="site-header-label"><b>Игры МГСУ</b></span>' +
+        '<span class="site-header-label">Игры МГСУ</span>' +
       '</a>' +
-
-      // НАВИГАЦИЯ (центр)
       '<nav class="site-header-nav">' +
         gamesLink +
         ratingsLink +
         shopLink +
       '</nav>' +
-
-      // ПРОФИЛЬ (справа)
       profileHtml +
-
     '</div>';
 
-  // Скролл-спай только на главной
   if (onHome){
     setupScrollSpy();
   }
 
-  // Подтянуть ник если залогинен но не сохранён
-  if (isLoggedIn && !nick){
+  // ★ Подтягиваем профиль если залогинен (обновляем ник и скин)
+  if (isLoggedIn){
     fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + token}})
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(d){
         if (d && d.user){
           localStorage.setItem('mgsu_nick', d.user.display_name);
+          if (d.user.active_char){
+            localStorage.setItem('mgsu_active_char', d.user.active_char);
+          }
           var av = container.querySelector('.site-header-avatar span');
-          if (av) av.textContent = d.user.display_name.charAt(0).toUpperCase();
+          if (av){
+            var ch = d.user.active_char || 'student';
+            av.textContent = CHAR_EMOJI[ch] || '🎓';
+          }
+          var avatarEl = container.querySelector('.site-header-avatar');
+          if (avatarEl) avatarEl.title = d.user.display_name || 'Профиль';
         }
       })
       .catch(function(){});
@@ -175,7 +186,6 @@ function renderSiteHeader(active, opts){
 
 /* ═══════════════════════════════════════════════════════════
    СКРОЛЛ-СПАЙ (только на главной)
-   Когда докрутил до игр — «Игры» становится активной
    ═══════════════════════════════════════════════════════════ */
 function setupScrollSpy(){
   var gamesSection = document.getElementById('games');
@@ -302,7 +312,7 @@ function renderSiteFooter(){
 
 
 /* ═══════════════════════════════════════════════════════════
-   FEEDBACK POPUP — после 3-х игр ИЛИ по запросу админа
+   FEEDBACK POPUP
    ═══════════════════════════════════════════════════════════ */
 (function(){
   if (window.__mgsuFeedbackInit) return;

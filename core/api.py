@@ -99,37 +99,57 @@ async def manual_snapshot():
 
 @router.get("/api/institutes")
 async def api_institutes():
-    """Список всех институтов + рейтинг."""
     from core.institutes import INSTITUTES, get_institutes_rating
     rating = await get_institutes_rating()
-    return {
-        "ok": True,
-        "institutes": INSTITUTES,
-        "rating": rating,
-    }
+    return {"ok": True, "institutes": INSTITUTES, "rating": rating}
 
 
 @router.get("/api/institutes/top")
 async def api_institutes_top():
-    """Топ-3 института для плашки на главной."""
     from core.institutes import get_institutes_rating
     rating = await get_institutes_rating(3)
     return {"ok": True, "top": rating}
 
 
-@router.get("/api/institutes/{key}/players")
-async def api_institute_players(key: str):
-    """Топ-10 игроков внутри института."""
+@router.get("/api/institutes/my")
+async def api_my_institute(authorization: str = Header(default="")):
+    import core.users as users
+    from core.institutes import get_player_institute_info
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    user = await users.get_user_by_token(token) if token else None
+    if not user:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+
+    inst_key = user.get("institute") or ""
+    if not inst_key:
+        return {"ok": True, "has_institute": False}
+
+    info = await get_player_institute_info(user["uid"], inst_key)
+    return {"ok": True, "has_institute": True, "info": info}
+
+
+@router.get("/api/institutes/players")
+async def api_institute_players_q(key: str = "", limit: int = 20):
     from core.institutes import INSTITUTE_MAP, get_institute_players
     if key not in INSTITUTE_MAP:
         raise HTTPException(status_code=404, detail="Институт не найден")
-    players = await get_institute_players(key, 10)
+    limit = max(5, min(limit, 50))
+    players = await get_institute_players(key, limit)
+    return {"ok": True, "players": players}
+
+
+@router.get("/api/institutes/{key}/players")
+async def api_institute_players(key: str):
+    from core.institutes import INSTITUTE_MAP, get_institute_players
+    if key not in INSTITUTE_MAP:
+        raise HTTPException(status_code=404, detail="Институт не найден")
+    players = await get_institute_players(key, 20)
     return {"ok": True, "players": players}
 
 
 @router.post("/api/institutes/set")
 async def api_institutes_set(payload: dict, authorization: str = Header(default="")):
-    """Выбрать или сменить институт. Смена = обнуление."""
     import core.users as users
     from core.institutes import get_institute
 
@@ -147,11 +167,8 @@ async def api_institutes_set(payload: dict, authorization: str = Header(default=
     if not r["ok"]:
         raise HTTPException(status_code=400, detail=r.get("error", "Ошибка"))
 
-    return {
-        "ok": True,
-        "institute": key,
-        "was_change": r.get("was_change", False),
-    }
+    return {"ok": True, "institute": key, "was_change": r.get("was_change", False)}
+
 
 # ═══════════════════════════════════════════════════════════
 # ДОСТИЖЕНИЯ
@@ -159,7 +176,6 @@ async def api_institutes_set(payload: dict, authorization: str = Header(default=
 
 @router.get("/api/achievements")
 async def api_achievements(authorization: str = Header(default="")):
-    """Все ачивки + какие у игрока получены."""
     from core.achievements import ACHIEVEMENTS, get_user_achievements
     import core.users as users
 
@@ -167,7 +183,6 @@ async def api_achievements(authorization: str = Header(default="")):
     user = await users.get_user_by_token(token) if token else None
 
     if not user:
-        # Гостю — все ачивки без отметок
         return {
             "ok": True,
             "logged_in": False,
@@ -200,10 +215,6 @@ async def api_achievements(authorization: str = Header(default="")):
 
 @router.post("/api/achievements/check")
 async def api_achievements_check(authorization: str = Header(default="")):
-    """
-    Перепроверить ачивки вручную.
-    Полезно после смены ранга/института, покупок.
-    """
     from core.achievements import check_and_grant
     import core.users as users
 
@@ -221,6 +232,89 @@ async def api_achievements_check(authorization: str = Header(default="")):
             for a in granted
         ],
     }
+
+
+# ═══════════════════════════════════════════════════════════
+# РАМКИ
+# ═══════════════════════════════════════════════════════════
+
+@router.get("/api/frames/catalog")
+async def api_frames_catalog(authorization: str = Header(default="")):
+    from core.frames import FRAMES, get_user_frames
+    import core.users as users
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    user = await users.get_user_by_token(token) if token else None
+
+    if not user:
+        return {
+            "ok": True,
+            "logged_in": False,
+            "coins": 0,
+            "active_frame": "",
+            "items": [
+                {**f, "owned": False, "active": False, "can_afford": False}
+                for f in FRAMES
+            ],
+        }
+
+    owned_list = await get_user_frames(user["uid"])
+    owned_keys = {f["key"] for f in owned_list}
+    active = user.get("active_frame", "") or ""
+    coins = user.get("coins", 0) or 0
+
+    items = []
+    for f in FRAMES:
+        items.append({
+            **f,
+            "owned": f["key"] in owned_keys,
+            "active": f["key"] == active,
+            "can_afford": coins >= f["price"],
+        })
+
+    return {
+        "ok": True,
+        "logged_in": True,
+        "coins": coins,
+        "active_frame": active,
+        "items": items,
+    }
+
+
+@router.post("/api/frames/buy")
+async def api_frames_buy(payload: dict, authorization: str = Header(default="")):
+    from core.frames import buy_frame
+    import core.users as users
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    user = await users.get_user_by_token(token) if token else None
+    if not user:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+
+    key = str(payload.get("key", "")).strip()
+    r = await buy_frame(user["uid"], key, user.get("coins", 0))
+    if not r["ok"]:
+        raise HTTPException(status_code=400, detail=r.get("error", "Ошибка"))
+    return r
+
+
+@router.post("/api/frames/equip")
+async def api_frames_equip(payload: dict, authorization: str = Header(default="")):
+    from core.frames import equip_frame
+    import core.users as users
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    user = await users.get_user_by_token(token) if token else None
+    if not user:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+
+    key = str(payload.get("key", "")).strip()
+    r = await equip_frame(user["uid"], key)
+    if not r["ok"]:
+        raise HTTPException(status_code=400, detail=r.get("error", "Ошибка"))
+    return r
+
+
 # ═══════════════════════════════════════════════════════════
 # FEEDBACK
 # ═══════════════════════════════════════════════════════════

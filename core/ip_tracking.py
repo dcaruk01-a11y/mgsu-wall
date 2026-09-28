@@ -196,13 +196,15 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
     days = max(1, min(days, 90))
     cutoff = time.time() - days * 86400
 
-    order = "visits DESC"
-    if sort_by == "recent":
-        order = "last_seen DESC"
-    elif sort_by == "users":
-        order = "users_count DESC"
+    order_map = {
+        "visits": "visits DESC",
+        "recent": "last_seen DESC",
+        "users":  "users_count DESC",
+    }
+    order = order_map.get(sort_by, "visits DESC")
 
     async with aiosqlite.connect(DB_PATH) as db:
+        # ═══ 1. Основная агрегация по подсетям ═══
         cur = await db.execute(f"""
             SELECT subnet,
                    COUNT(*) as visits,
@@ -211,66 +213,95 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
                    MIN(ts) as first_seen,
                    MAX(ts) as last_seen
             FROM visits
-            WHERE ts > ?
+            WHERE ts > ? AND subnet != 'unknown'
             GROUP BY subnet
             ORDER BY {order}
-            LIMIT 100
+            LIMIT 40
         """, (cutoff,))
         rows = await cur.fetchall()
 
-        zones = []
-        for r in rows:
-            subnet = r[0]
-            if subnet == "unknown":
-                continue
+        if not rows:
+            return []
 
-            # Игроки с этого subnet
-            cur2 = await db.execute("""
-                SELECT DISTINCT uid FROM visits
-                WHERE subnet = ? AND uid != '' AND ts > ?
-                LIMIT 10
-            """, (subnet, cutoff))
-            uids = [row[0] for row in await cur2.fetchall()]
+        subnets = [r[0] for r in rows]
+        placeholders = ",".join("?" * len(subnets))
 
-            users = []
-            if uids:
-                placeholders = ",".join("?" * len(uids))
-                cur3 = await db.execute(
-                    f"SELECT uid, display_name FROM users WHERE uid IN ({placeholders})",
-                    uids
-                )
-                nick_map = {row[0]: row[1] for row in await cur3.fetchall()}
-                users = [{"uid": u, "nick": nick_map.get(u, "?")} for u in uids]
+        # ═══ 2. Игроки по ВСЕМ подсетям — один запрос ═══
+        cur = await db.execute(f"""
+            SELECT DISTINCT subnet, uid
+            FROM visits
+            WHERE subnet IN ({placeholders})
+              AND uid != ''
+              AND ts > ?
+        """, subnets + [cutoff])
+        uid_rows = await cur.fetchall()
 
-            # Устройства — берём User-Agent и упрощаем
-            cur4 = await db.execute("""
-                SELECT DISTINCT user_agent FROM visits
-                WHERE subnet = ? AND user_agent != '' AND ts > ?
-                LIMIT 30
-            """, (subnet, cutoff))
-            agents = [row[0] for row in await cur4.fetchall()]
-            devices = _simplify_agents(agents)
+        subnet_uids = {}
+        all_uids = set()
+        for sub, uid in uid_rows:
+            if len(subnet_uids.get(sub, [])) < 10:
+                subnet_uids.setdefault(sub, []).append(uid)
+            all_uids.add(uid)
 
-            # Тег
-            cur5 = await db.execute(
-                "SELECT tag, label FROM ip_tags WHERE subnet=?", (subnet,)
+        # ═══ 3. Ники по всем uid — один запрос ═══
+        nick_map = {}
+        if all_uids:
+            uid_list = list(all_uids)
+            ph2 = ",".join("?" * len(uid_list))
+            cur = await db.execute(
+                f"SELECT uid, display_name FROM users WHERE uid IN ({ph2})",
+                uid_list
             )
-            tag_row = await cur5.fetchone()
-            tag = tag_row[0] if tag_row else "unknown"
-            label = tag_row[1] if tag_row else ""
+            nick_map = {r[0]: r[1] for r in await cur.fetchall()}
 
-            zones.append({
-                "subnet": subnet,
-                "visits": r[1] or 0,
-                "users_count": r[2] or 0,
-                "mobile_count": r[3] or 0,
-                "first_seen": r[4],
-                "last_seen": r[5],
-                "tag": tag,
-                "label": label,
-                "users": users,
-                "devices": devices,
-            })
+        # ═══ 4. User-Agent'ы по всем подсетям — один запрос ═══
+        cur = await db.execute(f"""
+            SELECT DISTINCT subnet, user_agent
+            FROM visits
+            WHERE subnet IN ({placeholders})
+              AND user_agent != ''
+              AND ts > ?
+            LIMIT 2000
+        """, subnets + [cutoff])
+        agent_rows = await cur.fetchall()
+
+        subnet_agents = {}
+        for sub, ua in agent_rows:
+            s = subnet_agents.setdefault(sub, set())
+            if len(s) < 30:
+                s.add(ua)
+
+        # ═══ 5. Теги по всем подсетям — один запрос ═══
+        cur = await db.execute(f"""
+            SELECT subnet, tag, label FROM ip_tags
+            WHERE subnet IN ({placeholders})
+        """, subnets)
+        tag_map = {r[0]: (r[1], r[2]) for r in await cur.fetchall()}
+
+    # ═══ Собираем результат ═══
+    zones = []
+    for r in rows:
+        subnet = r[0]
+        uids = subnet_uids.get(subnet, [])
+        users = [{"uid": u, "nick": nick_map.get(u, "?")} for u in uids]
+
+        agents = list(subnet_agents.get(subnet, set()))
+        devices = _simplify_agents(agents)
+
+        tag_row = tag_map.get(subnet, ("unknown", ""))
+
+        zones.append({
+            "subnet": subnet,
+            "visits": r[1] or 0,
+            "users_count": r[2] or 0,
+            "mobile_count": r[3] or 0,
+            "first_seen": r[4],
+            "last_seen": r[5],
+            "tag": tag_row[0],
+            "label": tag_row[1],
+            "users": users,
+            "devices": devices,
+        })
 
     return zones
 
@@ -306,11 +337,19 @@ async def set_ip_tag(subnet: str, tag: str, label: str = ""):
     if tag not in ("mgsu", "dorm", "mobile", "other", "unknown"):
         tag = "unknown"
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
-            INSERT INTO ip_tags (subnet, tag, label, first_seen, last_seen, visits)
-            VALUES (?, ?, ?, ?, ?, 0)
-            ON CONFLICT(subnet) DO UPDATE SET tag=?, label=?
-        """, (subnet, tag, label[:60], time.time(), time.time(), tag, label[:60]))
+        cur = await db.execute("SELECT subnet FROM ip_tags WHERE subnet=?", (subnet,))
+        row = await cur.fetchone()
+        if row:
+            await db.execute(
+                "UPDATE ip_tags SET tag=?, label=? WHERE subnet=?",
+                (tag, label[:60], subnet)
+            )
+        else:
+            await db.execute(
+                "INSERT INTO ip_tags (subnet, tag, label, first_seen, last_seen, visits) "
+                "VALUES (?,?,?,?,?,0)",
+                (subnet, tag, label[:60], time.time(), time.time())
+            )
         await db.commit()
     return {"ok": True}
 

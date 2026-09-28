@@ -1,4 +1,4 @@
-"""IP, часы, сводка по заданиям."""
+"""IP, часы, лента заходов, зоны."""
 import json as _json
 from fastapi import APIRouter, Header, HTTPException
 import aiosqlite
@@ -9,19 +9,38 @@ from core.admin.common import check_admin
 router = APIRouter()
 
 
-@router.get("/admin/api/ips")
-async def admin_ips(token: str = Header(default="", alias="authorization")):
-    if not check_admin(token.replace("Bearer ", "").strip()):
+def _tok(token: str) -> str:
+    return token.replace("Bearer ", "").strip()
+
+
+# ═══════════════════════════════════════════════════════════
+# ЖИВАЯ ЛЕНТА
+# ═══════════════════════════════════════════════════════════
+@router.get("/admin/api/feed")
+async def admin_feed(days: int = 7, limit: int = 60,
+                     token: str = Header(default="", alias="authorization")):
+    if not check_admin(_tok(token)):
         raise HTTPException(status_code=401, detail="Unauthorized")
-    return {
-        "ips": await ip_tracking.get_ip_summary(),
-        "geo": await ip_tracking.get_geo_summary(),
-    }
+    feed = await ip_tracking.get_live_feed(limit=limit, days=days)
+    return {"feed": feed}
 
 
-@router.post("/admin/api/ips/tag")
-async def admin_ip_tag(payload: dict, token: str = Header(default="", alias="authorization")):
-    if not check_admin(token.replace("Bearer ", "").strip()):
+# ═══════════════════════════════════════════════════════════
+# ЗОНЫ IP
+# ═══════════════════════════════════════════════════════════
+@router.get("/admin/api/zones")
+async def admin_zones(days: int = 7, sort: str = "visits",
+                      token: str = Header(default="", alias="authorization")):
+    if not check_admin(_tok(token)):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    zones = await ip_tracking.get_ip_zones(days=days, sort_by=sort)
+    return {"zones": zones}
+
+
+@router.post("/admin/api/zones/tag")
+async def admin_zone_tag(payload: dict,
+                         token: str = Header(default="", alias="authorization")):
+    if not check_admin(_tok(token)):
         raise HTTPException(status_code=401, detail="Unauthorized")
     subnet = str(payload.get("subnet", ""))
     tag = str(payload.get("tag", "unknown"))
@@ -31,9 +50,22 @@ async def admin_ip_tag(payload: dict, token: str = Header(default="", alias="aut
     return await ip_tracking.set_ip_tag(subnet, tag, label)
 
 
+# ═══════════════════════════════════════════════════════════
+# ЧАСЫ С УСТРОЙСТВАМИ
+# ═══════════════════════════════════════════════════════════
+@router.get("/admin/api/hours-full")
+async def admin_hours_full(days: int = 7,
+                           token: str = Header(default="", alias="authorization")):
+    if not check_admin(_tok(token)):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    hours = await ip_tracking.get_hourly_full(days)
+    summary = await ip_tracking.get_summary(days)
+    return {"hours": hours, "summary": summary}
+
+
 @router.get("/admin/api/hours")
 async def admin_hours(days: int = 1, token: str = Header(default="", alias="authorization")):
-    if not check_admin(token.replace("Bearer ", "").strip()):
+    if not check_admin(_tok(token)):
         raise HTTPException(status_code=401, detail="Unauthorized")
     days = max(1, min(days, 30))
     return {
@@ -42,9 +74,56 @@ async def admin_hours(days: int = 1, token: str = Header(default="", alias="auth
     }
 
 
+# ═══════════════════════════════════════════════════════════
+# ВОРОНКА
+# ═══════════════════════════════════════════════════════════
+@router.get("/admin/api/funnel")
+async def admin_funnel(days: int = 7,
+                       token: str = Header(default="", alias="authorization")):
+    if not check_admin(_tok(token)):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return await ip_tracking.get_funnel(days)
+
+
+# ═══════════════════════════════════════════════════════════
+# СВОДКА
+# ═══════════════════════════════════════════════════════════
+@router.get("/admin/api/summary")
+async def admin_summary(days: int = 7,
+                        token: str = Header(default="", alias="authorization")):
+    if not check_admin(_tok(token)):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return await ip_tracking.get_summary(days)
+
+
+# ═══════════════════════════════════════════════════════════
+# СТАРЫЕ ЭНДПОИНТЫ (совместимость)
+# ═══════════════════════════════════════════════════════════
+@router.get("/admin/api/ips")
+async def admin_ips(token: str = Header(default="", alias="authorization")):
+    if not check_admin(_tok(token)):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {
+        "ips": await ip_tracking.get_ip_summary(),
+        "geo": await ip_tracking.get_geo_summary(),
+    }
+
+
+@router.post("/admin/api/ips/tag")
+async def admin_ip_tag(payload: dict, token: str = Header(default="", alias="authorization")):
+    if not check_admin(_tok(token)):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    subnet = str(payload.get("subnet", ""))
+    tag = str(payload.get("tag", "unknown"))
+    label = str(payload.get("label", ""))
+    if not subnet:
+        raise HTTPException(status_code=400, detail="subnet required")
+    return await ip_tracking.set_ip_tag(subnet, tag, label)
+
+
 @router.get("/admin/api/tasks-summary")
 async def admin_tasks_summary(token: str = Header(default="", alias="authorization")):
-    if not check_admin(token.replace("Bearer ", "").strip()):
+    if not check_admin(_tok(token)):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     today = today_str()

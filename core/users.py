@@ -367,9 +367,10 @@ async def add_coins(uid: str, amount: int, reason: str = "") -> dict:
 async def set_institute(uid: str, institute: str) -> dict:
     """
     Привязать или сменить институт.
-    Смена = обнуление всего кроме имени, UID, PIN.
+    Смена = обнуление прогресса (очки, монеты, streak, партии, скины).
+    Институт можно менять в любое время.
     """
-    from core.institutes import INSTITUTES
+    from core.institutes import INSTITUTES, reset_player_institute
     valid_keys = {i["key"] for i in INSTITUTES}
     if institute not in valid_keys:
         return {"ok": False, "error": "Неизвестный институт"}
@@ -384,6 +385,7 @@ async def set_institute(uid: str, institute: str) -> dict:
         is_change = bool(old_institute and old_institute != institute)
 
         if is_change:
+            # Обнуляем прогресс
             await db.execute("""
                 UPDATE users SET
                     institute = ?,
@@ -403,6 +405,13 @@ async def set_institute(uid: str, institute: str) -> dict:
                 (institute, uid)
             )
         await db.commit()
+
+    # Обнуляем очки в старом институте (после закрытия соединения, чтобы не было lock)
+    if is_change:
+        try:
+            await reset_player_institute(uid)
+        except Exception as e:
+            print("reset_player_institute error:", e)
 
     return {
         "ok": True,

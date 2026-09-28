@@ -70,3 +70,13 @@ async def on_startup():
     asyncio.create_task(daily_loop())
     asyncio.create_task(feedback_bot_loop())
     asyncio.create_task(content_publisher_loop())
+
+
+# ── ВРЕМЕННАЯ ДИАГНОСТИКА (удалить после починки) ──
+@app.get("/debug/routes")
+async def debug_routes():
+    routes = []
+    for route in app.routes:
+        if hasattr(route, "path"):
+            routes.append(route.path)
+    return {"total": len(routes), "routes": sorted(routes)}

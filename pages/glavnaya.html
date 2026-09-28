@@ -538,7 +538,16 @@
 <div id="siteHeader"></div>
 
 <div class="page">
-
+<!-- ══════════ ИНСТИТУТ ВПЕРЕДИ ══════════ -->
+<section class="mini-top" id="miniInstSection" style="display:none;">
+  <a href="/ratings" class="mini-top-inner" style="background:rgba(111,168,255,0.10);border-color:rgba(111,168,255,0.35);">
+    <span class="mini-top-label" style="color:#6FA8FF;">🏛 Впереди</span>
+    <div class="mini-top-players" id="miniInstPlayers">
+      <span style="opacity:0.6;font-size:14px;">Загрузка…</span>
+    </div>
+    <span class="mini-top-arrow" style="color:#6FA8FF;">→</span>
+  </a>
+</section>
   <!-- ══════════ ТОП ДНЯ (СВЕРХУ) ══════════ -->
   <section class="top-strip-section" id="topStripSection">
     <a href="/ratings" class="top-strip">
@@ -940,5 +949,40 @@ document.addEventListener('DOMContentLoaded', function(){
 (function(){
   try{ fetch('/api/visit', {method:'POST'}).catch(()=>{}); }catch(e){}
 })();
+/* ═══════════════════════════════════════════════════════════
+   ТОП-3 ИНСТИТУТА
+   ═══════════════════════════════════════════════════════════ */
+async function loadTopInstitutes(){
+  try{
+    const r = await fetch('/api/institutes/top');
+    const data = await r.json();
+    renderTopInstitutes(data.top || []);
+  }catch(e){}
+}
+
+function renderTopInstitutes(top){
+  const section = document.getElementById('miniInstSection');
+  const list = document.getElementById('miniInstPlayers');
+  if (!section || !list) return;
+  if (!top.length){ section.style.display = 'none'; return; }
+
+  section.style.display = 'block';
+  list.innerHTML = '';
+  const medals = ['🥇', '🥈', '🥉'];
+  top.forEach((it, i) => {
+    const el = document.createElement('span');
+    el.className = 'mini-top-player';
+    el.innerHTML =
+      '<span class="medal">' + (medals[i] || '•') + '</span>' +
+      '<span class="nick"></span>' +
+      '<b class="score"></b>';
+    el.querySelector('.nick').textContent = it.emoji + ' ' + it.short;
+    el.querySelector('.score').textContent = it.total;
+    list.appendChild(el);
+  });
+}
+
+// Запускаем при загрузке
+loadTopInstitutes();
 </script>
 </body></html>

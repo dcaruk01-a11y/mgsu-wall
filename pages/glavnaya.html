@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/static/site-header.css">
 <style>
-/* ═══════════ ПРИВЕТСТВЕННАЯ МОДАЛКА ═══════════ */
 .welcome-overlay{
   position:fixed;inset:0;z-index:2500;
   background:rgba(0,0,0,0.55);
@@ -45,19 +44,12 @@
 .welcome-btn:active{transform:scale(0.97);}
 .welcome-hint{font-size:12px;color:var(--text-dim, #94a3b8);margin-top:14px;line-height:1.5;}
 
-/* ═══════════ БАННЕР "ТЕХНИЧЕСКИЙ ПЕРЕРЫВ" ═══════════ */
 .closed-banner{max-width:1100px;margin:14px auto 0;padding:0 20px;}
-.closed-banner-inner{
-  display:flex;align-items:center;gap:14px;
-  padding:14px 20px;border-radius:14px;
-  background:rgba(255,77,94,0.10);
-  border:1px solid rgba(255,77,94,0.35);
-}
+.closed-banner-inner{display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:14px;background:rgba(255,77,94,0.10);border:1px solid rgba(255,77,94,0.35);}
 .closed-banner-icon{font-size:28px;line-height:1;}
 .closed-banner-title{font-size:15px;font-weight:900;color:#FF4D5E;margin-bottom:3px;}
 .closed-banner-text{font-size:13px;opacity:0.75;line-height:1.4;}
 
-/* ═══════════ HERO ═══════════ */
 .mini-hero{padding:36px 20px 14px;max-width:1100px;margin:0 auto;text-align:center;}
 .mini-hero h1{font-size:clamp(32px,6vw,60px);font-weight:900;letter-spacing:-0.035em;line-height:1.02;margin-bottom:12px;color:inherit;}
 .mini-hero h1 em{font-style:normal;background:linear-gradient(135deg,#FFB347,#FF7A2B);-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -69,7 +61,6 @@
 .btn-hero.secondary{background:rgba(128,128,128,0.10);color:inherit;border:1px solid rgba(128,128,128,0.28);}
 .btn-hero.secondary:hover{background:rgba(128,128,128,0.20);transform:translateY(-2px);}
 
-/* ═══════════ МИНИ-ПОЛОСКИ ═══════════ */
 .mini-top{max-width:680px;margin:14px auto 0;padding:0 20px;}
 .mini-top + .mini-top{margin-top:10px;}
 .mini-top-inner{display:flex;align-items:center;gap:14px;padding:12px 20px;border-radius:14px;background:rgba(255,180,80,0.08);border:1px solid rgba(255,180,80,0.28);text-decoration:none;color:inherit;transition:transform .15s, background .15s;}
@@ -96,7 +87,6 @@
   .mini-top-player .nick{max-width:70px;}
 }
 
-/* ═══════════ ИГРЫ ═══════════ */
 .games-section-head{max-width:1100px;margin:24px auto 18px;padding:0 20px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
 .games-section-title{font-size:22px;font-weight:900;letter-spacing:-0.02em;color:inherit;}
 .games-section-hint{font-size:12px;opacity:0.55;font-weight:600;}
@@ -114,7 +104,6 @@
 .game-card-arrow{font-size:14px;opacity:0.55;margin-top:8px;display:inline-flex;align-items:center;gap:6px;font-weight:700;}
 .game-card:hover .game-card-arrow{opacity:1;}
 
-/* ═══════════ БЛОК РАЗРАБОТЧИКОВ ═══════════ */
 .dev-credits{margin:48px auto 32px;padding:0 20px;max-width:1100px;}
 .dev-credits__inner{background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.18);border-radius:16px;padding:24px;text-align:center;}
 .dev-credits__title{font-size:18px;font-weight:800;color:inherit;margin-bottom:4px;}
@@ -126,7 +115,6 @@
 .dev-card__note{font-size:11px;opacity:0.65;}
 .dev-credits__footer{font-size:12px;opacity:0.65;border-top:1px dashed rgba(128,128,128,0.20);padding-top:14px;margin-top:2px;}
 
-/* ═══════════ МОДАЛКА ИГРЫ ═══════════ */
 #gameActions{display:flex;justify-content:center;flex-direction:column;gap:14px;}
 #gameActions .btn-play{margin:0 auto;min-width:240px;max-width:320px;width:100%;}
 .game-tasks-block{padding:16px 18px;border-radius:14px;background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.30);text-align:left;}
@@ -171,7 +159,6 @@
 </style>
 </head><body>
 
-<!-- ══════════ ПРИВЕТСТВЕННАЯ МОДАЛКА ══════════ -->
 <div class="welcome-overlay" id="welcomeOverlay">
   <div class="welcome-card">
     <div class="welcome-emoji">🎮</div>
@@ -207,7 +194,6 @@
 
 <div id="siteHeader"></div>
 
-<!-- ══════════ БАННЕР РАСПИСАНИЯ ══════════ -->
 <div class="closed-banner" id="closedBanner" style="display:none;">
   <div class="closed-banner-inner">
     <div class="closed-banner-icon">🔒</div>
@@ -218,7 +204,6 @@
   </div>
 </div>
 
-<!-- ══════════ HERO ══════════ -->
 <section class="mini-hero">
   <h1>Играй. Копи монеты.<br><em>Качай персонажа.</em></h1>
   <p>Игры для студентов МГСУ. Без установки, без регистрации.</p>
@@ -228,7 +213,6 @@
   </div>
 </section>
 
-<!-- ══════════ ТОП-3 ДНЯ ══════════ -->
 <section class="mini-top" id="miniTopSection" style="display:none;">
   <a href="/ratings?tab=me&period=day" class="mini-top-inner">
     <span class="mini-top-label">🏆 Топ дня</span>
@@ -239,7 +223,6 @@
   </a>
 </section>
 
-<!-- ══════════ ИНСТИТУТ ВПЕРЕДИ ══════════ -->
 <section class="mini-top" id="miniInstSection" style="display:none;">
   <a href="/ratings?tab=inst" class="mini-top-inner inst">
     <span class="mini-top-label">🏛 Впереди</span>
@@ -250,7 +233,6 @@
   </a>
 </section>
 
-<!-- ══════════ ИГРЫ ══════════ -->
 <section id="games">
   <div class="games-section-head">
     <div class="games-section-title">🎮 Все игры</div>
@@ -261,7 +243,6 @@
   </div>
 </section>
 
-<!-- ══════════ БЛОК РАЗРАБОТЧИКОВ ══════════ -->
 <section class="dev-credits" id="devCreditsSection" style="display:none;">
   <div class="dev-credits__inner">
     <div class="dev-credits__title" id="dcTitleEl"></div>
@@ -271,7 +252,6 @@
   </div>
 </section>
 
-<!-- ══════════ МОДАЛКА ИГРЫ ══════════ -->
 <div id="gameModal" class="modal-overlay" role="dialog" aria-modal="true">
   <div class="modal-box glass">
     <button class="modal-close" onclick="closeGame()" aria-label="Закрыть">✕</button>
@@ -285,7 +265,6 @@
   </div>
 </div>
 
-<!-- ══════════ МОДАЛКА ПРИВАТНОСТИ ══════════ -->
 <div id="privacyModal" class="modal-overlay" role="dialog" aria-modal="true">
   <div class="modal-box">
     <button class="modal-close" onclick="closePrivacy()" aria-label="Закрыть">✕</button>
@@ -319,10 +298,71 @@
 
 <script src="/static/site-header.js"></script>
 <script>
+/* ═══════════════════════════════════════════════════════════
+   VISITOR_ID — анонимный ID браузера
+   Создаётся один раз при первом заходе, хранится в localStorage.
+   Именно он используется в аналитике вместо IP.
+   ═══════════════════════════════════════════════════════════ */
+const LS_VISITOR = 'mgsu_visitor_id';
+const LS_SOURCE = 'mgsu_source';
+
+function generateVisitorId(){
+  // Формат: 10 случайных символов + время
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let id = '';
+  for (let i = 0; i < 10; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id + '-' + Date.now().toString(36).slice(-4).toUpperCase();
+}
+
+function getVisitorId(){
+  let vid = '';
+  try{ vid = localStorage.getItem(LS_VISITOR) || ''; }catch(e){}
+  if (!vid){
+    vid = generateVisitorId();
+    try{ localStorage.setItem(LS_VISITOR, vid); }catch(e){}
+  }
+  return vid;
+}
+
+function getSourceFromUrl(){
+  // ?source=campus / dorm / canteen / telegram / ...
+  try{
+    const params = new URLSearchParams(location.search);
+    const s = (params.get('source') || '').trim().toLowerCase();
+    return s.slice(0, 40);
+  }catch(e){ return ''; }
+}
+
+function getSavedSource(){
+  try{ return localStorage.getItem(LS_SOURCE) || ''; }catch(e){ return ''; }
+}
+
+function saveSourceOnce(src){
+  // Сохраняем источник ТОЛЬКО при первом заходе
+  if (!src) return;
+  const existing = getSavedSource();
+  if (!existing){
+    try{ localStorage.setItem(LS_SOURCE, src); }catch(e){}
+  }
+}
+
+function getEffectiveSource(){
+  // Если в URL есть ?source= — используем его
+  const fromUrl = getSourceFromUrl();
+  if (fromUrl){
+    saveSourceOnce(fromUrl);
+    return fromUrl;
+  }
+  // Иначе берём сохранённый
+  return getSavedSource();
+}
+
 renderSiteHeader('home');
 renderSiteFooter();
 
-/* ═══════════ ПРИВЕТСТВЕННАЯ МОДАЛКА ═══════════ */
+/* ═══════════════════════════════════════════════════════════
+   ПРИВЕТСТВЕННАЯ МОДАЛКА
+   ═══════════════════════════════════════════════════════════ */
 (function(){
   var LS_KEY = 'mgsu_welcomed_v1';
   var seen = false;
@@ -357,7 +397,9 @@ renderSiteFooter();
   });
 })();
 
-/* ═══════════ КНОПКА "НАЧАТЬ ИГРАТЬ" ═══════════ */
+/* ═══════════════════════════════════════════════════════════
+   КНОПКА "НАЧАТЬ ИГРАТЬ"
+   ═══════════════════════════════════════════════════════════ */
 document.getElementById('startPlayingBtn').addEventListener('click', function(){
   var gamesSection = document.getElementById('games');
   if (!gamesSection) return;
@@ -366,7 +408,9 @@ document.getElementById('startPlayingBtn').addEventListener('click', function(){
   window.scrollTo({top: top, behavior: 'smooth'});
 });
 
-/* ═══════════ ПРОФИЛЬ ═══════════ */
+/* ═══════════════════════════════════════════════════════════
+   ПРОФИЛЬ
+   ═══════════════════════════════════════════════════════════ */
 (function(){
   var btn = document.getElementById('profileCta');
   if (!btn) return;
@@ -380,7 +424,9 @@ document.getElementById('startPlayingBtn').addEventListener('click', function(){
   }
 })();
 
-/* ═══════════ ДАННЫЕ ИГР ═══════════ */
+/* ═══════════════════════════════════════════════════════════
+   ДАННЫЕ ИГР
+   ═══════════════════════════════════════════════════════════ */
 const GAMES_INFO = {
   broadway: { title: 'Бродвей', rules: '<p class="rule-text">Пробеги по коридору, собирай кофе и монеты.</p>', playUrl: '/games/broadway', playLabel: 'Играть' },
   campus: { title: 'Построй кампус', rules: '<p class="rule-text">Голосуй за улучшения МГСУ.</p>', playUrl: '/games/campus', playLabel: 'Играть' },
@@ -398,7 +444,6 @@ const GAMES_INFO = {
 
 let gameTasksCache = {};
 
-/* ═══════════ ОТРИСОВКА ПЛИТОК ═══════════ */
 function renderTiles(games){
   const box = document.getElementById('gamesGrid');
   box.innerHTML = '';
@@ -425,7 +470,6 @@ function renderTiles(games){
   });
 }
 
-/* ═══════════ ЗАДАНИЯ ═══════════ */
 function applyGameTasks(tasksMap){
   gameTasksCache = tasksMap;
   document.querySelectorAll('.game-card').forEach(card => {
@@ -443,7 +487,6 @@ function applyGameTasks(tasksMap){
   });
 }
 
-/* ═══════════ МОДАЛКА ИГРЫ ═══════════ */
 function openGame(key){
   const info = GAMES_INFO[key];
   if (!info) return;
@@ -497,7 +540,6 @@ function unlockScroll(){
   document.documentElement.style.removeProperty('--scrollbar-width');
 }
 
-/* ═══════════ ТОП ДНЯ ═══════════ */
 function renderMiniTop(top){
   const section = document.getElementById('miniTopSection');
   const list = document.getElementById('miniTopList');
@@ -525,7 +567,6 @@ async function loadMiniTop(){
   }catch(e){}
 }
 
-/* ═══════════ ИНСТИТУТ ВПЕРЕДИ ═══════════ */
 function renderTopInstitute(top){
   const section = document.getElementById('miniInstSection');
   const list = document.getElementById('miniInstList');
@@ -563,7 +604,6 @@ async function loadTopInstitute(){
   }catch(e){}
 }
 
-/* ═══════════ БЛОК РАЗРАБОТЧИКОВ ═══════════ */
 function renderDevCredits(cfg){
   const section = document.getElementById('devCreditsSection');
   if (!section) return;
@@ -594,7 +634,6 @@ async function loadDevCredits(){
   }catch(e){}
 }
 
-/* ═══════════ ГЛАВНЫЙ ЗАГРУЗЧИК ═══════════ */
 async function loadHome(){
   const headers = {};
   const token = localStorage.getItem('mgsu_token') || '';
@@ -608,7 +647,6 @@ async function loadHome(){
     const enabled = (data.games || []).filter(g => g.enabled);
     renderTiles(enabled);
 
-    // Баннер расписания
     if (data.schedule && data.schedule.is_open === false){
       const banner = document.getElementById('closedBanner');
       const text = document.getElementById('closedBannerText');
@@ -649,7 +687,6 @@ async function loadGames(){
   }
 }
 
-/* ═══════════ ИНИЦИАЛИЗАЦИЯ ═══════════ */
 document.addEventListener('DOMContentLoaded', function(){
   ['gameModal','privacyModal'].forEach(function(id){
     var m = document.getElementById(id);
@@ -664,14 +701,29 @@ document.addEventListener('DOMContentLoaded', function(){
   loadHome();
 });
 </script>
+
 <script>
+/* ═══════════════════════════════════════════════════════════
+   ОТПРАВКА ЗАХОДА С visitor_id И source
+   ═══════════════════════════════════════════════════════════ */
 (function(){
   try{
+    var vid = getVisitorId();
+    var source = getEffectiveSource();
+    var token = localStorage.getItem('mgsu_token') || '';
+
+    var headers = {'Content-Type':'application/json'};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
     fetch('/api/visit', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({page: location.pathname})
-    }).catch(()=>{});
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        page: location.pathname,
+        visitor_id: vid,
+        source: source
+      })
+    }).catch(function(){});
   }catch(e){}
 })();
 </script>

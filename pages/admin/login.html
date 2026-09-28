@@ -31,6 +31,8 @@
 
 <script>
 const LS_KEY = 'mgsu_admin_token';
+const LS_VISITOR = 'mgsu_visitor_id';
+
 const pwInput = document.getElementById('pwInput');
 const loginBtn = document.getElementById('loginBtn');
 const loginErr = document.getElementById('loginErr');
@@ -47,11 +49,26 @@ pwToggle.addEventListener('click', e => {
   pwInput.focus();
 });
 
+/* Генерируем visitor_id, если его нет */
+function ensureVisitorId(){
+  let vid = '';
+  try{ vid = localStorage.getItem(LS_VISITOR) || ''; }catch(e){}
+  if (!vid){
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    let id = '';
+    for (let i = 0; i < 10; i++) id += chars[Math.floor(Math.random() * chars.length)];
+    vid = id + '-' + Date.now().toString(36).slice(-4).toUpperCase();
+    try{ localStorage.setItem(LS_VISITOR, vid); }catch(e){}
+  }
+  return vid;
+}
+
 async function doLogin(){
   const pw = pwInput.value;
   loginErr.textContent = '';
   if (!pw){ loginErr.textContent = 'Введите пароль'; return; }
   loginErr.textContent = 'Проверяю...';
+
   try{
     const res = await fetch('/admin/api/login', {
       method:'POST',
@@ -59,22 +76,26 @@ async function doLogin(){
       body: JSON.stringify({password: pw})
     });
     const data = await res.json();
+
     if (data.ok){
-  localStorage.setItem(LS_KEY, data.token);
-  // Помечаем браузер как админский
-  try{
-    const vid = localStorage.getItem('mgsu_visitor_id') || '';
-    if (vid){
-      fetch('/admin/api/mark-admin?visitor_id=' + encodeURIComponent(vid), {
-        method: 'POST',
-        headers: {'Authorization': 'Bearer ' + data.token}
-      }).catch(()=>{});
-    }
-  }catch(e){}
-  location.href = '/admin';
-} else {
+      localStorage.setItem(LS_KEY, data.token);
+
+      /* Помечаем этот браузер как админский */
+      try{
+        const vid = ensureVisitorId();
+        if (vid){
+          await fetch('/admin/api/mark-admin?visitor_id=' + encodeURIComponent(vid), {
+            method: 'POST',
+            headers: {'Authorization': 'Bearer ' + data.token}
+          });
+        }
+      }catch(e){ console.warn('mark-admin failed:', e); }
+
+      location.href = '/admin';
+    } else {
       loginErr.textContent = data.error || 'Неверный пароль';
-      pwInput.value = ''; pwInput.focus();
+      pwInput.value = '';
+      pwInput.focus();
     }
   }catch(e){
     loginErr.textContent = 'Ошибка соединения: ' + e.message;
@@ -84,7 +105,6 @@ async function doLogin(){
 loginBtn.addEventListener('click', doLogin);
 pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
-// если уже залогинен — сразу в дашборд
 if (localStorage.getItem(LS_KEY)) location.href = '/admin';
 </script>
 

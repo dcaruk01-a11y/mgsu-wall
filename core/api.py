@@ -153,7 +153,74 @@ async def api_institutes_set(payload: dict, authorization: str = Header(default=
         "was_change": r.get("was_change", False),
     }
 
+# ═══════════════════════════════════════════════════════════
+# ДОСТИЖЕНИЯ
+# ═══════════════════════════════════════════════════════════
 
+@router.get("/api/achievements")
+async def api_achievements(authorization: str = Header(default="")):
+    """Все ачивки + какие у игрока получены."""
+    from core.achievements import ACHIEVEMENTS, get_user_achievements
+    import core.users as users
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    user = await users.get_user_by_token(token) if token else None
+
+    if not user:
+        # Гостю — все ачивки без отметок
+        return {
+            "ok": True,
+            "logged_in": False,
+            "achievements": [
+                {**a, "unlocked": False, "unlocked_at": None}
+                for a in ACHIEVEMENTS
+            ],
+            "total": len(ACHIEVEMENTS),
+            "unlocked": 0,
+        }
+
+    unlocked_map = await get_user_achievements(user["uid"])
+
+    result = []
+    for a in ACHIEVEMENTS:
+        result.append({
+            **a,
+            "unlocked": a["key"] in unlocked_map,
+            "unlocked_at": unlocked_map.get(a["key"]),
+        })
+
+    return {
+        "ok": True,
+        "logged_in": True,
+        "achievements": result,
+        "total": len(ACHIEVEMENTS),
+        "unlocked": len(unlocked_map),
+    }
+
+
+@router.post("/api/achievements/check")
+async def api_achievements_check(authorization: str = Header(default="")):
+    """
+    Перепроверить ачивки вручную.
+    Полезно после смены ранга/института, покупок.
+    """
+    from core.achievements import check_and_grant
+    import core.users as users
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    user = await users.get_user_by_token(token) if token else None
+    if not user:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+
+    granted = await check_and_grant(user["uid"], user)
+
+    return {
+        "ok": True,
+        "granted": [
+            {"key": a["key"], "name": a["name"], "emoji": a["emoji"]}
+            for a in granted
+        ],
+    }
 # ═══════════════════════════════════════════════════════════
 # FEEDBACK
 # ═══════════════════════════════════════════════════════════

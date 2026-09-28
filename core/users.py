@@ -48,7 +48,6 @@ async def db_init_users():
             )
         """)
 
-        # Миграции для существующих баз
         try:
             cur = await db.execute("PRAGMA table_info(users)")
             existing = {row[1] for row in await cur.fetchall()}
@@ -132,7 +131,6 @@ async def login(uid: str, pin: str, ip: str = "") -> dict:
     if not (pin.isdigit() and len(pin) == 4):
         return {"ok": False, "error": "PIN — 4 цифры"}
 
-    # Проверка блокировки
     blocked, wait_sec = await guard.check_blocked(uid, ip)
     if blocked:
         mins = (wait_sec + 59) // 60
@@ -149,7 +147,6 @@ async def login(uid: str, pin: str, ip: str = "") -> dict:
         await guard.record_attempt(uid, ip, False)
         return {"ok": False, "error": "ID не найден"}
 
-    # Проверка бана
     if row[3]:
         reason = row[4] or "Нарушение правил"
         return {"ok": False, "error": f"Аккаунт заблокирован: {reason}"}
@@ -159,7 +156,6 @@ async def login(uid: str, pin: str, ip: str = "") -> dict:
         await guard.record_attempt(uid, ip, False)
         return {"ok": False, "error": "Неверный PIN"}
 
-    # Успех — записываем и сбрасываем счётчик
     await guard.record_attempt(uid, ip, True)
 
     token = secrets.token_urlsafe(32)
@@ -187,7 +183,6 @@ async def get_user_by_token(token: str):
             return None
         uid, created_at = row
 
-        # Проверка срока жизни токена
         if created_at and (time.time() - created_at) > SESSION_TTL:
             await db.execute("DELETE FROM sessions WHERE token=?", (token,))
             await db.commit()
@@ -263,7 +258,6 @@ async def update_pin(uid: str, old_pin: str, new_pin: str) -> dict:
             "UPDATE users SET pin_hash=? WHERE uid=?",
             (_hash_pin(new_pin, uid), uid)
         )
-        # Сброс всех сессий
         await db.execute("DELETE FROM sessions WHERE uid=?", (uid,))
         await db.commit()
     return {"ok": True, "sessions_reset": True}
@@ -302,16 +296,22 @@ async def apply_streak(uid: str) -> dict:
     return {"ok": True, "streak": streak, "changed": True, "is_record": streak == best}
 
 
-async def apply_score_and_coins(uid: str, score: int, game: str, is_record: bool = False, daily_mult: float = 1.0) -> dict:
+async def apply_score_and_coins(uid: str, score: int, game: str, is_record: bool = False,
+                                daily_mult: float = 1.0, rank_bonus_pct: int = 0) -> dict:
     """
     daily_mult — дневной множитель (1.0 / 0.7 / 0.4 / 0.2).
-    Применяется и к очкам, и к монетам за партию.
+    rank_bonus_pct — бонус к монетам по рангу (0 / 5 / 10 / 15 / 20 / 30 / 50).
     Рекорд-бонус (200 монет) не режется.
     """
     score = max(0, min(int(score), 100000))
     daily_mult = max(0.1, min(float(daily_mult or 1.0), 1.0))
 
-    coins = int(round(COINS_PER_GAME * daily_mult))
+    base_coins = int(round(COINS_PER_GAME * daily_mult))
+
+    if rank_bonus_pct > 0:
+        base_coins = int(round(base_coins * (1 + rank_bonus_pct / 100.0)))
+
+    coins = base_coins
     if is_record:
         coins += COINS_PER_RECORD
 
@@ -344,6 +344,7 @@ async def apply_score_and_coins(uid: str, score: int, game: str, is_record: bool
         "total_score": row[4] or 0,
         "games_played": row[5] or 0,
         "coins_added": coins,
+        "rank_bonus_pct": rank_bonus_pct,
     }
 
 
@@ -363,7 +364,7 @@ async def add_coins(uid: str, amount: int, reason: str = "") -> dict:
 
 
 # ═══════════════════════════════════════════════════════════
-# РАНГ АККАУНТА (общий уровень игрока)
+# РАНГ АККАУНТА
 # ═══════════════════════════════════════════════════════════
 
 ACCOUNT_RANKS = [
@@ -376,12 +377,19 @@ ACCOUNT_RANKS = [
     {"key":"legend",    "name":"Легенда МГСУ", "emoji":"👑", "min_score":200000, "min_games":400},
 ]
 
+# ★ Бонус монет по рангам
+RANK_BONUSES = {
+    "freshman":  0,
+    "student":   5,
+    "expert":    10,
+    "activist":  15,
+    "headman":   20,
+    "commander": 30,
+    "legend":    50,
+}
+
 
 def get_account_rank(total_score: int, games_played: int) -> dict:
-    """
-    Возвращает текущий ранг, следующий ранг и прогресс (0..1).
-    Прогресс считается по «узкому месту» — где отстаём сильнее.
-    """
     total_score = int(total_score or 0)
     games_played = int(games_played or 0)
 
@@ -400,16 +408,20 @@ def get_account_rank(total_score: int, games_played: int) -> dict:
         games_pct = games_played / next_rank["min_games"] if next_rank["min_games"] else 1.0
         progress = min(1.0, min(score_pct, games_pct))
 
+    bonus_pct = RANK_BONUSES.get(current["key"], 0)
+
     return {
         "key": current["key"],
         "name": current["name"],
         "emoji": current["emoji"],
+        "bonus_pct": bonus_pct,
         "next": {
             "key": next_rank["key"],
             "name": next_rank["name"],
             "emoji": next_rank["emoji"],
             "min_score": next_rank["min_score"],
             "min_games": next_rank["min_games"],
+            "bonus_pct": RANK_BONUSES.get(next_rank["key"], 0),
         } if next_rank else None,
         "progress": round(progress, 3),
         "total_score": total_score,

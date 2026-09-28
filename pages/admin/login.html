@@ -60,9 +60,19 @@ async function doLogin(){
     });
     const data = await res.json();
     if (data.ok){
-      localStorage.setItem(LS_KEY, data.token);
-      location.href = '/admin';
-    } else {
+  localStorage.setItem(LS_KEY, data.token);
+  // Помечаем браузер как админский
+  try{
+    const vid = localStorage.getItem('mgsu_visitor_id') || '';
+    if (vid){
+      fetch('/admin/api/mark-admin?visitor_id=' + encodeURIComponent(vid), {
+        method: 'POST',
+        headers: {'Authorization': 'Bearer ' + data.token}
+      }).catch(()=>{});
+    }
+  }catch(e){}
+  location.href = '/admin';
+} else {
       loginErr.textContent = data.error || 'Неверный пароль';
       pwInput.value = ''; pwInput.focus();
     }

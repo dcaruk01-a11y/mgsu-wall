@@ -7,120 +7,100 @@
 .page-header{margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;}
 .page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
 .page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
-
 .period-tabs{display:flex;gap:6px;background:rgba(255,255,255,0.05);border-radius:10px;padding:4px;}
-.period-tab{padding:8px 16px;border:0;background:transparent;color:rgba(255,255,255,0.6);font-family:inherit;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.period-tab{padding:8px 16px;border:0;background:transparent;color:rgba(255,255,255,0.6);font-family:inherit;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;transition:all .15s;}
 .period-tab:hover{color:#fff;}
 .period-tab.active{background:rgba(255,255,255,0.15);color:#fff;}
 
-.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
-.sum-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
-.sum-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
-.sum-value{font-size:22px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1;}
+.pulse-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+.pulse-card{padding:24px 22px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.12);position:relative;overflow:hidden;}
+.pulse-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#6FA8FF,#4ADE80);}
+.pulse-card.green::before{background:linear-gradient(90deg,#4ADE80,#22c55e);}
+.pulse-card.blue::before{background:linear-gradient(90deg,#6FA8FF,#3b82f6);}
+.pulse-icon{font-size:26px;line-height:1;margin-bottom:10px;opacity:0.9;}
+.pulse-label{font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:10px;}
+.pulse-value{font-size:44px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-0.03em;}
+.pulse-delta{display:inline-block;margin-top:10px;font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px;}
+.pulse-delta.up{background:rgba(74,222,128,0.18);color:#4ADE80;}
+.pulse-delta.down{background:rgba(255,77,94,0.18);color:#FF6B7B;}
+.pulse-delta.flat{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);}
+.pulse-hint{font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;line-height:1.4;}
 
-.funnel{display:flex;flex-direction:column;gap:8px;padding:18px 20px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:20px;}
-.funnel-step{display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.04);position:relative;overflow:hidden;}
-.funnel-step-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(111,168,255,0.25),rgba(111,168,255,0.05));z-index:0;transition:width .5s;}
-.funnel-step-content{position:relative;z-index:1;display:flex;align-items:center;gap:14px;width:100%;}
-.funnel-icon{font-size:22px;line-height:1;width:32px;text-align:center;flex-shrink:0;}
+.overview-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
+.ov-card{padding:16px 18px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);}
+.ov-label{font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.ov-value{font-size:26px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1;}
+.ov-sub{font-size:11px;color:rgba(255,255,255,0.55);margin-top:6px;}
+
+.funnel{padding:22px;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:24px;}
+.funnel-step{display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:12px;background:rgba(255,255,255,0.04);position:relative;overflow:hidden;margin-bottom:6px;}
+.funnel-step-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(111,168,255,0.20),rgba(111,168,255,0.04));z-index:0;transition:width .5s;}
+.funnel-content{position:relative;z-index:1;display:flex;align-items:center;gap:14px;width:100%;}
+.funnel-icon{font-size:22px;line-height:1;width:30px;text-align:center;flex-shrink:0;}
 .funnel-label{flex:1;font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);}
-.funnel-count{font-size:20px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;min-width:50px;text-align:right;}
+.funnel-pct{font-size:12px;font-weight:800;color:rgba(255,255,255,0.55);padding:3px 9px;border-radius:999px;background:rgba(255,255,255,0.06);}
+.funnel-count{font-size:22px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;min-width:50px;text-align:right;}
 
-.feed-box{border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);overflow:hidden;}
-.feed-head{display:grid;grid-template-columns:80px 60px 130px 1fr 100px;gap:10px;padding:12px 16px;background:rgba(0,0,0,0.20);font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
-.feed-row{display:grid;grid-template-columns:80px 60px 130px 1fr 100px;gap:10px;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.05);font-size:13px;align-items:center;transition:background .15s;}
-.feed-row:hover{background:rgba(255,255,255,0.03);}
-.feed-time{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.7);}
-.feed-device{font-size:18px;line-height:1;text-align:center;}
-.feed-subnet{font-family:monospace;font-size:12px;color:#6FA8FF;}
-.feed-who{display:flex;align-items:center;gap:8px;overflow:hidden;}
-.feed-emoji{font-size:16px;flex-shrink:0;}
-.feed-nick{color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.feed-guest{color:rgba(255,255,255,0.5);font-style:italic;}
-.feed-action{padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;text-align:center;}
-.feed-action.visit{background:rgba(111,168,255,0.15);color:#6FA8FF;}
-.feed-action.register{background:rgba(74,222,128,0.2);color:#4ADE80;}
-.feed-action.login{background:rgba(180,120,255,0.18);color:#C0A0FF;}
-.feed-action.game{background:rgba(255,180,80,0.2);color:#FFB347;}
+.block{margin-bottom:28px;}
+.block h2{font-size:18px;font-weight:800;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.block h2 small{font-size:12px;font-weight:500;color:rgba(255,255,255,0.4);}
 
-.hours-chart{display:flex;align-items:flex-end;gap:3px;height:140px;padding:20px 4px 0;}
-.hour-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px;position:relative;}
+.device-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+.device-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);}
+.device-label{font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:6px;}
+.device-value{font-size:22px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;}
+.device-brands{display:flex;gap:6px;flex-wrap:wrap;}
+.brand-pill{padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(111,168,255,0.12);border:1px solid rgba(111,168,255,0.35);color:#8BC0FF;}
+.brand-pill b{color:#fff;margin-left:4px;}
+
+.hours-chart{display:flex;align-items:flex-end;gap:3px;height:130px;padding:16px 4px 0;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;}
+.hour-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px;}
 .hour-stack{width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:100%;}
-.hour-bar-mobile{background:#FFB347;border-radius:3px 3px 0 0;min-height:0;}
-.hour-bar-desktop{background:#6FA8FF;border-radius:0 0 3px 3px;min-height:0;}
+.hour-bar-mobile{background:#FFB347;border-radius:3px 3px 0 0;}
+.hour-bar-desktop{background:#6FA8FF;border-radius:0 0 3px 3px;}
 .hour-label{font-size:9px;color:rgba(255,255,255,0.4);font-variant-numeric:tabular-nums;}
 .hours-legend{display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:12px;color:rgba(255,255,255,0.7);}
 .hours-legend-item{display:flex;align-items:center;gap:6px;}
 .hours-legend-dot{width:10px;height:10px;border-radius:3px;}
 
-.zones-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;}
-.sort-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.05);border-radius:8px;padding:3px;}
-.sort-tab{padding:6px 12px;border:0;background:transparent;color:rgba(255,255,255,0.55);font-family:inherit;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;transition:all .15s;}
-.sort-tab.active{background:rgba(255,255,255,0.15);color:#fff;}
+.details-toggle{display:inline-flex;align-items:center;gap:10px;padding:12px 20px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-bottom:16px;}
+.details-toggle:hover{background:rgba(255,255,255,0.10);}
+.details-toggle .arrow{transition:transform .2s;display:inline-block;}
+.details-toggle.open .arrow{transform:rotate(90deg);}
+.details-content{display:none;}
+.details-content.open{display:block;}
 
-.zone-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:10px;}
-.zone-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
-.zone-subnet{font-family:monospace;font-size:15px;font-weight:800;color:#fff;}
-.zone-tag-badge{padding:4px 10px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;}
-.zone-tag-badge.mgsu{background:rgba(74,222,128,0.2);color:#4ADE80;border:1px solid rgba(74,222,128,0.5);}
-.zone-tag-badge.dorm{background:rgba(255,180,80,0.2);color:#FFB347;border:1px solid rgba(255,180,80,0.5);}
-.zone-tag-badge.mobile{background:rgba(111,168,255,0.2);color:#6FA8FF;border:1px solid rgba(111,168,255,0.5);}
-.zone-tag-badge.other{background:rgba(180,120,255,0.2);color:#C0A0FF;border:1px solid rgba(180,120,255,0.5);}
-.zone-tag-badge.unknown{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);}
-.zone-stats{display:flex;gap:16px;font-size:12px;color:rgba(255,255,255,0.7);flex-wrap:wrap;margin-bottom:10px;}
-.zone-stats b{color:#fff;font-weight:800;}
+.feed-box{border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);overflow:hidden;margin-bottom:24px;}
+.feed-head{display:grid;grid-template-columns:80px 60px 130px 1fr 100px;gap:10px;padding:12px 16px;background:rgba(0,0,0,0.20);font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+.feed-row{display:grid;grid-template-columns:80px 60px 130px 1fr 100px;gap:10px;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.05);font-size:13px;align-items:center;}
+.feed-row:hover{background:rgba(255,255,255,0.03);}
+.feed-time{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.7);}
+.feed-device{font-size:18px;text-align:center;}
+.feed-subnet{font-family:monospace;font-size:12px;color:#6FA8FF;}
+.feed-who{display:flex;align-items:center;gap:8px;overflow:hidden;}
+.feed-nick{color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.feed-guest{color:rgba(255,255,255,0.5);font-style:italic;}
+.feed-action{padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;text-align:center;}
+.feed-action.visit{background:rgba(111,168,255,0.15);color:#6FA8FF;}
+.feed-action.register{background:rgba(74,222,128,0.2);color:#4ADE80;}
+.feed-action.login{background:rgba(180,120,255,0.18);color:#C0A0FF;}
+.feed-action.game{background:rgba(255,180,80,0.2);color:#FFB347;}
 
-.zone-section-label{
-  margin:10px 0 6px;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:0.12em;
-  text-transform:uppercase;
-  color:rgba(255,255,255,0.4);
-}
-.zone-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
-.zone-pill{
-  padding:4px 10px;
-  border-radius:999px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.12);
-  font-size:11px;
-  color:rgba(255,255,255,0.85);
-}
-.zone-pill.device{
-  background:rgba(111,168,255,0.12);
-  border-color:rgba(111,168,255,0.35);
-  color:#8BC0FF;
-}
-.zone-pill.user{
-  background:rgba(74,222,128,0.10);
-  border-color:rgba(74,222,128,0.35);
-  color:#7FEFA0;
-  font-weight:700;
-}
-.zone-pill.empty{
-  background:transparent;
-  border-style:dashed;
-  color:rgba(255,255,255,0.35);
-  font-style:italic;
-}
+.zone-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;}
+.zone-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+.zone-subnet{font-family:monospace;font-size:14px;font-weight:800;color:#fff;}
+.zone-stats{font-size:12px;color:rgba(255,255,255,0.7);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+.zone-stats b{color:#fff;}
+.zone-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.zone-pill{padding:3px 9px;border-radius:999px;font-size:11px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);}
 
-.zone-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
-.zone-btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.8);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
-.zone-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
-.zone-btn.active{background:#4ADE80;color:#0a1f0f;border-color:#4ADE80;}
-.zone-btn.active.dorm{background:#FFB347;color:#1a0e05;border-color:#FFB347;}
-.zone-btn.active.mobile{background:#6FA8FF;color:#0a1f3d;border-color:#6FA8FF;}
-.zone-btn.active.other{background:#C0A0FF;color:#1a0e2e;border-color:#C0A0FF;}
-
-.block{margin-bottom:28px;}
-.block h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
-.block h2 small{font-size:12px;font-weight:500;color:rgba(255,255,255,0.4);}
 .empty{padding:40px;text-align:center;color:rgba(255,255,255,0.4);font-size:14px;}
 
 @media(max-width:720px){
+  .pulse-grid{grid-template-columns:1fr;gap:10px;}
+  .pulse-value{font-size:36px;}
   .feed-head{display:none;}
-  .feed-row{grid-template-columns:60px 40px 1fr;grid-template-areas:"time device who" "subnet subnet action";gap:6px;padding:12px 14px;}
+  .feed-row{grid-template-columns:70px 40px 1fr;grid-template-areas:"time device who" "subnet subnet action";gap:6px;padding:12px 14px;}
   .feed-time{grid-area:time;}
   .feed-device{grid-area:device;}
   .feed-subnet{grid-area:subnet;font-size:11px;}
@@ -137,7 +117,7 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">Аналитика</h1>
-        <div class="page-sub">Кто заходит, откуда, что делает</div>
+        <div class="page-sub">Что происходит с проектом</div>
       </div>
       <div class="period-tabs">
         <button class="period-tab" data-days="1">Сегодня</button>
@@ -146,55 +126,89 @@
       </div>
     </div>
 
-    <div class="summary-grid" id="summaryGrid"></div>
-
-    <div class="block">
-      <h2>🎯 Воронка: что происходит с пользователем</h2>
-      <div class="funnel" id="funnelBox"><div class="empty">Загрузка…</div></div>
-    </div>
-
-    <div class="block">
-      <h2>📡 Живая лента заходов <small id="feedRangeLabel"></small></h2>
-      <div class="feed-box">
-        <div class="feed-head">
-          <span>Время</span>
-          <span>Девайс</span>
-          <span>Подсеть</span>
-          <span>Кто</span>
-          <span>Действие</span>
-        </div>
-        <div id="feedBody"></div>
+    <div class="pulse-grid" id="pulseGrid">
+      <div class="pulse-card blue">
+        <div class="pulse-icon">👥</div>
+        <div class="pulse-label">Посетители</div>
+        <div class="pulse-value" id="pulseVisitors">—</div>
+        <div class="pulse-delta flat" id="pulseVisitorsDelta">—</div>
+        <div class="pulse-hint">по уникальным браузерам</div>
+      </div>
+      <div class="pulse-card green">
+        <div class="pulse-icon">🎮</div>
+        <div class="pulse-label">Играли</div>
+        <div class="pulse-value" id="pulsePlayed">—</div>
+        <div class="pulse-delta flat" id="pulsePlayedDelta">—</div>
+        <div class="pulse-hint">хотя бы раз за период</div>
+      </div>
+      <div class="pulse-card">
+        <div class="pulse-icon">🔁</div>
+        <div class="pulse-label">Возврат D1</div>
+        <div class="pulse-value" id="pulseD1">—</div>
+        <div class="pulse-delta flat" id="pulseD1Delta">—</div>
+        <div class="pulse-hint" id="pulseD1Hint">вернулись на следующий день</div>
       </div>
     </div>
 
     <div class="block">
-      <h2>🕐 По часам — кто когда заходит</h2>
-      <div style="padding:20px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
-        <div class="hours-chart" id="hoursChart"></div>
-        <div class="hours-legend">
-          <div class="hours-legend-item">
-            <div class="hours-legend-dot" style="background:#6FA8FF;"></div>
-            <span>💻 С компьютера</span>
+      <h2>📊 Обзор <small id="overviewPeriod"></small></h2>
+      <div class="overview-row" id="overviewRow"></div>
+    </div>
+
+    <div class="block">
+      <h2>🎯 Путь пользователя</h2>
+      <div class="funnel" id="funnelBox">
+        <div class="empty">Загрузка…</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2>📱 Устройства</h2>
+      <div class="device-row" id="deviceRow"></div>
+      <div class="device-brands" id="deviceBrands"></div>
+    </div>
+
+    <div class="block">
+      <h2>🕐 Когда заходят</h2>
+      <div class="hours-chart" id="hoursChart"></div>
+      <div class="hours-legend">
+        <div class="hours-legend-item"><div class="hours-legend-dot" style="background:#6FA8FF;"></div><span>💻 Компьютер</span></div>
+        <div class="hours-legend-item"><div class="hours-legend-dot" style="background:#FFB347;"></div><span>📱 Телефон</span></div>
+      </div>
+    </div>
+
+    <button class="details-toggle" id="detailsToggle">
+      <span class="arrow">▶</span>
+      <span>🔧 Технические детали</span>
+    </button>
+
+    <div class="details-content" id="detailsContent">
+
+      <div class="block">
+        <h2>📡 Живая лента <small id="feedRange"></small></h2>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;color:rgba(255,255,255,0.6);cursor:pointer;user-select:none;">
+            <input type="checkbox" id="showAdmin" style="margin-right:6px;">
+            показывать мои заходы (админ)
+          </label>
+        </div>
+        <div class="feed-box">
+          <div class="feed-head">
+            <span>Время</span>
+            <span>Девайс</span>
+            <span>Подсеть</span>
+            <span>Кто</span>
+            <span>Действие</span>
           </div>
-          <div class="hours-legend-item">
-            <div class="hours-legend-dot" style="background:#FFB347;"></div>
-            <span>📱 С телефона</span>
-          </div>
+          <div id="feedBody"></div>
         </div>
       </div>
-    </div>
 
-    <div class="block">
-      <h2>🌍 Зоны IP <small>(сгруппировано по подсетям)</small></h2>
-      <div class="zones-toolbar">
-        <span style="font-size:12px;color:rgba(255,255,255,0.5);">Сортировка:</span>
-        <div class="sort-tabs">
-          <button class="sort-tab active" data-sort="visits">По заходам</button>
-          <button class="sort-tab" data-sort="recent">По свежести</button>
-          <button class="sort-tab" data-sort="users">По игрокам</button>
-        </div>
+      <div class="block">
+        <h2>🌐 IP и подсети</h2>
+        <div id="zonesBox"><div class="empty">Загрузка…</div></div>
       </div>
-      <div id="zonesBox"><div class="empty">Загрузка…</div></div>
+
     </div>
 
   </main>
@@ -206,7 +220,7 @@ const token = adminRequireToken();
 renderAdminMenu('analytics');
 
 let currentDays = 7;
-let currentSort = 'visits';
+let showAdminFeed = false;
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -227,17 +241,8 @@ function deviceIcon(d){
   return '💻';
 }
 
-const ACTION_LABELS = {
-  visit: 'Заход',
-  register: 'Регистрация',
-  login: 'Вход',
-  game: 'Игра',
-};
-
-const CHAR_EMOJI = {
-  student:'🎓', sso:'👷', prorab:'📋', builder:'🏗️',
-  prof:'🧑‍🏫', dean:'🧑‍💼', legend:'👑'
-};
+const ACTION_LABELS = { visit: 'Заход', register: 'Регистрация', login: 'Вход', game: 'Игра' };
+const CHAR_EMOJI = { student:'🎓', sso:'👷', prorab:'📋', builder:'🏗️', prof:'🧑‍🏫', dean:'🧑‍💼', legend:'👑' };
 
 document.querySelectorAll('.period-tab').forEach(t => {
   t.onclick = () => {
@@ -248,54 +253,93 @@ document.querySelectorAll('.period-tab').forEach(t => {
   };
 });
 
-document.querySelectorAll('.sort-tab').forEach(t => {
-  t.onclick = () => {
-    document.querySelectorAll('.sort-tab').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    currentSort = t.dataset.sort;
+const detailsToggle = document.getElementById('detailsToggle');
+const detailsContent = document.getElementById('detailsContent');
+detailsToggle.onclick = () => {
+  detailsToggle.classList.toggle('open');
+  detailsContent.classList.toggle('open');
+  if (detailsContent.classList.contains('open')){
+    loadFeed();
     loadZones();
-  };
-});
+  }
+};
 
-async function loadSummary(){
+document.getElementById('showAdmin').onchange = (e) => {
+  showAdminFeed = e.target.checked;
+  loadFeed();
+};
+
+function renderDelta(el, delta){
+  if (delta === null || delta === undefined){
+    el.className = 'pulse-delta flat';
+    el.textContent = 'нет данных';
+    return;
+  }
+  if (delta > 0){
+    el.className = 'pulse-delta up';
+    el.textContent = '↑ ' + delta + '%';
+  } else if (delta < 0){
+    el.className = 'pulse-delta down';
+    el.textContent = '↓ ' + Math.abs(delta) + '%';
+  } else {
+    el.className = 'pulse-delta flat';
+    el.textContent = '= 0%';
+  }
+}
+
+async function loadOverview(){
   try{
-    const s = await adminApi('/admin/api/summary?days=' + currentDays);
-    const grid = document.getElementById('summaryGrid');
+    const d = await adminApi('/admin/api/overview?days=' + currentDays);
+
+    document.getElementById('pulseVisitors').textContent = d.visitors;
+    document.getElementById('pulsePlayed').textContent = d.played;
+    document.getElementById('pulseD1').textContent = d.d1_pct + '%';
+
+    renderDelta(document.getElementById('pulseVisitorsDelta'), d.visitors_delta);
+    renderDelta(document.getElementById('pulsePlayedDelta'), d.played_delta);
+    document.getElementById('pulseD1Delta').className = 'pulse-delta flat';
+    document.getElementById('pulseD1Delta').textContent = d.d1_count + ' из ' + d.d1_total;
+    document.getElementById('pulseD1Hint').textContent =
+      d.d1_total ? 'вернулись на след. день' : 'пока нет данных';
+
+    document.getElementById('overviewPeriod').textContent = 'за ' + d.days + ' дн.';
+
+    const row = document.getElementById('overviewRow');
     const cards = [
-      {label:'Всего заходов', value: s.visits},
-      {label:'Уникальных IP', value: s.uniq_ips},
-      {label:'Игроков', value: s.uniq_users},
-      {label:'💻 ПК', value: s.desktop},
-      {label:'📱 Телефоны', value: s.mobile},
+      {label:'🆕 Новые', value: d.new_visitors, sub:'первый раз на сайте'},
+      {label:'🔁 Вернувшиеся', value: d.returning, sub:'заходили ранее'},
+      {label:'🎉 Регистрации', value: d.registered, sub: d.registered_delta !== null ? (d.registered_delta >= 0 ? '+' : '') + d.registered_delta + '%' : 'нет сравнения'},
+      {label:'🎮 Всего партий', value: d.games, sub: d.games_delta !== null ? (d.games_delta >= 0 ? '+' : '') + d.games_delta + '%' : 'нет сравнения'},
+      {label:'📊 Партий на игрока', value: d.played ? (d.games / d.played).toFixed(1) : '0', sub:'среднее'},
     ];
-    grid.innerHTML = cards.map(c =>
-      '<div class="sum-card"><div class="sum-label">' + c.label + '</div><div class="sum-value">' + c.value + '</div></div>'
+    row.innerHTML = cards.map(c =>
+      '<div class="ov-card">' +
+        '<div class="ov-label">' + c.label + '</div>' +
+        '<div class="ov-value">' + c.value + '</div>' +
+        '<div class="ov-sub">' + c.sub + '</div>' +
+      '</div>'
     ).join('');
-  }catch(e){ console.warn('summary:', e); }
+  }catch(e){ console.warn('overview:', e); }
 }
 
 async function loadFunnel(){
   try{
-    const f = await adminApi('/admin/api/funnel?days=' + currentDays);
+    const d = await adminApi('/admin/api/funnel-v2?days=' + currentDays);
     const box = document.getElementById('funnelBox');
-    const steps = [
-      {icon:'🌐', label:'Зашли на сайт (уникальные IP)', value: f.ips},
-      {icon:'👤', label:'Были с аккаунтом', value: f.users},
-      {icon:'🎉', label:'Зарегистрировались', value: f.registered},
-      {icon:'🎮', label:'Сыграли хотя бы раз', value: f.played},
-      {icon:'🔁', label:'Вернулись ещё раз', value: f.returned},
-    ];
+    const steps = d.steps || [];
+    if (!steps.length){ box.innerHTML = '<div class="empty">Пока нет данных</div>'; return; }
     const max = Math.max(1, ...steps.map(s => s.value));
     box.innerHTML = '';
-    steps.forEach(s => {
-      const pct = (s.value / max) * 100;
+    steps.forEach((s, i) => {
+      const fillPct = (s.value / max) * 100;
       const el = document.createElement('div');
       el.className = 'funnel-step';
       el.innerHTML =
-        '<div class="funnel-step-fill" style="width:' + pct + '%"></div>' +
-        '<div class="funnel-step-content">' +
+        '<div class="funnel-step-fill" style="width:' + fillPct + '%"></div>' +
+        '<div class="funnel-content">' +
           '<span class="funnel-icon">' + s.icon + '</span>' +
           '<span class="funnel-label">' + s.label + '</span>' +
+          (i > 0 ? '<span class="funnel-pct">' + s.pct + '%</span>' : '') +
           '<span class="funnel-count">' + s.value + '</span>' +
         '</div>';
       box.appendChild(el);
@@ -303,39 +347,22 @@ async function loadFunnel(){
   }catch(e){ console.warn('funnel:', e); }
 }
 
-async function loadFeed(){
+async function loadDevices(){
   try{
-    const r = await adminApi('/admin/api/feed?days=' + currentDays + '&limit=60');
-    const feed = r.feed || [];
-    const body = document.getElementById('feedBody');
-    document.getElementById('feedRangeLabel').textContent =
-      '(последние ' + feed.length + ' за ' + currentDays + ' д.)';
-
-    if (!feed.length){
-      body.innerHTML = '<div class="empty">Пока пусто</div>';
-      return;
+    const d = await adminApi('/admin/api/devices?days=' + currentDays);
+    const row = document.getElementById('deviceRow');
+    row.innerHTML =
+      '<div class="device-card"><div class="device-label">📱 Телефоны</div><div class="device-value">' + d.mobile + '</div></div>' +
+      '<div class="device-card"><div class="device-label">💻 Компьютеры</div><div class="device-value">' + d.desktop + '</div></div>' +
+      '<div class="device-card"><div class="device-label">📟 Планшеты</div><div class="device-value">' + d.tablet + '</div></div>';
+    const brands = document.getElementById('deviceBrands');
+    const list = d.brands || [];
+    if (!list.length){
+      brands.innerHTML = '<span style="font-size:12px;opacity:0.4;">устройства начнут определяться по новым заходам</span>';
+    } else {
+      brands.innerHTML = list.map(b => '<span class="brand-pill">' + escapeHtml(b.name) + '<b>' + b.count + '</b></span>').join('');
     }
-
-    body.innerHTML = '';
-    feed.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'feed-row';
-
-      const actionLabel = ACTION_LABELS[item.action] || item.action;
-      const who = item.logged_in
-        ? '<span class="feed-emoji">' + (CHAR_EMOJI[item.active_char] || '🎓') + '</span>' +
-          '<span class="feed-nick">' + escapeHtml(item.nick) + '</span>'
-        : '<span class="feed-emoji">👻</span><span class="feed-guest">Гость</span>';
-
-      row.innerHTML =
-        '<span class="feed-time">' + fmtTime(item.ts) + '</span>' +
-        '<span class="feed-device">' + deviceIcon(item.device) + '</span>' +
-        '<span class="feed-subnet">' + escapeHtml(item.subnet) + '.*</span>' +
-        '<span class="feed-who">' + who + '</span>' +
-        '<span class="feed-action ' + item.action + '">' + actionLabel + '</span>';
-      body.appendChild(row);
-    });
-  }catch(e){ console.warn('feed:', e); }
+  }catch(e){ console.warn('devices:', e); }
 }
 
 async function loadHours(){
@@ -347,17 +374,15 @@ async function loadHours(){
     chart.innerHTML = '';
     hours.forEach(h => {
       const totalH = (h.visits / max) * 100;
-      const mobilePart = h.visits ? (h.mobile / h.visits) * totalH : 0;
-      const desktopPart = h.visits ? (h.desktop / h.visits) * totalH : 0;
-
+      const mobPct = h.visits ? (h.mobile / h.visits) * totalH : 0;
+      const deskPct = h.visits ? (h.desktop / h.visits) * totalH : 0;
       const col = document.createElement('div');
       col.className = 'hour-col';
-      col.title = h.hour + ':00 — всего ' + h.visits +
-        ' (💻' + h.desktop + ' / 📱' + h.mobile + ')';
+      col.title = h.hour + ':00 — всего ' + h.visits;
       col.innerHTML =
         '<div class="hour-stack">' +
-          '<div class="hour-bar-mobile" style="height:' + mobilePart + '%"></div>' +
-          '<div class="hour-bar-desktop" style="height:' + desktopPart + '%"></div>' +
+          '<div class="hour-bar-mobile" style="height:' + mobPct + '%"></div>' +
+          '<div class="hour-bar-desktop" style="height:' + deskPct + '%"></div>' +
         '</div>' +
         '<div class="hour-label">' + h.hour + '</div>';
       chart.appendChild(col);
@@ -365,93 +390,69 @@ async function loadHours(){
   }catch(e){ console.warn('hours:', e); }
 }
 
+async function loadFeed(){
+  try{
+    const url = '/admin/api/feed?days=' + currentDays + '&limit=60&admin=' + (showAdminFeed ? 1 : 0);
+    const r = await adminApi(url);
+    const feed = r.feed || [];
+    const body = document.getElementById('feedBody');
+    document.getElementById('feedRange').textContent = '(последние ' + feed.length + ')';
+    if (!feed.length){ body.innerHTML = '<div class="empty">Пока пусто</div>'; return; }
+    body.innerHTML = '';
+    feed.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'feed-row';
+      const actionLabel = ACTION_LABELS[item.action] || item.action;
+      const who = item.logged_in
+        ? '<span>' + (CHAR_EMOJI[item.active_char] || '🎓') + '</span><span class="feed-nick">' + escapeHtml(item.nick) + '</span>'
+        : '<span>👻</span><span class="feed-guest">Гость</span>';
+      const adminTag = item.is_admin ? ' 👑' : '';
+      row.innerHTML =
+        '<span class="feed-time">' + fmtTime(item.ts) + adminTag + '</span>' +
+        '<span class="feed-device">' + deviceIcon(item.device) + '</span>' +
+        '<span class="feed-subnet">' + escapeHtml(item.subnet) + '.*</span>' +
+        '<span class="feed-who">' + who + '</span>' +
+        '<span class="feed-action ' + item.action + '">' + actionLabel + '</span>';
+      body.appendChild(row);
+    });
+  }catch(e){ console.warn('feed:', e); }
+}
+
 async function loadZones(){
   try{
-    const r = await adminApi('/admin/api/zones?days=' + currentDays + '&sort=' + currentSort);
+    const r = await adminApi('/admin/api/zones?days=' + currentDays);
     const zones = r.zones || [];
     const box = document.getElementById('zonesBox');
-
-    if (!zones.length){
-      box.innerHTML = '<div class="empty">Пока нет данных</div>';
-      return;
-    }
-
+    if (!zones.length){ box.innerHTML = '<div class="empty">Пока нет данных</div>'; return; }
     box.innerHTML = '';
-    zones.forEach(z => {
+    zones.slice(0, 20).forEach(z => {
       const el = document.createElement('div');
       el.className = 'zone-card';
-
-      const tagLabels = {
-        mgsu: '🏛 МГСУ', dorm: '🛏 Общага',
-        mobile: '📡 Мобильный', other: '❓ Другое', unknown: '— Не размечено'
-      };
-
-      // Устройства
-      const devicesList = z.devices || [];
-      const devicesHtml = devicesList.length
-        ? devicesList.map(d => '<span class="zone-pill device">' + escapeHtml(d) + '</span>').join('')
-        : '<span class="zone-pill empty">устройства не записаны</span>';
-
-      // Игроки
-      const usersList = z.users || [];
-      const usersHtml = usersList.length
-        ? usersList.map(u => '<span class="zone-pill user">' + escapeHtml(u.nick) + '</span>').join('')
-        : '<span class="zone-pill empty">только гости</span>';
-
+      const users = (z.users || []).length
+        ? z.users.map(u => '<span class="zone-pill">' + escapeHtml(u.nick) + '</span>').join('')
+        : '<span class="zone-pill" style="opacity:0.5;">только гости</span>';
       el.innerHTML =
-        '<div class="zone-head">' +
-          '<span class="zone-subnet">' + escapeHtml(z.subnet) + '.*</span>' +
-          '<span class="zone-tag-badge ' + z.tag + '">' + (tagLabels[z.tag] || z.tag) + '</span>' +
-        '</div>' +
+        '<div class="zone-head"><span class="zone-subnet">' + escapeHtml(z.subnet) + '.*</span></div>' +
         '<div class="zone-stats">' +
           '<span>📊 <b>' + z.visits + '</b> заходов</span>' +
           '<span>👤 <b>' + z.users_count + '</b> игроков</span>' +
-          '<span>🕐 последний: <b>' + fmtTime(z.last_seen) + '</b></span>' +
+          '<span>🕐 ' + fmtTime(z.last_seen) + '</span>' +
         '</div>' +
-        '<div class="zone-section-label">💻 Устройства</div>' +
-        '<div class="zone-pills">' + devicesHtml + '</div>' +
-        '<div class="zone-section-label">🎓 Игроки</div>' +
-        '<div class="zone-pills">' + usersHtml + '</div>' +
-        '<div class="zone-actions">' +
-          '<button class="zone-btn" data-tag="mgsu">🏛 МГСУ</button>' +
-          '<button class="zone-btn dorm" data-tag="dorm">🛏 Общага</button>' +
-          '<button class="zone-btn mobile" data-tag="mobile">📡 Мобильный</button>' +
-          '<button class="zone-btn other" data-tag="other">❓ Другое</button>' +
-          '<button class="zone-btn" data-tag="unknown">— Сброс</button>' +
-        '</div>';
-
-      // Подсветить активную метку
-      el.querySelectorAll('.zone-btn').forEach(b => {
-        if (b.dataset.tag === z.tag) b.classList.add('active');
-      });
-
-      el.querySelectorAll('.zone-btn').forEach(b => {
-        b.onclick = async () => {
-          try{
-            await adminApi('/admin/api/zones/tag', {
-              method:'POST',
-              body: JSON.stringify({subnet: z.subnet, tag: b.dataset.tag, label: ''})
-            });
-            loadZones();
-          }catch(e){ alert('Ошибка: ' + e.message); }
-        };
-      });
-
+        '<div class="zone-pills">' + users + '</div>';
       box.appendChild(el);
     });
-  }catch(e){
-    console.warn('zones:', e);
-    document.getElementById('zonesBox').innerHTML =
-      '<div class="empty" style="color:#FF4D5E;">Ошибка: ' + escapeHtml(e.message) + '</div>';
-  }
+  }catch(e){ console.warn('zones:', e); }
 }
 
 function loadAll(){
-  loadSummary();
+  loadOverview();
   loadFunnel();
-  loadFeed();
+  loadDevices();
   loadHours();
-  loadZones();
+  if (detailsContent.classList.contains('open')){
+    loadFeed();
+    loadZones();
+  }
 }
 
 loadAll();

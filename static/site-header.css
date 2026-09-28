@@ -315,3 +315,13 @@ a:visited,
 .site-header-avatar{
   text-decoration: none !important;
 }
+/* Версия сайта в футере */
+.site-version{
+  font-family:monospace;
+  font-size:11px;
+  padding:2px 6px;
+  border-radius:4px;
+  background:rgba(128,128,128,0.15);
+  opacity:0.6;
+  margin-left:4px;
+}

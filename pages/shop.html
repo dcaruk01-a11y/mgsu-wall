@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="/static/site-header.css">
 <style>
 .shop-wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px;}
-.shop-head{text-align:center;padding:20px 0 24px;}
+.shop-head{text-align:center;padding:20px 0 20px;}
 .shop-title{font-size:clamp(32px,6vw,52px);font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:12px;color:inherit;}
 .shop-coins{
   display:inline-flex;align-items:center;gap:10px;
@@ -19,7 +19,21 @@
   color:inherit;
 }
 .shop-coins small{font-size:12px;font-weight:600;opacity:0.6;letter-spacing:0.1em;text-transform:uppercase;}
-.items{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+
+/* ═══ ТАБЫ ═══ */
+.tabs-shop{
+  display:flex;background:rgba(128,128,128,0.10);
+  border-radius:999px;padding:4px;margin:8px 0 16px;
+}
+.shop-tab{
+  flex:1;padding:10px;border:0;background:transparent;
+  color:inherit;font-family:inherit;font-size:13px;font-weight:700;
+  border-radius:999px;cursor:pointer;opacity:0.6;transition:all .15s;
+}
+.shop-tab.active{background:rgba(128,128,128,0.28);opacity:1;}
+
+/* ═══ ПЕРСОНАЖИ ═══ */
+.items{display:flex;flex-direction:column;gap:12px;}
 .item{
   display:flex;align-items:center;gap:16px;
   padding:18px 20px;border-radius:16px;
@@ -61,6 +75,47 @@
   font-size:12px;
   cursor:not-allowed;
 }
+
+/* ═══ РАМКИ ═══ */
+.frame-item{
+  display:flex;align-items:center;gap:16px;
+  padding:16px 18px;border-radius:16px;
+  background:rgba(128,128,128,0.10);
+  border:1px solid rgba(128,128,128,0.18);
+  transition:background .15s, border-color .15s;
+}
+.frame-item.owned{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.06);}
+.frame-item.active{border-color:#FFD700;background:rgba(255,215,0,0.08);}
+.frame-preview{
+  width:56px;height:56px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;
+  background:rgba(128,128,128,0.20);
+  padding:2px;
+  box-sizing:border-box;
+}
+.frame-preview-inner{
+  width:100%;height:100%;border-radius:50%;
+  background:rgba(128,128,128,0.15);
+  display:flex;align-items:center;justify-content:center;
+}
+.frame-info{flex:1;min-width:0;}
+.frame-name{font-size:15px;font-weight:800;margin-bottom:4px;color:inherit;}
+.frame-price{font-size:12px;font-weight:700;color:#FFD700;font-variant-numeric:tabular-nums;}
+.frame-price.owned{color:#4ADE80;}
+.frame-price.no-money{color:#FF8B8B;}
+
+.remove-frame-btn{
+  width:100%;margin-top:8px;
+  padding:12px 18px;border-radius:12px;
+  background:rgba(255,77,94,0.08);
+  border:1px solid rgba(255,77,94,0.35);
+  color:#FF8B8B;font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .15s;
+}
+.remove-frame-btn:hover{background:rgba(255,77,94,0.2);color:#fff;}
+
+/* ═══ ГОСТЬ ═══ */
 .guest-hint{
   padding:24px;border-radius:16px;
   background:rgba(128,128,128,0.10);
@@ -69,11 +124,14 @@
 }
 .guest-hint a{color:#4ADE80;font-weight:700;text-decoration:none;}
 .guest-hint a:hover{text-decoration:underline;}
+
+/* ═══ TOAST ═══ */
 .toast{
   position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(60px);
   background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;
   font-size:14px;font-weight:700;box-shadow:0 12px 32px rgba(0,0,0,0.3);
   z-index:100;opacity:0;transition:all .3s;pointer-events:none;
+  max-width:90vw;
 }
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast.err{background:#FF4D5E;color:#fff;}
@@ -87,7 +145,17 @@
     <div class="shop-title">🛍 Магазин</div>
     <div class="shop-coins">💰 <span id="coinsValue">0</span><small>монет</small></div>
   </div>
+
+  <div class="tabs-shop">
+    <button class="shop-tab active" data-tab="chars" type="button">🎭 Персонажи</button>
+    <button class="shop-tab" data-tab="frames" type="button">🖼 Рамки</button>
+  </div>
+
   <div class="items" id="itemsBox">
+    <div style="text-align:center;padding:40px;opacity:0.5;">Загрузка…</div>
+  </div>
+
+  <div class="items" id="framesBox" style="display:none;">
     <div style="text-align:center;padding:40px;opacity:0.5;">Загрузка…</div>
   </div>
 </div>
@@ -127,13 +195,16 @@ function escapeHtml(s){
 
 let currentCoins = 0;
 
+/* ═══════════════════════════════════════════════════════════
+   ПЕРСОНАЖИ
+   ═══════════════════════════════════════════════════════════ */
 async function loadShop(){
   try{
     const res = await api('/api/shop/catalog');
     const data = res.data;
     if (!data.logged_in){
       document.getElementById('itemsBox').innerHTML =
-        '<div class="guest-hint">💡 Чтобы покупать персонажей, <a href="/auth">войди в аккаунт</a>.<br>Монеты копятся за игры и выполненные задания.</div>';
+        '<div class="guest-hint">💡 Чтобы покупать персонажей, <a href="/auth">войди в аккаунт</a>.<br>Монеты копятся за игры и задания.</div>';
       document.getElementById('coinsValue').textContent = '0';
       return;
     }
@@ -193,7 +264,6 @@ function renderItems(items){
       btn.textContent = 'Не хватает 💰';
       btn.className = 'item-btn cant-afford';
       btn.disabled = true;
-      btn.title = 'Недостаточно монет';
     } else {
       btn.textContent = 'Купить';
       btn.className = 'item-btn';
@@ -213,7 +283,6 @@ async function buy(key){
       setTimeout(loadShop, 500);
       return;
     }
-    // ★ Сохраняем скин для шапки
     try{ localStorage.setItem('mgsu_active_char', key); }catch(e){}
     showToast('Куплено! Персонаж активирован');
     loadShop();
@@ -224,11 +293,146 @@ async function equip(key){
   try{
     const res = await api('/api/shop/equip', {method:'POST', body: JSON.stringify({key: key})});
     if (res.status !== 200){ showToast(res.data.detail || 'Ошибка', true); return; }
-    // ★ Сохраняем скин для шапки
     try{ localStorage.setItem('mgsu_active_char', key); }catch(e){}
     showToast('Персонаж выбран');
     loadShop();
   }catch(e){ showToast('Ошибка соединения', true); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ТАБЫ
+   ═══════════════════════════════════════════════════════════ */
+document.querySelectorAll('.shop-tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    document.querySelectorAll('.shop-tab').forEach(function(x){ x.classList.remove('active'); });
+    t.classList.add('active');
+    const isChars = t.dataset.tab === 'chars';
+    document.getElementById('itemsBox').style.display = isChars ? '' : 'none';
+    document.getElementById('framesBox').style.display = isChars ? 'none' : '';
+    if (!isChars) loadFrames();
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
+   РАМКИ
+   ═══════════════════════════════════════════════════════════ */
+async function loadFrames(){
+  const box = document.getElementById('framesBox');
+  box.innerHTML = '<div style="text-align:center;padding:40px;opacity:0.5;">Загрузка…</div>';
+
+  try{
+    const r = await fetch('/api/frames/catalog', {
+      headers: token ? {'Authorization': 'Bearer ' + token} : {}
+    });
+    const data = await r.json();
+
+    if (!data.logged_in){
+      box.innerHTML = '<div class="guest-hint">💡 Чтобы покупать рамки, <a href="/auth">войди в аккаунт</a>.</div>';
+      return;
+    }
+
+    box.innerHTML = '';
+    data.items.forEach(function(f){
+      const el = document.createElement('div');
+      let cls = 'frame-item';
+      if (f.active) cls += ' active';
+      else if (f.owned) cls += ' owned';
+      el.className = cls;
+
+      let frameBg = f.color === 'rainbow'
+        ? 'conic-gradient(from 0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)'
+        : f.color;
+
+      let priceHtml = '';
+      if (f.owned){
+        priceHtml = '<div class="frame-price owned">✓ Куплена</div>';
+      } else if (f.can_afford){
+        priceHtml = '<div class="frame-price">💰 ' + f.price + '</div>';
+      } else {
+        const need = f.price - data.coins;
+        priceHtml = '<div class="frame-price no-money">💰 ' + f.price + ' · не хватает ' + need + '</div>';
+      }
+
+      el.innerHTML =
+        '<div class="frame-preview" style="background:' + frameBg + ';">' +
+          '<div class="frame-preview-inner">🎓</div>' +
+        '</div>' +
+        '<div class="frame-info">' +
+          '<div class="frame-name">' + f.emoji + ' ' + escapeHtml(f.name) + '</div>' +
+          priceHtml +
+        '</div>' +
+        '<div class="item-actions"></div>';
+
+      const actions = el.querySelector('.item-actions');
+      const btn = document.createElement('button');
+
+      if (f.active){
+        btn.textContent = '✓ Активна';
+        btn.className = 'item-btn equipped';
+        btn.disabled = true;
+      } else if (f.owned){
+        btn.textContent = 'Надеть';
+        btn.className = 'item-btn primary';
+        btn.onclick = function(){ equipFrame(f.key); };
+      } else if (!f.can_afford){
+        btn.textContent = 'Не хватает';
+        btn.className = 'item-btn cant-afford';
+        btn.disabled = true;
+      } else {
+        btn.textContent = 'Купить';
+        btn.className = 'item-btn';
+        btn.onclick = function(){ buyFrame(f.key); };
+      }
+
+      actions.appendChild(btn);
+      box.appendChild(el);
+    });
+
+    if (data.active_frame){
+      const offBtn = document.createElement('button');
+      offBtn.className = 'remove-frame-btn';
+      offBtn.type = 'button';
+      offBtn.textContent = '❌ Снять рамку';
+      offBtn.onclick = function(){ equipFrame(''); };
+      box.appendChild(offBtn);
+    }
+  }catch(e){
+    box.innerHTML = '<div style="text-align:center;padding:40px;opacity:0.5;">Ошибка загрузки</div>';
+  }
+}
+
+async function buyFrame(key){
+  try{
+    const r = await fetch('/api/frames/buy', {
+      method:'POST',
+      headers: {'Content-Type':'application/json', 'Authorization':'Bearer ' + token},
+      body: JSON.stringify({key: key})
+    });
+    const data = await r.json();
+    if (!r.ok){ showToast(data.detail || 'Ошибка', true); return; }
+    try{ localStorage.setItem('mgsu_active_frame', key); }catch(e){}
+    showToast('Рамка куплена!');
+    loadFrames();
+    loadShop();
+  }catch(e){ showToast('Ошибка', true); }
+}
+
+async function equipFrame(key){
+  try{
+    const r = await fetch('/api/frames/equip', {
+      method:'POST',
+      headers: {'Content-Type':'application/json', 'Authorization':'Bearer ' + token},
+      body: JSON.stringify({key: key})
+    });
+    const data = await r.json();
+    if (!r.ok){ showToast(data.detail || 'Ошибка', true); return; }
+    try{
+      if (key) localStorage.setItem('mgsu_active_frame', key);
+      else localStorage.removeItem('mgsu_active_frame');
+    }catch(e){}
+    showToast(key ? 'Рамка надета' : 'Рамка снята');
+    loadFrames();
+  }catch(e){ showToast('Ошибка', true); }
 }
 
 loadShop();

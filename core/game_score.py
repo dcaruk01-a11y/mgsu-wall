@@ -136,6 +136,14 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
     except Exception as e:
         print("top save error:", e)
 
+        # ★ 7.5. Очки в копилку института
+    try:
+        if user.get("institute"):
+            from core.institutes import add_score
+            await add_score(uid, user["institute"], points)
+    except Exception as e:
+        print("institute score error:", e)
+
     # 8. Задания
     completed = []
     try:
@@ -156,7 +164,7 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
 
     updated_user = await users.get_user_by_token(token)
 
-    return {
+     return {
         "ok": True,
         "logged_in": True,
         "game": game,
@@ -173,6 +181,7 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
             "streak": streak_info.get("streak", 0),
             "streak_changed": streak_info.get("changed", False),
             "rank_bonus_pct": rank_bonus_pct,
+            "institute": (updated_user.get("institute") if updated_user else "") or "",
         },
         "streak_bonus": streak_bonus,
         "tasks_completed": completed,

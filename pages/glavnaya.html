@@ -7,10 +7,10 @@
 <link rel="stylesheet" href="/theme.css">
 <link rel="stylesheet" href="/static/site-header.css">
 <style>
-/* ═══════════ ПРИВЕТСТВЕННАЯ МОДАЛКА ═══════════ */
+/* ═══════════ ПРИВЕТСТВЕННАЯ МОДАЛКА — АДАПТИВНАЯ ═══════════ */
 .welcome-overlay{
   position:fixed;inset:0;z-index:2500;
-  background:rgba(5,14,31,0.92);
+  background:rgba(0,0,0,0.55);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   display:none;align-items:center;justify-content:center;
   padding:20px;
@@ -20,157 +20,119 @@
 
 .welcome-card{
   max-width:420px;width:100%;
-  background:linear-gradient(180deg, rgba(30,40,64,0.98), rgba(15,22,40,0.98));
-  border:1px solid rgba(255,255,255,0.15);
+  background:var(--bg-solid, #ffffff);
+  border:1px solid var(--line, rgba(15,23,42,0.12));
   border-radius:24px;
   padding:32px 26px 26px;
   text-align:center;
-  color:#fff;
-  box-shadow:0 30px 80px rgba(0,0,0,0.6);
+  color:var(--text, #0a0f1e);
+  box-shadow:0 30px 80px rgba(0,0,0,0.4);
   animation:slideUp .4s cubic-bezier(.2,1.2,.4,1);
 }
-@keyframes slideUp{from{transform:translateY(30px) scale(0.96);opacity:0;}to{transform:translateY(0) scale(1);opacity:1;}}
+@keyframes slideUp{
+  from{transform:translateY(30px) scale(0.96);opacity:0;}
+  to{transform:translateY(0) scale(1);opacity:1;}
+}
 
-.welcome-emoji{font-size:72px;line-height:1;margin-bottom:14px;filter:drop-shadow(0 8px 24px rgba(255,180,80,0.5));}
-.welcome-card h2{font-size:26px;font-weight:800;margin-bottom:10px;letter-spacing:-0.02em;}
-.welcome-card p{font-size:15px;color:rgba(255,255,255,0.75);line-height:1.55;margin-bottom:24px;}
+.welcome-emoji{
+  font-size:64px;line-height:1;
+  margin-bottom:14px;
+}
+.welcome-card h2{
+  font-size:24px;font-weight:900;
+  margin:0 0 10px;
+  letter-spacing:-0.02em;
+  color:var(--text, #0a0f1e);
+}
+.welcome-card p{
+  font-size:14px;
+  color:var(--text-dim, #64748b);
+  line-height:1.55;
+  margin:0 0 22px;
+}
 
-.welcome-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:26px;text-align:left;}
-.welcome-step{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);}
-.welcome-step-num{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FFB347,#FF7A2B);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#1a0e05;flex-shrink:0;}
-.welcome-step-text{font-size:14px;font-weight:600;line-height:1.4;}
-.welcome-step-text b{color:#fff;font-weight:800;}
-.welcome-step-text span{opacity:0.65;font-weight:500;font-size:12px;display:block;margin-top:2px;}
+.welcome-steps{
+  display:flex;flex-direction:column;gap:10px;
+  margin-bottom:24px;text-align:left;
+}
+.welcome-step{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 16px;border-radius:14px;
+  background:var(--bg-soft, #f0f2f5);
+  border:1px solid var(--line, rgba(15,23,42,0.08));
+}
+.welcome-step-num{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#FFB347,#FF7A2B);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:15px;color:#1a0e05;
+  flex-shrink:0;
+}
+.welcome-step-text{
+  font-size:13px;font-weight:600;
+  line-height:1.4;
+  color:var(--text, #0a0f1e);
+}
+.welcome-step-text b{
+  font-weight:800;
+  display:block;
+  font-size:14px;
+  margin-bottom:2px;
+}
+.welcome-step-text span{
+  color:var(--text-dim, #64748b);
+  font-weight:500;
+  font-size:12px;
+}
 
 .welcome-btn{
   width:100%;padding:16px;border-radius:999px;border:0;cursor:pointer;
   background:linear-gradient(135deg,#FFB347,#FF7A2B);color:#1a0e05;
   font-family:inherit;font-size:16px;font-weight:900;
-  box-shadow:0 12px 30px rgba(255,140,50,0.5);transition:transform .12s;
+  box-shadow:0 12px 30px rgba(255,140,50,0.5);
+  transition:transform .12s;
 }
 .welcome-btn:active{transform:scale(0.97);}
-.welcome-hint{font-size:12px;color:rgba(255,255,255,0.4);margin-top:14px;}
+.welcome-hint{
+  font-size:12px;
+  color:var(--text-dim, #94a3b8);
+  margin-top:14px;
+  line-height:1.5;
+}
 
-/* ═══════════ ОБЩАЯ РАСКЛАДКА ГЛАВНОЙ ═══════════ */
-.page{
-  max-width:1240px;
+/* ═══════════ HERO ═══════════ */
+.mini-hero{
+  padding:36px 20px 14px;
+  max-width:1100px;
   margin:0 auto;
-  padding:0 24px;
-}
-
-/* ═══════════ ТОП ДНЯ — ВЕРХНИЙ БЛОК ═══════════ */
-.top-strip-section{
-  padding:56px 0 0;
-  display:none;
-}
-.top-strip-section.show{display:block;}
-
-.top-strip{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:20px;
-  padding:16px 24px;
-  border-radius:16px;
-  background:rgba(255,180,80,0.07);
-  border:1px solid rgba(255,180,80,0.25);
-  text-decoration:none;
-  color:inherit;
-  transition:transform .2s, background .2s, border-color .2s;
-  flex-wrap:wrap;
-}
-.top-strip:hover{
-  transform:translateY(-2px);
-  background:rgba(255,180,80,0.13);
-  border-color:rgba(255,180,80,0.45);
-}
-
-.top-strip-label{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:13px;
-  font-weight:900;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-  color:#FFB347;
-  flex-shrink:0;
-}
-
-.top-strip-players{
-  display:flex;
-  align-items:center;
-  gap:24px;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-
-.top-strip-player{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  font-size:14px;
-}
-.top-strip-player .medal{
-  font-size:18px;
-  line-height:1;
-}
-.top-strip-player .nick{
-  color:inherit;
-  font-weight:700;
-  max-width:140px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.top-strip-player .score{
-  color:#FFB347;
-  font-weight:900;
-  font-variant-numeric:tabular-nums;
-}
-.top-strip-arrow{
-  color:#FFB347;
-  font-weight:900;
-  font-size:18px;
-  flex-shrink:0;
-  margin-left:8px;
-  transition:transform .2s;
-}
-.top-strip:hover .top-strip-arrow{transform:translateX(4px);}
-
-/* ═══════════ HERO — КРУПНЫЙ И ПРОСТОРНЫЙ ═══════════ */
-.hero{
-  padding:120px 0 112px;
   text-align:center;
 }
-
-.hero h1{
-  font-size:clamp(40px,7vw,84px);
+.mini-hero h1{
+  font-size:clamp(32px,6vw,60px);
   font-weight:900;
-  letter-spacing:-0.045em;
+  letter-spacing:-0.035em;
   line-height:1.02;
-  margin:0 0 40px;
+  margin-bottom:12px;
   color:inherit;
 }
-.hero h1 em{
+.mini-hero h1 em{
   font-style:normal;
   background:linear-gradient(135deg,#FFB347,#FF7A2B);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
 }
-
-.hero p{
-  font-size:17px;
+.mini-hero p{
+  font-size:15px;
   opacity:0.65;
-  max-width:560px;
-  margin:0 auto 56px;
-  line-height:1.6;
+  max-width:520px;
+  margin:0 auto 24px;
+  line-height:1.5;
 }
 
-.hero-buttons{
+.mini-hero-buttons{
   display:flex;
-  gap:14px;
+  gap:10px;
   justify-content:center;
   flex-wrap:wrap;
 }
@@ -178,104 +140,191 @@
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:10px;
-  padding:18px 36px;
+  gap:8px;
+  padding:14px 26px;
   border-radius:999px;
   font-family:inherit;
-  font-size:16px;
+  font-size:14px;
   font-weight:800;
   text-decoration:none;
   cursor:pointer;
   border:0;
-  transition:transform .12s, box-shadow .2s, background .15s;
-  min-width:200px;
+  transition:transform .12s, box-shadow .2s;
 }
 .btn-hero.primary{
   background:linear-gradient(135deg,#FFB347,#FF7A2B);
   color:#1a0e05;
-  box-shadow:0 12px 30px rgba(255,140,50,0.35);
+  box-shadow:0 8px 22px rgba(255,140,50,0.35);
 }
-.btn-hero.primary:hover{
-  transform:translateY(-3px);
-  box-shadow:0 18px 40px rgba(255,140,50,0.5);
-}
-.btn-hero.primary:active{transform:translateY(0) scale(0.98);}
+.btn-hero.primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(255,140,50,0.5);}
 .btn-hero.secondary{
-  background:rgba(128,128,128,0.08);
+  background:rgba(128,128,128,0.10);
   color:inherit;
-  border:1px solid rgba(128,128,128,0.25);
+  border:1px solid rgba(128,128,128,0.28);
 }
 .btn-hero.secondary:hover{
-  background:rgba(128,128,128,0.16);
-  transform:translateY(-3px);
+  background:rgba(128,128,128,0.20);
+  transform:translateY(-2px);
 }
 
-/* ═══════════ СЕКЦИЯ ИГР ═══════════ */
-.games-section{
-  padding:16px 0 72px;
+/* ═══════════ МИНИ-ПОЛОСКА (топ дня / институт) ═══════════ */
+.mini-top{
+  max-width:680px;
+  margin:14px auto 0;
+  padding:0 20px;
 }
+.mini-top + .mini-top{margin-top:10px;}
 
-.games-header{
+.mini-top-inner{
   display:flex;
-  align-items:baseline;
-  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  padding:12px 20px;
+  border-radius:14px;
+  background:rgba(255,180,80,0.08);
+  border:1px solid rgba(255,180,80,0.28);
+  text-decoration:none;
+  color:inherit;
+  transition:transform .15s, background .15s;
+}
+.mini-top-inner:hover{
+  transform:translateY(-1px);
+  background:rgba(255,180,80,0.16);
+}
+.mini-top-inner.inst{
+  background:rgba(111,168,255,0.08);
+  border-color:rgba(111,168,255,0.28);
+}
+.mini-top-inner.inst:hover{background:rgba(111,168,255,0.16);}
+
+.mini-top-label{
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:#FFB347;
+  flex-shrink:0;
+  white-space:nowrap;
+}
+.mini-top-inner.inst .mini-top-label{color:#6FA8FF;}
+
+.mini-top-players{
+  flex:1;
+  display:flex;
   gap:16px;
-  margin-bottom:32px;
+  min-width:0;
+  overflow:hidden;
+  align-items:center;
+}
+.mini-top-player{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  white-space:nowrap;
+  font-size:13px;
+  flex-shrink:0;
+}
+.mini-top-player .medal{font-size:14px;line-height:1;}
+.mini-top-player .emoji{font-size:16px;line-height:1;}
+.mini-top-player .nick{
+  color:inherit;
+  font-weight:600;
+  max-width:110px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.mini-top-player .score{
+  color:#FFB347;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+}
+.mini-top-inner.inst .mini-top-player .score{color:#6FA8FF;}
+
+.mini-top-empty{
+  flex:1;
+  font-size:13px;
+  opacity:0.6;
+}
+.mini-top-arrow{
+  color:#FFB347;
+  font-weight:900;
+  font-size:15px;
+  flex-shrink:0;
+}
+.mini-top-inner.inst .mini-top-arrow{color:#6FA8FF;}
+
+@media(max-width:520px){
+  .mini-top-inner{padding:10px 14px;gap:10px;}
+  .mini-top-label{font-size:11px;}
+  .mini-top-players{gap:12px;}
+  .mini-top-player{font-size:12px;}
+  .mini-top-player .nick{max-width:70px;}
+  .mini-top:nth-child(2){margin-top:14px;}
+}
+
+/* ═══════════ ИГРЫ ═══════════ */
+.games-section-head{
+  max-width:1100px;
+  margin:24px auto 18px;
+  padding:0 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:12px;
   flex-wrap:wrap;
 }
-.games-title{
-  font-size:32px;
+.games-section-title{
+  font-size:22px;
   font-weight:900;
-  letter-spacing:-0.03em;
+  letter-spacing:-0.02em;
   color:inherit;
-  margin:0;
 }
-.games-hint{
-  font-size:14px;
-  opacity:0.5;
+.games-section-hint{
+  font-size:12px;
+  opacity:0.55;
   font-weight:600;
 }
 
+.games-grid-wrap{max-width:1100px;margin:0 auto;padding:0 20px;}
 .games-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:20px;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:14px;
 }
 
 .game-card{
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  min-height:180px;
-  padding:26px 24px;
-  border-radius:18px;
-  background:rgba(128,128,128,0.07);
-  border:1px solid rgba(128,128,128,0.16);
+  min-height:150px;
+  padding:20px 18px;
+  border-radius:14px;
+  background:rgba(128,128,128,0.08);
+  border:1px solid rgba(128,128,128,0.18);
   text-decoration:none;
   color:inherit;
   cursor:pointer;
   font-family:inherit;
   text-align:left;
-  transition:transform .2s, background .2s, border-color .2s, box-shadow .2s;
+  transition:transform .15s, background .15s, border-color .15s;
   position:relative;
 }
 .game-card:hover{
-  transform:translateY(-4px);
-  background:rgba(128,128,128,0.13);
-  border-color:rgba(128,128,128,0.35);
-  box-shadow:0 12px 32px rgba(0,0,0,0.08);
+  transform:translateY(-3px);
+  background:rgba(128,128,128,0.16);
+  border-color:rgba(128,128,128,0.42);
 }
 .game-card.soon{opacity:0.5;cursor:default;}
-.game-card.soon:hover{transform:none;box-shadow:none;background:rgba(128,128,128,0.07);}
+.game-card.soon:hover{transform:none;}
 
 .game-card-task{
   position:absolute;
-  top:18px;
-  right:18px;
+  top:14px;
+  right:14px;
   display:none;
-  font-size:11px;
+  font-size:10px;
   font-weight:900;
-  padding:4px 10px;
+  padding:3px 8px;
   border-radius:999px;
   background:rgba(74,222,128,0.15);
   color:#4ADE80;
@@ -288,96 +337,97 @@
   display:inline-block;
   font-size:10px;
   font-weight:800;
-  letter-spacing:0.14em;
+  letter-spacing:0.12em;
   text-transform:uppercase;
-  padding:5px 12px;
+  padding:3px 9px;
   border-radius:999px;
-  background:rgba(128,128,128,0.14);
+  background:rgba(128,128,128,0.18);
   color:inherit;
   margin-bottom:auto;
   align-self:flex-start;
-  opacity:0.75;
+  opacity:0.8;
 }
-.game-card-tag.grey{opacity:0.45;}
+.game-card-tag.grey{opacity:0.5;}
 
 .game-card-title{
-  font-size:26px;
+  font-size:22px;
   font-weight:800;
-  letter-spacing:-0.025em;
-  margin-top:20px;
+  letter-spacing:-0.02em;
+  margin-top:12px;
   color:inherit;
   line-height:1.1;
 }
 .game-card-arrow{
-  font-size:15px;
-  opacity:0.5;
-  margin-top:12px;
+  font-size:14px;
+  opacity:0.55;
+  margin-top:8px;
   display:inline-flex;
   align-items:center;
   gap:6px;
   font-weight:700;
-  transition:opacity .15s;
 }
 .game-card:hover .game-card-arrow{opacity:1;}
 
 /* ═══════════ БЛОК РАЗРАБОТЧИКОВ ═══════════ */
 .dev-credits{
-  padding:60px 0 40px;
+  margin:48px auto 32px;
+  padding:0 20px;
+  max-width:1100px;
 }
 .dev-credits__inner{
-  background:rgba(128,128,128,0.06);
-  border:1px solid rgba(128,128,128,0.16);
-  border-radius:20px;
-  padding:40px 32px;
+  background:rgba(128,128,128,0.08);
+  border:1px solid rgba(128,128,128,0.18);
+  border-radius:16px;
+  padding:24px;
   text-align:center;
 }
 .dev-credits__title{
-  font-size:22px;
+  font-size:18px;
   font-weight:800;
   color:inherit;
-  margin-bottom:8px;
+  margin-bottom:4px;
 }
 .dev-credits__subtitle{
-  font-size:14px;
+  font-size:13px;
   opacity:0.65;
-  margin-bottom:28px;
+  margin-bottom:18px;
 }
 .dev-credits__grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:14px;
-  margin-bottom:24px;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+  margin-bottom:16px;
 }
 .dev-card{
-  background:rgba(128,128,128,0.05);
-  border:1px solid rgba(128,128,128,0.12);
-  border-radius:14px;
-  padding:18px 16px;
+  background:rgba(128,128,128,0.06);
+  border:1px solid rgba(128,128,128,0.14);
+  border-radius:12px;
+  padding:14px 12px;
 }
 .dev-card__role{
   font-size:10px;
   text-transform:uppercase;
   letter-spacing:1px;
   color:#FF4D5E;
-  margin-bottom:6px;
+  margin-bottom:4px;
   font-weight:700;
 }
 .dev-card__name{
-  font-size:15px;
+  font-size:14px;
   font-weight:700;
   color:inherit;
-  margin-bottom:4px;
+  margin-bottom:2px;
 }
 .dev-card__note{
-  font-size:12px;
+  font-size:11px;
   opacity:0.65;
 }
 .dev-credits__footer{
-  font-size:13px;
-  opacity:0.6;
-  border-top:1px dashed rgba(128,128,128,0.2);
-  padding-top:18px;
-  margin-top:4px;
+  font-size:12px;
+  opacity:0.65;
+  border-top:1px dashed rgba(128,128,128,0.20);
+  padding-top:14px;
+  margin-top:2px;
 }
 
 /* ═══════════ МОДАЛКА ИГРЫ ═══════════ */
@@ -447,54 +497,34 @@
 }
 
 /* ═══════════ АДАПТИВ ═══════════ */
-@media(max-width:768px){
-  .page{padding:0 16px;}
+@media(max-width:640px){
+  .mini-hero{padding:24px 16px 8px;}
+  .mini-hero h1{margin-bottom:10px;}
+  .mini-hero p{font-size:14px;margin-bottom:18px;}
+  .btn-hero{padding:12px 20px;font-size:13px;}
 
-  .top-strip-section{padding:32px 0 0;}
-  .top-strip{padding:14px 18px;gap:12px;}
-  .top-strip-players{gap:16px;}
-  .top-strip-player{font-size:13px;}
-  .top-strip-player .nick{max-width:100px;}
+  .games-section-head{margin-top:18px;}
+  .games-section-title{font-size:18px;}
+  .games-section-hint{font-size:11px;}
+  .games-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .game-card{min-height:120px;padding:14px 12px;border-radius:12px;}
+  .game-card-title{font-size:16px;margin-top:10px;}
+  .game-card-tag{font-size:9px;padding:2px 7px;}
+  .game-card-arrow{font-size:12px;}
+  .game-card-task{top:10px;right:10px;font-size:9px;padding:2px 6px;}
 
-  .hero{padding:72px 0 64px;}
-  .hero h1{margin:0 0 20px;}
-  .hero p{font-size:15px;margin:0 auto 28px;}
-  .btn-hero{padding:15px 26px;font-size:14px;min-width:auto;flex:1;}
-
-  .games-header{margin-bottom:22px;}
-  .games-title{font-size:24px;}
-  .games-hint{display:none;}
-  .games-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
-  .game-card{min-height:140px;padding:18px 16px;border-radius:14px;}
-  .game-card-title{font-size:17px;margin-top:14px;}
-  .game-card-tag{font-size:9px;padding:3px 8px;}
-  .game-card-arrow{font-size:12px;margin-top:8px;}
-  .game-card-task{top:12px;right:12px;font-size:9px;padding:2px 7px;}
-
-  .dev-credits{padding:40px 0 20px;}
-  .dev-credits__inner{padding:24px 20px;border-radius:16px;}
-  .dev-credits__title{font-size:18px;}
-  .dev-credits__subtitle{margin-bottom:18px;}
+  .dev-credits__inner{padding:18px 16px;}
+  .dev-credits__title{font-size:16px;}
 
   .welcome-card{padding:26px 20px 20px;border-radius:20px;}
-  .welcome-emoji{font-size:60px;margin-bottom:10px;}
-  .welcome-card h2{font-size:22px;}
-  .welcome-card p{font-size:14px;margin-bottom:20px;}
+  .welcome-emoji{font-size:54px;margin-bottom:10px;}
+  .welcome-card h2{font-size:21px;}
+  .welcome-card p{font-size:13px;margin-bottom:18px;}
   .welcome-step{padding:10px 12px;gap:10px;}
   .welcome-step-num{width:28px;height:28px;font-size:13px;}
-  .welcome-step-text{font-size:13px;}
+  .welcome-step-text{font-size:12px;}
+  .welcome-step-text b{font-size:13px;}
 }
-
-@media(max-width:480px){
-  .hero{padding:36px 0 36px;}
-  .hero p{font-size:14px;}
-  .btn-hero{padding:14px 22px;font-size:13px;}
-  .games-grid{grid-template-columns:1fr;gap:12px;}
-  .game-card{min-height:auto;padding:20px 18px;}
-  .game-card-title{margin-top:16px;font-size:19px;}
-  .game-card-arrow{margin-top:10px;}
-}
-
 @media(max-width:520px){
   #gameActions .btn-play{max-width:none;}
 }
@@ -512,7 +542,7 @@
         <div class="welcome-step-num">1</div>
         <div class="welcome-step-text">
           <b>Выбери игру</b>
-          <span>Кликер, Тетрис, Лабиринт и другие</span>
+          <span>Разные жанры — на любой вкус</span>
         </div>
       </div>
       <div class="welcome-step">
@@ -537,58 +567,58 @@
 
 <div id="siteHeader"></div>
 
-<div class="page">
-<!-- ══════════ ИНСТИТУТ ВПЕРЕДИ ══════════ -->
-<section class="mini-top" id="miniInstSection" style="display:none;">
-  <a href="/ratings" class="mini-top-inner" style="background:rgba(111,168,255,0.10);border-color:rgba(111,168,255,0.35);">
-    <span class="mini-top-label" style="color:#6FA8FF;">🏛 Впереди</span>
-    <div class="mini-top-players" id="miniInstPlayers">
-      <span style="opacity:0.6;font-size:14px;">Загрузка…</span>
+<!-- ══════════ HERO ══════════ -->
+<section class="mini-hero">
+  <h1>Играй. Копи монеты.<br><em>Качай персонажа.</em></h1>
+  <p>Игры для студентов МГСУ. Без установки, без регистрации.</p>
+  <div class="mini-hero-buttons">
+    <button class="btn-hero primary" id="startPlayingBtn" type="button">🎮 Начать играть ↓</button>
+    <a class="btn-hero secondary" href="/profile" id="profileCta">👤 Мой профиль</a>
+  </div>
+</section>
+
+<!-- ══════════ ТОП-3 ДНЯ ══════════ -->
+<section class="mini-top" id="miniTopSection" style="display:none;">
+  <a href="/ratings" class="mini-top-inner">
+    <span class="mini-top-label">🏆 Топ дня</span>
+    <div class="mini-top-players" id="miniTopList">
+      <span class="mini-top-empty">Загрузка…</span>
     </div>
-    <span class="mini-top-arrow" style="color:#6FA8FF;">→</span>
+    <span class="mini-top-arrow">→</span>
   </a>
 </section>
-  <!-- ══════════ ТОП ДНЯ (СВЕРХУ) ══════════ -->
-  <section class="top-strip-section" id="topStripSection">
-    <a href="/ratings" class="top-strip">
-      <span class="top-strip-label">🏆 Топ дня</span>
-      <div class="top-strip-players" id="topStripPlayers">
-        <span style="opacity:0.6;font-size:14px;">Загрузка…</span>
-      </div>
-      <span class="top-strip-arrow">→</span>
-    </a>
-  </section>
 
-  <!-- ══════════ HERO ══════════ -->
-  <section class="hero">
-    <h1>Играй. Копи монеты.<br><em>Качай персонажа.</em></h1>
-    <p>Игры для студентов МГСУ. Без установки, без регистрации. Работает на телефоне.</p>
-    <div class="hero-buttons">
-      <button class="btn-hero primary" id="startPlayingBtn" type="button">🎮 Начать играть</button>
-      <a class="btn-hero secondary" href="/profile" id="profileCta">👤 Мой профиль</a>
+<!-- ══════════ ИНСТИТУТ ВПЕРЕДИ ══════════ -->
+<section class="mini-top" id="miniInstSection" style="display:none;">
+  <a href="/ratings" class="mini-top-inner inst">
+    <span class="mini-top-label">🏛 Впереди</span>
+    <div class="mini-top-players" id="miniInstList">
+      <span class="mini-top-empty">Загрузка…</span>
     </div>
-  </section>
+    <span class="mini-top-arrow">→</span>
+  </a>
+</section>
 
-  <!-- ══════════ ИГРЫ ══════════ -->
-  <section class="games-section" id="games">
-    <div class="games-header">
-      <h2 class="games-title">🎮 Все игры</h2>
-      <div class="games-hint">Выбери и играй →</div>
-    </div>
+<!-- ══════════ ИГРЫ ══════════ -->
+<section id="games">
+  <div class="games-section-head">
+    <div class="games-section-title">🎮 Все игры</div>
+    <div class="games-section-hint">Выбери и играй →</div>
+  </div>
+  <div class="games-grid-wrap">
     <div class="games-grid" id="gamesGrid"></div>
-  </section>
+  </div>
+</section>
 
-  <!-- ══════════ БЛОК РАЗРАБОТЧИКОВ ══════════ -->
-  <section class="dev-credits" id="devCreditsSection" style="display:none;">
-    <div class="dev-credits__inner">
-      <div class="dev-credits__title" id="dcTitleEl"></div>
-      <div class="dev-credits__subtitle" id="dcSubtitleEl"></div>
-      <div class="dev-credits__grid" id="dcGridEl"></div>
-      <div class="dev-credits__footer" id="dcFooterEl"></div>
-    </div>
-  </section>
-
-</div>
+<!-- ══════════ БЛОК РАЗРАБОТЧИКОВ ══════════ -->
+<section class="dev-credits" id="devCreditsSection" style="display:none;">
+  <div class="dev-credits__inner">
+    <div class="dev-credits__title" id="dcTitleEl"></div>
+    <div class="dev-credits__subtitle" id="dcSubtitleEl"></div>
+    <div class="dev-credits__grid" id="dcGridEl"></div>
+    <div class="dev-credits__footer" id="dcFooterEl"></div>
+  </div>
+</section>
 
 <!-- ══════════ МОДАЛКА ИГРЫ ══════════ -->
 <div id="gameModal" class="modal-overlay" role="dialog" aria-modal="true">
@@ -666,7 +696,7 @@ renderSiteFooter();
     setTimeout(function(){
       var gamesSection = document.getElementById('games');
       if (gamesSection){
-        var headerH = 64;
+        var headerH = 60;
         var top = gamesSection.getBoundingClientRect().top + window.pageYOffset - headerH - 20;
         window.scrollTo({top: top, behavior: 'smooth'});
       }
@@ -685,7 +715,7 @@ renderSiteFooter();
 document.getElementById('startPlayingBtn').addEventListener('click', function(){
   var gamesSection = document.getElementById('games');
   if (!gamesSection) return;
-  var headerH = 64;
+  var headerH = 60;
   var top = gamesSection.getBoundingClientRect().top + window.pageYOffset - headerH - 20;
   window.scrollTo({top: top, behavior: 'smooth'});
 });
@@ -712,7 +742,7 @@ document.getElementById('startPlayingBtn').addEventListener('click', function(){
 const GAMES_INFO = {
   broadway: { title: 'Бродвей', rules: `<p class="rule-text">Пробеги по коридору, собирай кофе и монеты.</p>`, playUrl: '/games/broadway', playLabel: 'Играть' },
   campus: { title: 'Построй кампус', rules: `<p class="rule-text">Голосуй за улучшения МГСУ.</p>`, playUrl: '/games/campus', playLabel: 'Играть' },
-  grable: { title: 'Столовая МГСУ', rules: `<p class="rule-text">Собери комплексный обед по заказу. Гарнир, мясо, суп, напиток — успей за 20 секунд!</p>`, playUrl: '/games/grable', playLabel: 'Играть' },
+  grable: { title: 'Столовая МГСУ', rules: `<p class="rule-text">Собери комплексный обед по заказу. Гарнир, мясо, суп, напиток.</p>`, playUrl: '/games/grable', playLabel: 'Играть' },
   wall: { title: 'Стена', rules: `<p class="rule-text">Рисуй с телефона — твой штрих мгновенно появляется на большом экране.</p>`, playUrl: '/games/wall', playLabel: 'Играть' },
   clicker: { title: 'Кликер', rules: `<p class="rule-text">30 секунд, 7 рангов от Студента до Легенды МГСУ. Одна партия в день.</p>`, playUrl: '/games/clicker', playLabel: 'Играть' },
   tetris: { title: 'Тетрис · Здания', rules: `<p class="rule-text">Складывай дома и башни МГСУ. Полные линии сгорают, скорость растёт.</p>`, playUrl: '/games/tetris', playLabel: 'Играть' },
@@ -862,32 +892,32 @@ function unlockScroll(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ТОП ДНЯ
+   ТОП-3 ДНЯ
    ═══════════════════════════════════════════════════════════ */
-async function loadTopStrip(){
+async function loadMiniTop(){
   try{
     const r = await fetch('/api/top-day');
     const data = await r.json();
-    renderTopStrip(data.top || []);
+    renderMiniTop(data.top || []);
   }catch(e){}
 }
 
-function renderTopStrip(top){
-  const section = document.getElementById('topStripSection');
-  const list = document.getElementById('topStripPlayers');
+function renderMiniTop(top){
+  const section = document.getElementById('miniTopSection');
+  const list = document.getElementById('miniTopList');
   if (!section || !list) return;
 
   if (!top.length){
-    section.classList.remove('show');
+    section.style.display = 'none';
     return;
   }
 
-  section.classList.add('show');
+  section.style.display = 'block';
   list.innerHTML = '';
   const medals = ['🥇', '🥈', '🥉'];
   top.forEach((t, i) => {
     const el = document.createElement('span');
-    el.className = 'top-strip-player';
+    el.className = 'mini-top-player';
     el.innerHTML =
       '<span class="medal">' + (medals[i] || '•') + '</span>' +
       '<span class="nick"></span>' +
@@ -895,6 +925,52 @@ function renderTopStrip(top){
     el.querySelector('.nick').textContent = t.nick || 'Аноним';
     list.appendChild(el);
   });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ИНСТИТУТ ВПЕРЕДИ — ОДИН, БЕЗ МЕДАЛЬОНОВ
+   ═══════════════════════════════════════════════════════════ */
+async function loadTopInstitute(){
+  try{
+    const r = await fetch('/api/institutes/top');
+    const data = await r.json();
+    const top = data.top || [];
+    const section = document.getElementById('miniInstSection');
+    const list = document.getElementById('miniInstList');
+    if (!section || !list) return;
+
+    if (!top.length){
+      section.style.display = 'none';
+      return;
+    }
+
+    const first = top[0];
+    section.style.display = 'block';
+    list.innerHTML = '';
+
+    const el = document.createElement('span');
+    el.className = 'mini-top-player';
+    el.innerHTML =
+      '<span class="emoji">' + (first.emoji || '🏛') + '</span>' +
+      '<span class="nick"></span>' +
+      '<span class="score">' + first.total + '</span>';
+    el.querySelector('.nick').textContent = first.short || '';
+    list.appendChild(el);
+
+    // Если есть второй — покажем маленько
+    if (top.length > 1){
+      const el2 = document.createElement('span');
+      el2.className = 'mini-top-player';
+      el2.style.opacity = '0.6';
+      el2.style.fontSize = '11px';
+      el2.innerHTML =
+        '<span class="emoji" style="font-size:13px;">' + (top[1].emoji || '🏛') + '</span>' +
+        '<span class="nick"></span>' +
+        '<span class="score" style="color:#6FA8FF;">' + top[1].total + '</span>';
+      el2.querySelector('.nick').textContent = top[1].short || '';
+      list.appendChild(el2);
+    }
+  }catch(e){}
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -941,7 +1017,8 @@ document.addEventListener('DOMContentLoaded', function(){
     if (e.key==='Escape'){ closeGame(); closePrivacy(); }
   });
   loadGames();
-  loadTopStrip();
+  loadMiniTop();
+  loadTopInstitute();
   loadDevCredits();
 });
 </script>
@@ -949,40 +1026,5 @@ document.addEventListener('DOMContentLoaded', function(){
 (function(){
   try{ fetch('/api/visit', {method:'POST'}).catch(()=>{}); }catch(e){}
 })();
-/* ═══════════════════════════════════════════════════════════
-   ТОП-3 ИНСТИТУТА
-   ═══════════════════════════════════════════════════════════ */
-async function loadTopInstitutes(){
-  try{
-    const r = await fetch('/api/institutes/top');
-    const data = await r.json();
-    renderTopInstitutes(data.top || []);
-  }catch(e){}
-}
-
-function renderTopInstitutes(top){
-  const section = document.getElementById('miniInstSection');
-  const list = document.getElementById('miniInstPlayers');
-  if (!section || !list) return;
-  if (!top.length){ section.style.display = 'none'; return; }
-
-  section.style.display = 'block';
-  list.innerHTML = '';
-  const medals = ['🥇', '🥈', '🥉'];
-  top.forEach((it, i) => {
-    const el = document.createElement('span');
-    el.className = 'mini-top-player';
-    el.innerHTML =
-      '<span class="medal">' + (medals[i] || '•') + '</span>' +
-      '<span class="nick"></span>' +
-      '<b class="score"></b>';
-    el.querySelector('.nick').textContent = it.emoji + ' ' + it.short;
-    el.querySelector('.score').textContent = it.total;
-    list.appendChild(el);
-  });
-}
-
-// Запускаем при загрузке
-loadTopInstitutes();
 </script>
 </body></html>

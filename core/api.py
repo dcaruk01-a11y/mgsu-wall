@@ -295,6 +295,7 @@ async def api_frames_buy(payload: dict, authorization: str = Header(default=""))
     r = await buy_frame(user["uid"], key, user.get("coins", 0))
     if not r["ok"]:
         raise HTTPException(status_code=400, detail=r.get("error", "Ошибка"))
+    users.invalidate_user_cache(user["uid"])
     return r
 
 
@@ -312,7 +313,82 @@ async def api_frames_equip(payload: dict, authorization: str = Header(default=""
     r = await equip_frame(user["uid"], key)
     if not r["ok"]:
         raise HTTPException(status_code=400, detail=r.get("error", "Ошибка"))
+    users.invalidate_user_cache(user["uid"])
     return r
+
+
+# ═══════════════════════════════════════════════════════════
+# ПРОФИЛЬ — всё сразу за 1 запрос
+# ═══════════════════════════════════════════════════════════
+
+@router.get("/api/profile/full")
+async def api_profile_full(authorization: str = Header(default="")):
+    import core.users as users
+    import core.top as top
+    from core.institutes import INSTITUTES, get_player_institute_info
+    from core.achievements import ACHIEVEMENTS, get_user_achievements
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    user = await users.get_user_by_token(token) if token else None
+    if not user:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+
+    uid = user["uid"]
+
+    rank = users.get_account_rank(
+        user.get("total_score", 0),
+        user.get("games_played", 0),
+    )
+
+    tasks_out = []
+    try:
+        import core.daily_tasks as daily_tasks
+        st = await daily_tasks.get_or_create_day(uid)
+        for t in st["tasks"]:
+            key = t["key"]
+            tasks_out.append({
+                "key": key,
+                "text": t["text"],
+                "game": t["game"],
+                "target": t["target"],
+                "reward": t["reward"],
+                "progress": st["progress"].get(key, 0),
+                "done": key in st["claimed"],
+            })
+    except Exception as e:
+        print("profile full tasks error:", e)
+
+    my_positions = None
+    try:
+        my_positions = await top.my_position(uid)
+    except Exception as e:
+        print("profile full ratings error:", e)
+
+    achievements_unlocked = 0
+    try:
+        unlocked_map = await get_user_achievements(uid)
+        achievements_unlocked = len(unlocked_map)
+    except Exception as e:
+        print("profile full ach error:", e)
+
+    inst_info = None
+    inst_key = user.get("institute") or ""
+    if inst_key:
+        try:
+            inst_info = await get_player_institute_info(uid, inst_key)
+        except Exception as e:
+            print("profile full inst error:", e)
+
+    return {
+        "ok": True,
+        "user": {**user, "rank": rank},
+        "tasks": tasks_out,
+        "positions": my_positions,
+        "achievements_total": len(ACHIEVEMENTS),
+        "achievements_unlocked": achievements_unlocked,
+        "institute": inst_info,
+        "institutes_list": INSTITUTES,
+    }
 
 
 # ═══════════════════════════════════════════════════════════

@@ -26,6 +26,30 @@ body.clicker-page{
   padding:8px max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
 }
 
+/* Кнопка "в меню" на старте */
+.home-pill{
+  position:absolute;
+  top:10px;left:10px;
+  z-index:60;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid rgba(128,128,128,0.30);
+  background:rgba(128,128,128,0.10);
+  color:inherit;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:700;
+  text-decoration:none;
+  cursor:pointer;
+  transition:background .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.home-pill:hover{background:rgba(128,128,128,0.22);}
+
+/* Верхняя плашка дуэли */
 .duel-bar{
   position:absolute;top:4px;left:4px;right:4px;z-index:50;
   display:none;gap:6px;align-items:center;
@@ -33,7 +57,7 @@ body.clicker-page{
   background:rgba(255,180,80,0.15);border:1px solid rgba(255,180,80,0.4);
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
 }
-.duel-bar:not(.hide){display:flex;}
+.duel-bar.show{display:flex !important;}
 .duel-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;}
 .duel-nick{font-size:11px;font-weight:800;opacity:0.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
 .duel-nick.you{color:#6BFF8E;}
@@ -56,7 +80,7 @@ body.clicker-page{
 .multiplier.blazing{background:rgba(255,80,80,0.25);border-color:rgba(255,80,80,0.7);color:#FF6B6B;transform:scale(1.15);animation:pulseHot .8s ease-in-out infinite alternate;}
 @keyframes pulseHot{from{box-shadow:0 0 0 0 rgba(255,80,80,0.4);}to{box-shadow:0 0 20px 4px rgba(255,80,80,0.5);}}
 
-.button-zone{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:4px;position:relative;z-index:5;}
+.button-zone{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:4px;position:relative;z-index:5;pointer-events:none;}
 .rank-badge{font-size:12px;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;opacity:0.7;padding:6px 16px;border:1px solid rgba(128,128,128,0.3);border-radius:999px;background:rgba(128,128,128,0.1);transition:all .2s;}
 .rank-badge.up{background:rgba(128,128,128,0.3);transform:scale(1.1);opacity:1;}
 .click-btn{
@@ -68,15 +92,14 @@ body.clicker-page{
   display:flex;align-items:center;justify-content:center;
   transition:box-shadow .2s, background .3s;
   padding:0;color:#fff;position:relative;
-  touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;
+  pointer-events:none;
   flex-shrink:0;will-change:transform;
 }
-.click-btn:disabled{opacity:0.4;cursor:not-allowed;}
 .click-btn.hot{background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.30) 0%, transparent 60%),radial-gradient(circle at 50% 50%, #ff9a3c 0%, #d65c0f 60%, #6b2a05 100%);border-color:rgba(255,200,120,0.6);}
 .click-btn.blazing{background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.35) 0%, transparent 60%),radial-gradient(circle at 50% 50%, #ff5c5c 0%, #b41e1e 60%, #4a0808 100%);border-color:rgba(255,120,120,0.7);animation:pulseBtn .6s ease-in-out infinite alternate;}
 @keyframes pulseBtn{from{box-shadow:0 24px 70px rgba(255,60,60,0.5), inset 0 -8px 24px rgba(0,0,0,0.4);}to{box-shadow:0 24px 90px rgba(255,60,60,0.9), inset 0 -8px 24px rgba(0,0,0,0.4);}}
 
-.bottom-hud{flex:0 0 auto;margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bottom-hud{flex:0 0 auto;margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;}
 .timer-row{display:flex;align-items:baseline;gap:8px;font-size:13px;opacity:0.8;}
 .timer-num{font-size:32px;font-weight:900;min-width:56px;text-align:center;font-variant-numeric:tabular-nums;transition:color .2s;}
 .timer-num.low{color:#FF4D5E;animation:pulse .5s ease-in-out infinite alternate;}
@@ -107,36 +130,52 @@ body.clicker-page{
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   display:flex;align-items:center;justify-content:center;
   flex-direction:column;gap:18px;padding:24px;text-align:center;
-  z-index:200;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  z-index:200;overflow-y:auto;
 }
 .overlay.hide{display:none !important;}
 
 .start-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.02em;line-height:1.15;}
 .start-sub{font-size:14px;color:rgba(255,255,255,0.7);max-width:360px;line-height:1.6;}
-.btn-big{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:16px 34px;border-radius:999px;background:#fff;color:#0F3C73;font-family:inherit;font-size:16px;font-weight:700;text-decoration:none;border:0;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,0.3);transition:transform .15s;min-width:260px;}
+
+.btn-big{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:15px 30px;border-radius:999px;
+  background:#fff;color:#0F3C73;
+  font-family:inherit;font-size:15px;font-weight:800;
+  text-decoration:none;border:0;cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,0.3);
+  transition:transform .12s;
+  width:100%;max-width:280px;
+}
 .btn-big:hover{transform:translateY(-2px);}
 .btn-big:active{transform:translateY(0) scale(0.98);}
-.btn-big.duel{background:linear-gradient(135deg,#FFB347,#FF7A2B);color:#1a0e05;font-weight:900;}
+.btn-big.duel{background:linear-gradient(135deg,#FFB347,#FF7A2B);color:#1a0e05;}
 .btn-big.ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);box-shadow:none;}
-.btn-big.small{min-width:auto;padding:12px 24px;font-size:14px;}
-.btn-big.disabled,
-.btn-big:disabled{opacity:0.45;cursor:not-allowed;filter:grayscale(0.6);}
-.btn-big.disabled:hover,
-.btn-big:disabled:hover{transform:none;}
+.btn-big.ghost:hover{background:rgba(255,255,255,0.16);}
 
-.solo-limit-note{
-  font-size:12px;
-  color:rgba(255,255,255,0.5);
-  text-align:center;
-  max-width:280px;
-  line-height:1.5;
-  margin-top:-4px;
+.start-buttons{
+  display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;
+  align-items:stretch;
 }
 
 .finish-emoji{font-size:72px;line-height:1;filter:drop-shadow(0 12px 40px rgba(255,255,255,0.15));}
 .finish-rank{font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
 .finish-score{font-size:58px;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums;}
 .finish-label{font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+
+/* Разбивка по раундам */
+.rounds-breakdown{
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+  margin-top:4px;
+}
+.round-chip{
+  padding:8px 14px;border-radius:999px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  font-size:12px;
+  color:rgba(255,255,255,0.85);
+}
+.round-chip b{color:#FFD700;font-weight:900;margin-left:4px;font-variant-numeric:tabular-nums;}
 
 .top-block{width:100%;max-width:420px;margin-top:6px;}
 .top-head{font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:12px;text-align:left;padding-left:8px;}
@@ -147,21 +186,74 @@ body.clicker-page{
 .top-nick{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .top-score{font-weight:800;font-variant-numeric:tabular-nums;color:#fff;}
 .top-empty{font-size:13px;color:rgba(255,255,255,0.4);padding:20px;text-align:center;}
-.me-notice{margin-top:10px;font-size:12px;color:rgba(255,255,255,0.5);text-align:center;}
 
-#progressBlock{display:none;width:100%;max-width:420px;padding:16px 20px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);margin-top:8px;font-size:14px;text-align:left;}
-.progress-line{padding:4px 0;line-height:1.5;}
-.progress-line b{color:#fff;font-weight:700;}
-.progress-guest{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;}
-.progress-guest a{color:#4ADE80;font-weight:700;text-decoration:none;}
-.progress-link{color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;font-weight:600;}
+#progressBlock{
+  display:none;width:100%;max-width:420px;
+  padding:14px 18px;border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  margin-top:8px;font-size:13px;text-align:left;
+  color:rgba(255,255,255,0.9);
+}
+#progressBlock a{color:#4ADE80;text-decoration:none;font-weight:700;}
 
-.finish-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
+/* Кнопки действий в финале — по центру */
+.finish-actions-center{
+  display:flex;flex-direction:column;gap:10px;align-items:center;
+  width:100%;max-width:280px;margin-top:4px;
+}
 
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(60px);background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 12px 32px rgba(0,0,0,0.3);z-index:300;opacity:0;transition:all .3s;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-.toast.err{background:#FF4D5E;color:#fff;}
+/* Спиннер для "считаем результат" */
+.calc-spinner{
+  width:52px;height:52px;border-radius:50%;
+  border:3px solid rgba(255,255,255,0.15);
+  border-top-color:#FFB347;
+  animation:spin 1s linear infinite;
+  margin-bottom:8px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
 
+.calc-text{
+  font-size:16px;font-weight:800;color:#fff;letter-spacing:0.02em;
+}
+.calc-sub{
+  font-size:13px;color:rgba(255,255,255,0.6);margin-top:6px;
+}
+
+/* Перебивка между раундами */
+.intermission-card{
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  padding:32px 26px;border-radius:22px;
+  background:linear-gradient(180deg, rgba(255,180,80,0.14), rgba(255,120,40,0.06));
+  border:1px solid rgba(255,180,80,0.4);
+  max-width:340px;width:100%;
+}
+.inter-round{
+  font-size:12px;font-weight:900;letter-spacing:0.16em;
+  text-transform:uppercase;color:#FFB347;
+}
+.inter-big{
+  font-size:46px;font-weight:900;color:#fff;line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.inter-lbl{
+  font-size:11px;font-weight:700;letter-spacing:0.14em;
+  text-transform:uppercase;color:rgba(255,255,255,0.5);
+  margin-top:-6px;
+}
+.inter-total{
+  font-size:14px;color:rgba(255,255,255,0.75);margin-top:8px;
+}
+.inter-total b{color:#FFD700;font-weight:900;font-variant-numeric:tabular-nums;}
+.inter-next{
+  margin-top:10px;padding-top:14px;
+  border-top:1px dashed rgba(255,180,80,0.3);
+  font-size:13px;color:rgba(255,255,255,0.65);
+  width:100%;text-align:center;
+}
+.inter-next b{color:#FFB347;font-weight:900;}
+
+/* Дуэль оверлеи */
 .duel-panel{
   position:absolute;inset:0;
   background:rgba(5,14,31,0.97);
@@ -191,7 +283,6 @@ body.clicker-page{
 
 .duel-waiting{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,0.85);font-weight:700;}
 .duel-spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,180,80,0.3);border-top-color:#FFB347;animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
 
 .duel-input{
   width:100%;max-width:260px;padding:14px 18px;border-radius:12px;
@@ -202,7 +293,6 @@ body.clicker-page{
 }
 .duel-input:focus{border-color:rgba(255,180,80,0.7);}
 .duel-input.err{border-color:#FF4D5E;}
-.duel-input-hint{font-size:12px;color:rgba(255,255,255,0.55);text-align:center;max-width:280px;line-height:1.5;}
 
 .duel-players{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;flex-wrap:wrap;justify-content:center;}
 .duel-player{padding:10px 16px;border-radius:999px;background:rgba(128,128,128,0.15);border:1px solid rgba(128,128,128,0.3);display:flex;align-items:center;gap:8px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -234,6 +324,16 @@ body.clicker-page{
 .duel-verdict.lose{color:rgba(255,255,255,0.7);}
 .duel-verdict.draw{color:#6FA8FF;}
 
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:#fff;color:#0F3C73;padding:12px 24px;border-radius:999px;
+  font-size:14px;font-weight:600;box-shadow:0 12px 32px rgba(0,0,0,0.3);
+  z-index:300;opacity:0;transition:all .3s;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.err{background:#FF4D5E;color:#fff;}
+
+/* ═══════════ АДАПТИВ ═══════════ */
 @media(max-width:520px){
   .score-display{font-size:56px;}
   .multiplier{font-size:20px;padding:5px 12px;min-width:64px;}
@@ -247,7 +347,8 @@ body.clicker-page{
   .duel-result-score{font-size:26px;}
   .duel-live-score{font-size:18px;}
   .duel-nick{font-size:10px;}
-  .btn-big{min-width:220px;padding:14px 28px;font-size:15px;}
+  .btn-big{padding:14px 24px;font-size:14px;}
+  .inter-big{font-size:38px;}
 }
 @media(max-height:700px){
   .click-btn{width:200px;height:200px;font-size:84px;}
@@ -255,6 +356,7 @@ body.clicker-page{
   .timer-num{font-size:22px;}
   .rank-badge{font-size:10px;padding:4px 10px;}
   .multiplier{font-size:18px;padding:4px 10px;min-width:56px;}
+  .inter-big{font-size:34px;}
 }
 @media(max-height:580px){
   .click-btn{width:160px;height:160px;font-size:68px;}
@@ -272,6 +374,9 @@ body.clicker-page{
 
 <div id="siteHeader"></div>
 
+<!-- Кнопка "В меню" на старте -->
+<a href="/glavnaya" class="home-pill" id="homePill">← В меню</a>
+
 <div class="duel-bar hide" id="duelBar">
   <div class="duel-side">
     <div class="duel-nick you" id="duelNickYou">Ты</div>
@@ -285,7 +390,7 @@ body.clicker-page{
   <button class="duel-leave-btn" id="duelLeaveBarBtn" title="Выйти">✕</button>
 </div>
 
-<div class="clicker-stage">
+<div class="clicker-stage" id="clickerStage">
 
   <div class="top-hud">
     <div class="score-wrap">
@@ -301,60 +406,85 @@ body.clicker-page{
 
   <div class="bottom-hud">
     <div class="timer-row">
-      <span>Осталось:</span>
+      <span>Раунд <b id="roundLabel">1</b> / 3</span>
       <span class="timer-num" id="timer">30</span>
       <span>сек</span>
     </div>
     <div class="timer-bar"><div class="timer-bar-fill" id="timerBar" style="width:100%"></div></div>
   </div>
 
+  <!-- ══════════ СТАРТ ══════════ -->
   <div class="overlay" id="startOverlay">
     <div class="start-title">Кликер МГСУ</div>
-    <div class="start-sub">30 секунд. Максимум кликов. Одна попытка в день.</div>
-    <button class="btn-big duel" id="duelBtn" type="button">⚔️ Играть с другом</button>
-    <button class="btn-big ghost" id="soloBtn" type="button">🎓 Играть одному</button>
-    <div class="solo-limit-note" id="soloLimitNote" style="display:none;"></div>
+    <div class="start-sub">
+      <b style="color:#FFD700;">3 раунда по 30 секунд</b><br>
+      Успей накликать максимум. Очки суммируются.
+    </div>
+    <div class="start-buttons">
+      <button class="btn-big duel" id="duelBtn" type="button">⚔️ Играть с другом</button>
+      <button class="btn-big ghost" id="soloBtn" type="button">🎓 Играть одному</button>
+    </div>
   </div>
 
+  <!-- ══════════ СЧИТАЕМ РЕЗУЛЬТАТ ══════════ -->
+  <div class="overlay hide" id="calculatingOv">
+    <div class="calc-spinner"></div>
+    <div class="calc-text">Считаем результат…</div>
+    <div class="calc-sub">Подожди секунду</div>
+  </div>
+
+  <!-- ══════════ ПЕРЕБИВКА МЕЖДУ РАУНДАМИ ══════════ -->
+  <div class="overlay hide" id="intermissionOv">
+    <div class="intermission-card">
+      <div class="inter-round" id="interRound">Раунд 1 завершён</div>
+      <div class="inter-big" id="interScore">0</div>
+      <div class="inter-lbl">очков в раунде</div>
+      <div class="inter-total">Всего: <b id="interTotal">0</b></div>
+      <div class="inter-next">Следующий раунд через <b id="interCounter">3</b>…</div>
+    </div>
+  </div>
+
+  <!-- ══════════ ФИНАЛ СОЛО ══════════ -->
   <div class="overlay hide" id="finishOverlay">
     <div class="finish-emoji" id="finishEmoji">🎓</div>
     <div class="finish-rank" id="finishRank">Студент</div>
     <div class="finish-score" id="finishScore">0</div>
-    <div class="finish-label">очков за 30 секунд</div>
+    <div class="finish-label">очков за 3 раунда</div>
+    <div class="rounds-breakdown" id="roundsBreakdown"></div>
     <div class="top-block">
       <div class="top-head">Топ дня</div>
       <div class="top-list" id="topList"><div class="top-empty">Загрузка…</div></div>
-      <div class="me-notice" id="meNotice" style="display:none;"></div>
     </div>
     <div id="progressBlock"></div>
-    <div class="finish-actions">
+    <div class="finish-actions-center">
       <button class="btn-big" id="shareBtn" type="button">Показать другу</button>
       <button class="btn-big ghost" id="againBtn" type="button">Ещё раз</button>
+      <a class="btn-big ghost" href="/glavnaya" style="text-decoration:none;">🏠 В меню</a>
     </div>
-    <button class="btn-big ghost small" id="soloHomeBtn" type="button" style="margin-top:8px;">🏠 В меню</button>
   </div>
 
+  <!-- ══════════ ОТСЧЁТ ДУЭЛИ ══════════ -->
   <div class="countdown-overlay hide" id="countdownOverlay">
     <div class="countdown-num" id="countdownNum">3</div>
   </div>
 
+  <!-- ══════════ ПАНЕЛЬ ДУЭЛИ ══════════ -->
   <div class="duel-panel hide" id="duelPanel">
 
     <div class="duel-screen" id="duelChoice">
-      <h2>⚔️ Дуэль с другом</h2>
-      <p>Играйте одновременно. У кого больше кликов за 30 сек — тот победил.</p>
+      <h2>⚔️ Дуэль</h2>
+      <p>3 раунда × 30 секунд. У кого больше очков — тот победил.</p>
       <div class="duel-btns">
-        <button class="btn-big duel" id="btnShowCreate" type="button">🎮 Создать дуэль</button>
+        <button class="btn-big duel" id="btnShowCreate" type="button">🎮 Создать игру</button>
         <button class="btn-big ghost" id="btnShowJoin" type="button">🔗 Присоединиться</button>
-        <button class="btn-big ghost small" id="btnBackFromChoice" type="button" style="background:transparent;border:none;box-shadow:none;">← В меню</button>
+        <button class="btn-big ghost" id="btnBackFromChoice" type="button" style="background:transparent;border:none;box-shadow:none;">← Назад</button>
       </div>
     </div>
 
     <div class="duel-screen hide" id="duelCreate">
-      <h2>🎮 Создать дуэль</h2>
+      <h2>🎮 Создать игру</h2>
       <p>Придумай код — друг введёт его, чтобы присоединиться</p>
       <input type="text" class="duel-input" id="createCodeInput" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="XXXX">
-      <div class="duel-input-hint">4 буквы или цифры. Например: <b>МГСУ</b>, <b>2026</b>, <b>ДИМА</b></div>
       <div class="duel-btns">
         <button class="btn-big duel" id="btnCreateRoom" type="button">Создать</button>
         <button class="btn-big ghost" id="btnBackFromCreate" type="button">← Назад</button>
@@ -363,7 +493,7 @@ body.clicker-page{
 
     <div class="duel-screen hide" id="duelJoin">
       <h2>🔗 Присоединиться</h2>
-      <p>Введи код, который тебе дал друг</p>
+      <p>Введи код, который дал друг</p>
       <input type="text" class="duel-input" id="joinCodeInput" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="XXXX">
       <div class="duel-btns">
         <button class="btn-big duel" id="btnJoinRoom" type="button">Войти</button>
@@ -372,13 +502,13 @@ body.clicker-page{
     </div>
 
     <div class="duel-screen hide" id="duelLobby">
-      <h2 id="duelLobbyTitle">Ждём соперника…</h2>
+      <h2 id="duelLobbyTitle">Ждём соперника</h2>
       <div class="duel-code-box">
         <div class="duel-code-label">Код игры</div>
         <div class="duel-code" id="duelCodeShow">----</div>
         <div class="duel-code-hint">Нажми — скопируется</div>
       </div>
-      <button class="btn-big ghost small" id="duelShareBtn" type="button">📤 Пригласить друга</button>
+      <button class="btn-big ghost" id="duelShareBtn" type="button" style="min-width:auto;font-size:13px;padding:12px 22px;">📤 Пригласить друга</button>
 
       <div class="duel-players" style="margin-top:8px;">
         <div class="duel-player you" id="duelPYou">🧑 Ты</div>
@@ -399,6 +529,7 @@ body.clicker-page{
 
   </div>
 
+  <!-- ══════════ РЕЗУЛЬТАТ ДУЭЛИ ══════════ -->
   <div class="overlay hide" id="duelResultOverlay">
     <div class="duel-verdict" id="duelVerdict">—</div>
     <div class="duel-result">
@@ -413,10 +544,9 @@ body.clicker-page{
         <div class="duel-result-badge" id="duelResultThemBadge">—</div>
       </div>
     </div>
-    <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px;text-align:center;">💡 Награда начислена как за обычную партию</div>
-    <div class="finish-actions">
+    <div class="finish-actions-center">
       <button class="btn-big" id="duelAgainBtn" type="button">⚔️ Сыграть ещё</button>
-      <button class="btn-big ghost" id="duelExitBtn" type="button">🏠 В меню</button>
+      <a class="btn-big ghost" href="/glavnaya" style="text-decoration:none;">🏠 В меню</a>
     </div>
   </div>
 
@@ -425,5 +555,1102 @@ body.clicker-page{
 <div class="toast" id="toast">Скопировано</div>
 
 <script src="/static/site-header.js"></script>
-<script src="/static/games/clicker.js"></script>
+<script>
+renderSiteHeader('games');
+
+/* ═══════════════════════════════════════════════════════════
+   НАСТРОЙКИ
+   ═══════════════════════════════════════════════════════════ */
+const DURATION = 30;
+const TOTAL_ROUNDS = 3;
+const BREAK_SECONDS = 3;
+const CALC_SECONDS = 1.6;
+
+const MULT_MIN = 1.0, MULT_MAX = 5.0;
+const FAST_CLICK_MS = 350, SLOW_CLICK_MS = 700;
+const MULT_STEP_UP = 0.18, MULT_STEP_DOWN = 0.35;
+const COMBO_DECAY_INTERVAL = 300, COMBO_IDLE_THRESHOLD = 800;
+const COIN_BONUS = 25;
+const COIN_PENALTY = 60;
+const COIN_TYPES = ['🪙', '💎', '⭐', '🔮', '🍀'];
+const COIN_SPAWN_MIN = 900, COIN_SPAWN_MAX = 1800;
+const COIN_FALL_MIN_MS = 3000, COIN_FALL_MAX_MS = 4800;
+const SOUND_ENABLED = true, VIBRATION_ENABLED = true;
+const DUEL_POLL_MS = 2000;
+const DUEL_PROGRESS_MS = 1500;
+
+const RANKS = [
+  {max:50, name:'Студент', emoji:'🎓'}, {max:120, name:'ССОшник', emoji:'👷'},
+  {max:220, name:'Прораб', emoji:'📋'}, {max:350, name:'Строитель', emoji:'🏗️'},
+  {max:550, name:'Генподрядчик', emoji:'🏢'}, {max:800, name:'Застройщик', emoji:'🏙️'},
+  {max:Infinity, name:'Легенда МГСУ', emoji:'👑'}
+];
+function rankFor(score){ for (const r of RANKS) if (score <= r.max) return r; return RANKS[RANKS.length - 1]; }
+
+/* ═══════════════════════════════════════════════════════════
+   СОСТОЯНИЕ
+   ═══════════════════════════════════════════════════════════ */
+let score = 0;              // очки текущего раунда
+let totalScore = 0;         // сумма всех раундов
+let roundScores = [];       // очки за каждый завершённый раунд
+let currentRound = 0;
+let timeLeft = DURATION;
+let running = false;        // активен ли сейчас раунд
+let inBreak = false;        // идёт перебивка
+let timerId = null, lastClickTime = 0, multiplier = 1.0, lastMilestone = 0;
+let coinSpawnTimer = null, comboDecayTimer = null;
+let myUid = '', myNick = '';
+const isLoggedIn = !!localStorage.getItem('mgsu_token');
+
+let duelMode = false;
+let duelCode = '';
+let duelRole = '';
+let duelState = null;
+let duelPollTimer = null;
+let duelProgressTimer = null;
+let duelSubmitted = false;
+
+/* ═══════════════════════════════════════════════════════════
+   DOM
+   ═══════════════════════════════════════════════════════════ */
+const stage = document.getElementById('clickerStage');
+const badge = document.getElementById('rankBadge');
+const btn = document.getElementById('clickBtn');
+const timerEl = document.getElementById('timer');
+const roundLabel = document.getElementById('roundLabel');
+const timerBar = document.getElementById('timerBar');
+const scoreEl = document.getElementById('scoreDisplay');
+const multEl = document.getElementById('multiplier');
+const startOv = document.getElementById('startOverlay');
+const calcOv = document.getElementById('calculatingOv');
+const interOv = document.getElementById('intermissionOv');
+const finishOv = document.getElementById('finishOverlay');
+const shareBtn = document.getElementById('shareBtn');
+const againBtn = document.getElementById('againBtn');
+const finishEmoji = document.getElementById('finishEmoji');
+const finishRank = document.getElementById('finishRank');
+const finishScore = document.getElementById('finishScore');
+const roundsBreakdown = document.getElementById('roundsBreakdown');
+const topList = document.getElementById('topList');
+const progressBlock = document.getElementById('progressBlock');
+const toast = document.getElementById('toast');
+const homePill = document.getElementById('homePill');
+
+const interRound = document.getElementById('interRound');
+const interScore = document.getElementById('interScore');
+const interTotal = document.getElementById('interTotal');
+const interCounter = document.getElementById('interCounter');
+
+const duelBar = document.getElementById('duelBar');
+const duelNickYou = document.getElementById('duelNickYou');
+const duelNickThem = document.getElementById('duelNickThem');
+const duelScoreYou = document.getElementById('duelScoreYou');
+const duelScoreThem = document.getElementById('duelScoreThem');
+const duelLeaveBarBtn = document.getElementById('duelLeaveBarBtn');
+
+const duelBtn = document.getElementById('duelBtn');
+const soloBtn = document.getElementById('soloBtn');
+const duelPanel = document.getElementById('duelPanel');
+const duelChoice = document.getElementById('duelChoice');
+const duelCreateEl = document.getElementById('duelCreate');
+const duelJoinEl = document.getElementById('duelJoin');
+const duelLobby = document.getElementById('duelLobby');
+const createCodeInput = document.getElementById('createCodeInput');
+const joinCodeInput = document.getElementById('joinCodeInput');
+const duelCodeShow = document.getElementById('duelCodeShow');
+const duelPYou = document.getElementById('duelPYou');
+const duelPThem = document.getElementById('duelPThem');
+const duelWaiting = document.getElementById('duelWaiting');
+const duelWaitText = document.getElementById('duelWaitText');
+const duelStartBtn = document.getElementById('duelStartBtn');
+const countdownOverlay = document.getElementById('countdownOverlay');
+const countdownNum = document.getElementById('countdownNum');
+const duelResultOverlay = document.getElementById('duelResultOverlay');
+const duelVerdict = document.getElementById('duelVerdict');
+const duelCardYou = document.getElementById('duelCardYou');
+const duelCardThem = document.getElementById('duelCardThem');
+const duelResultYouName = document.getElementById('duelResultYouName');
+const duelResultYouScore = document.getElementById('duelResultYouScore');
+const duelResultYouBadge = document.getElementById('duelResultYouBadge');
+const duelResultThemName = document.getElementById('duelResultThemName');
+const duelResultThemScore = document.getElementById('duelResultThemScore');
+const duelResultThemBadge = document.getElementById('duelResultThemBadge');
+
+/* ═══════════════════════════════════════════════════════════
+   ЗВУК
+   ═══════════════════════════════════════════════════════════ */
+let audioCtx = null, lastSoundTime = 0;
+const SOUND_THROTTLE = 15;
+function initAudio(){
+  if (audioCtx) return;
+  try{ const AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }catch(e){}
+}
+function playClickSound(){
+  if (!SOUND_ENABLED || !audioCtx) return;
+  const now = performance.now();
+  if (now - lastSoundTime < SOUND_THROTTLE) return;
+  lastSoundTime = now;
+  try{
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    const freq = 1100 + Math.random() * 500;
+    osc.frequency.setValueAtTime(freq, t);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.55, t + 0.05);
+    gain.gain.setValueAtTime(0.07, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + 0.1);
+  }catch(e){}
+}
+function vibrate(ms){ if (!VIBRATION_ENABLED) return; if (navigator.vibrate){ try{ navigator.vibrate(ms); }catch(e){} } }
+
+/* ═══════════════════════════════════════════════════════════
+   РАСПИСАНИЕ
+   ═══════════════════════════════════════════════════════════ */
+let scheduleOpen = true;
+async function checkScheduleStatus(){
+  try{
+    const r = await fetch('/status');
+    const s = await r.json();
+    scheduleOpen = !!s.open;
+    const banner = document.getElementById('statusBanner');
+    const sub = document.getElementById('statusBannerSub');
+    if (!scheduleOpen){
+      sub.textContent = 'Игры доступны только в учебное время: с ' + s.opens_at + ' до ' + s.closes_at;
+      banner.classList.add('show');
+      if (running) stopRound();
+      btn.disabled = true;
+    } else {
+      banner.classList.remove('show');
+      if (!running) btn.disabled = false;
+    }
+  }catch(e){}
+}
+checkScheduleStatus();
+setInterval(checkScheduleStatus, 60000);
+
+/* ═══════════════════════════════════════════════════════════
+   ПРОФИЛЬ
+   ═══════════════════════════════════════════════════════════ */
+if (isLoggedIn){
+  const t = localStorage.getItem('mgsu_token');
+  fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + t}})
+    .then(r => r.json())
+    .then(d => { if (d && d.user){ myUid = d.user.uid; myNick = d.user.display_name; } })
+    .catch(()=>{});
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ОТРИСОВКА
+   ═══════════════════════════════════════════════════════════ */
+function updateScore(newScore){
+  score = Math.max(0, Math.round(newScore));
+  scoreEl.textContent = score;
+  let color = '';
+  if      (score >= 500) color = '#FF6B6B';
+  else if (score >= 350) color = '#FF8A3C';
+  else if (score >= 200) color = '#FFB347';
+  else if (score >= 100) color = '#FFD24A';
+  else if (score >= 50)  color = '#A6E22E';
+  scoreEl.style.color = color || '';
+
+  const milestone = Math.floor(score / 50) * 50;
+  if (milestone > lastMilestone && milestone > 0){
+    lastMilestone = milestone;
+    try{
+      scoreEl.getAnimations().forEach(a => a.cancel());
+      scoreEl.animate([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],
+        {duration:400, easing:'ease-out'});
+    }catch(e){}
+  }
+  if (milestone < lastMilestone) lastMilestone = milestone;
+}
+function updateMultiplier(){
+  multEl.textContent = 'x' + multiplier.toFixed(1);
+  multEl.classList.remove('hot','blazing');
+  btn.classList.remove('hot','blazing');
+  if (multiplier >= 3.5){ multEl.classList.add('blazing'); btn.classList.add('blazing'); }
+  else if (multiplier >= 2.0){ multEl.classList.add('hot'); btn.classList.add('hot'); }
+}
+function updateRank(){
+  const r = rankFor(score);
+  if (badge.textContent !== r.name){
+    badge.textContent = r.name;
+    badge.classList.add('up');
+    setTimeout(() => badge.classList.remove('up'), 250);
+  }
+  btn.textContent = r.emoji;
+}
+function punchButton(){
+  try{
+    btn.getAnimations().forEach(a => a.cancel());
+    btn.animate([{transform:'scale(1)'},{transform:'scale(0.88)'},{transform:'scale(1)'}],
+      {duration:140, easing:'cubic-bezier(.2,1.4,.5,1)'});
+  }catch(e){
+    btn.style.transform = 'scale(0.9)';
+    setTimeout(() => { btn.style.transform = ''; }, 90);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   КЛИК — ПО ВСЕМУ ЭКРАНУ
+   ═══════════════════════════════════════════════════════════ */
+function handleClick(){
+  if (!running || !scheduleOpen) return;
+  const now = performance.now();
+  const dt = now - lastClickTime;
+  lastClickTime = now;
+
+  if (dt > 0 && dt < FAST_CLICK_MS) multiplier = Math.min(MULT_MAX, multiplier + MULT_STEP_UP);
+  else if (dt > SLOW_CLICK_MS) multiplier = Math.max(MULT_MIN, multiplier - MULT_STEP_DOWN);
+
+  const points = Math.max(1, Math.round(multiplier));
+  updateScore(score + points);
+  updateMultiplier();
+  updateRank();
+  punchButton();
+  playClickSound();
+  vibrate(8);
+
+  const rect = btn.getBoundingClientRect();
+  spawnFloat(rect.left + rect.width / 2 + (Math.random() - 0.5) * 50,
+             rect.top + rect.height * 0.3, '+' + points, false);
+
+  if (duelMode) duelScoreYou.textContent = totalScore + score;
+}
+
+// Клик по всему стейджу, кроме интерактивных элементов
+stage.addEventListener('pointerdown', function(e){
+  if (!running || !scheduleOpen) return;
+  // Игнорируем клики по кнопкам/ссылкам/полям
+  if (e.target.closest('button, a, select, input, textarea, .duel-bar, .overlay, .duel-panel, .countdown-overlay')) return;
+  e.preventDefault();
+  handleClick();
+}, {passive: false});
+
+// Пробел — тоже клик
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space'){
+    e.preventDefault();
+    if (!running || !scheduleOpen) return;
+    if (e.repeat) return;
+    handleClick();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   МОНЕТКИ
+   ═══════════════════════════════════════════════════════════ */
+function spawnCoin(){
+  if (!running) return;
+  const coin = document.createElement('div');
+  coin.className = 'falling-coin';
+  coin.textContent = COIN_TYPES[Math.floor(Math.random() * COIN_TYPES.length)];
+  const side = Math.random() < 0.5 ? 'left' : 'right';
+  const offset = 6 + Math.random() * 18;
+  coin.style[side] = offset + '%';
+  const duration = COIN_FALL_MIN_MS + Math.random() * (COIN_FALL_MAX_MS - COIN_FALL_MIN_MS);
+  coin.style.animationDuration = duration + 'ms';
+
+  let handled = false;
+  function onHit(e){
+    if (handled || !running) return;
+    handled = true;
+    if (e){ e.preventDefault(); e.stopPropagation(); }
+    coin.classList.add('caught');
+    updateScore(score + COIN_BONUS);
+    spawnFloatAt(coin, '+' + COIN_BONUS, false);
+    playClickSound();
+    vibrate(15);
+    setTimeout(() => coin.remove(), 240);
+    if (duelMode) duelScoreYou.textContent = totalScore + score;
+  }
+  coin.addEventListener('touchstart', onHit, {passive: false});
+  coin.addEventListener('mousedown', onHit);
+  coin.addEventListener('animationend', () => {
+    if (handled) return;
+    if (!running){ coin.remove(); return; }
+    handled = true;
+    updateScore(score - COIN_PENALTY);
+    spawnFloatAt(coin, '-' + COIN_PENALTY, true);
+    vibrate(30);
+    coin.remove();
+    if (duelMode) duelScoreYou.textContent = totalScore + score;
+  });
+  setTimeout(() => { if (coin.parentNode && !handled) coin.remove(); }, duration + 500);
+  document.body.appendChild(coin);
+
+  const next = COIN_SPAWN_MIN + Math.random() * (COIN_SPAWN_MAX - COIN_SPAWN_MIN);
+  coinSpawnTimer = setTimeout(spawnCoin, next);
+}
+function spawnFloatAt(el, text, isBad){ const rect = el.getBoundingClientRect(); spawnFloat(rect.left + rect.width/2, rect.top + rect.height/2, text, isBad); }
+function spawnFloat(x, y, text, isBad){
+  const el = document.createElement('div');
+  el.className = 'float-num ' + (isBad ? 'bad' : 'good');
+  el.textContent = text;
+  el.style.left = x + 'px'; el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1100);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ЛОГИКА РАУНДОВ
+   ═══════════════════════════════════════════════════════════ */
+function resetRoundState(){
+  updateScore(0);
+  timeLeft = DURATION;
+  timerEl.textContent = timeLeft;
+  timerEl.classList.remove('low');
+  timerBar.style.width = '100%';
+  timerBar.classList.remove('low');
+  multiplier = 1.0;
+  lastClickTime = performance.now();
+  lastMilestone = 0;
+  badge.textContent = 'Студент';
+  btn.textContent = '🎓';
+  updateMultiplier();
+  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
+  running = true;
+  inBreak = false;
+}
+
+function startRound(){
+  currentRound++;
+  roundLabel.textContent = currentRound;
+  resetRoundState();
+
+  clearInterval(timerId);
+  timerId = setInterval(tick, 1000);
+
+  clearInterval(comboDecayTimer);
+  comboDecayTimer = setInterval(() => {
+    if (!running) return;
+    const idle = performance.now() - lastClickTime;
+    if (idle > COMBO_IDLE_THRESHOLD){
+      multiplier = Math.max(MULT_MIN, multiplier - 0.15);
+      updateMultiplier();
+    }
+  }, COMBO_DECAY_INTERVAL);
+
+  clearTimeout(coinSpawnTimer);
+  spawnCoin();
+}
+
+function tick(){
+  timeLeft -= 1;
+  timerEl.textContent = Math.max(0, timeLeft);
+  timerBar.style.width = Math.max(0, (timeLeft / DURATION) * 100) + '%';
+  if (timeLeft <= 5){ timerEl.classList.add('low'); timerBar.classList.add('low'); }
+  if (timeLeft <= 0) stopRound();
+}
+
+function stopRound(){
+  if (!running) return;
+  running = false;
+  clearInterval(timerId);
+  clearInterval(comboDecayTimer);
+  clearTimeout(coinSpawnTimer);
+  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
+
+  // Сохраняем результат раунда
+  roundScores.push(score);
+  totalScore += score;
+
+  if (duelMode) duelScoreYou.textContent = totalScore;
+
+  if (currentRound >= TOTAL_ROUNDS){
+    // Все раунды завершены
+    finishAllRounds();
+  } else {
+    // Перебивка перед следующим
+    showIntermission();
+  }
+}
+
+function showIntermission(){
+  inBreak = true;
+  interRound.textContent = 'Раунд ' + currentRound + ' завершён';
+  interScore.textContent = score;
+  interTotal.textContent = totalScore;
+  interOv.classList.remove('hide');
+
+  let sec = BREAK_SECONDS;
+  interCounter.textContent = sec;
+  const t = setInterval(() => {
+    sec--;
+    if (sec <= 0){
+      clearInterval(t);
+      interOv.classList.add('hide');
+      startRound();
+    } else {
+      interCounter.textContent = sec;
+    }
+  }, 1000);
+}
+
+async function finishAllRounds(){
+  // Показываем "Считаем результат"
+  calcOv.classList.remove('hide');
+
+  setTimeout(() => {
+    calcOv.classList.add('hide');
+    if (duelMode){
+      duelSubmitScore(totalScore);
+    } else {
+      showSoloFinish();
+    }
+  }, CALC_SECONDS * 1000);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   СОЛО — СТАРТ/ФИНАЛ
+   ═══════════════════════════════════════════════════════════ */
+function startSolo(){
+  if (!scheduleOpen){ checkScheduleStatus(); return; }
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+  duelMode = false;
+  duelBar.classList.add('hide');
+  currentRound = 0;
+  totalScore = 0;
+  roundScores = [];
+
+  startOv.classList.add('hide');
+  finishOv.classList.add('hide');
+  duelResultOverlay.classList.add('hide');
+  duelPanel.classList.add('hide');
+  progressBlock.style.display = 'none';
+  homePill.style.display = 'none'; // прячем на время игры
+
+  startRound();
+}
+
+function showSoloFinish(){
+  const r = rankFor(totalScore);
+  finishEmoji.textContent = r.emoji;
+  finishRank.textContent = r.name;
+  finishScore.textContent = totalScore;
+
+  // Разбивка по раундам
+  roundsBreakdown.innerHTML = '';
+  roundScores.forEach((s, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'round-chip';
+    chip.innerHTML = 'Раунд ' + (i + 1) + ': <b>' + s + '</b>';
+    roundsBreakdown.appendChild(chip);
+  });
+
+  finishOv.classList.remove('hide');
+  homePill.style.display = ''; // возвращаем
+  meNoticeReset();
+  progressBlock.style.display = 'none';
+  topList.innerHTML = '<div class="top-empty">Загрузка…</div>';
+
+  submitSoloResult(totalScore);
+}
+
+function meNoticeReset(){ /* заглушка */ }
+
+async function submitSoloResult(finalScore){
+  try{
+    const headers = {'Content-Type':'application/json'};
+    const t = localStorage.getItem('mgsu_token');
+    if (t) headers['Authorization'] = 'Bearer ' + t;
+    const r = await fetch('/clicker/score', {
+      method:'POST', headers,
+      body: JSON.stringify({nick: '', score: finalScore, rank: rankFor(finalScore).name})
+    });
+    const data = await r.json();
+    renderTop(data.top || [], finalScore, data.position);
+    renderProgress(data);
+  }catch(e){
+    topList.innerHTML = '<div class="top-empty">Не удалось загрузить топ</div>';
+  }
+}
+
+function renderTop(top, myScore, pos){
+  if (!top.length){ topList.innerHTML = '<div class="top-empty">Пока никого. Ты первый!</div>'; return; }
+  topList.innerHTML = '';
+  let iAmInTop = false;
+  top.forEach((e, i) => {
+    let isMe = false;
+    if (isLoggedIn && myUid) isMe = (e.uid && e.uid === myUid);
+    else isMe = (e.score === myScore && !iAmInTop);
+    if (isMe) iAmInTop = true;
+    const row = document.createElement('div');
+    row.className = 'top-row' + (isMe ? ' me' : '');
+    row.innerHTML = '<span class="top-pos">' + (i + 1) + '</span><span class="top-nick"></span><span class="top-score">' + e.score + '</span>';
+    row.querySelector('.top-nick').textContent = e.nick;
+    topList.appendChild(row);
+  });
+}
+
+function renderProgress(data){
+  if (!data.logged_in){
+    progressBlock.innerHTML = '💡 Хочешь монеты и топ? <a href="/auth">Создай аккаунт</a>';
+    progressBlock.style.display = 'block';
+    return;
+  }
+  let html = '';
+  if (data.progress && data.progress.coins_added) html += '<div>💰 +' + data.progress.coins_added + ' монет</div>';
+  if (data.progress){
+    html += '<div>🏆 Всего очков: <b>' + data.progress.total_score + '</b></div>';
+    html += '<div>🎮 Партий: <b>' + data.progress.games_played + '</b></div>';
+  }
+  if (data.streak !== null && data.streak !== undefined){
+    html += '<div>🔥 Серия: <b>' + data.streak + ' дней</b>';
+    if (data.streak_changed) html += ' <span style="color:#4ADE80;">+1</span>';
+    html += '</div>';
+  }
+  html += '<div style="margin-top:8px;"><a href="/profile">Открыть профиль →</a></div>';
+  progressBlock.innerHTML = html;
+  progressBlock.style.display = 'block';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ДУЭЛЬ
+   ═══════════════════════════════════════════════════════════ */
+function duelHeaders(){
+  const t = localStorage.getItem('mgsu_token') || '';
+  return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t };
+}
+
+function showScreen(name){
+  duelChoice.classList.add('hide');
+  duelCreateEl.classList.add('hide');
+  duelJoinEl.classList.add('hide');
+  duelLobby.classList.add('hide');
+  if (name === 'choice') duelChoice.classList.remove('hide');
+  if (name === 'create') duelCreateEl.classList.remove('hide');
+  if (name === 'join')   duelJoinEl.classList.remove('hide');
+  if (name === 'lobby')  duelLobby.classList.remove('hide');
+}
+
+function openDuelPanel(){
+  if (!isLoggedIn){
+    showToast('Войди в аккаунт');
+    setTimeout(() => location.href = '/auth', 1200);
+    return;
+  }
+  duelPanel.classList.remove('hide');
+  startOv.classList.add('hide');
+  finishOv.classList.add('hide');
+  duelResultOverlay.classList.add('hide');
+  homePill.style.display = 'none';
+  showScreen('choice');
+}
+
+async function createRoom(){
+  const code = (createCodeInput.value || '').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
+  if (code.length !== 4){
+    createCodeInput.classList.add('err');
+    showToast('Код — 4 символа', true);
+    return;
+  }
+  try{
+    const r = await fetch('/api/duel/create', {
+      method:'POST', headers: duelHeaders(),
+      body: JSON.stringify({code})
+    });
+    if (!r.ok){
+      const err = await r.json().catch(()=>({}));
+      createCodeInput.classList.add('err');
+      showToast(err.detail || 'Ошибка', true);
+      return;
+    }
+    const data = await r.json();
+    duelCode = data.code;
+    duelRole = 'host';
+    duelMode = true;
+    createCodeInput.classList.remove('err');
+    goToLobby();
+  }catch(e){ showToast('Ошибка соединения', true); }
+}
+
+async function joinRoom(){
+  const code = (joinCodeInput.value || '').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
+  if (code.length !== 4){
+    joinCodeInput.classList.add('err');
+    showToast('Код — 4 символа', true);
+    return;
+  }
+  try{
+    const r = await fetch('/api/duel/join', {
+      method:'POST', headers: duelHeaders(),
+      body: JSON.stringify({code})
+    });
+    if (!r.ok){
+      const err = await r.json().catch(()=>({}));
+      joinCodeInput.classList.add('err');
+      showToast(err.detail || 'Комната не найдена', true);
+      return;
+    }
+    const data = await r.json();
+    duelCode = data.code;
+    duelRole = 'guest';
+    duelMode = true;
+    joinCodeInput.classList.remove('err');
+    goToLobby();
+  }catch(e){ showToast('Ошибка соединения', true); }
+}
+
+function goToLobby(){
+  showScreen('lobby');
+  duelCodeShow.textContent = duelCode;
+  duelPYou.textContent = '🧑 ' + (myNick || 'Ты');
+  duelPThem.textContent = '⏳ Ждём…';
+  duelPThem.classList.add('empty');
+  duelWaiting.style.display = 'flex';
+  duelStartBtn.classList.add('hide');
+
+  if (duelRole === 'host'){
+    document.getElementById('duelLobbyTitle').textContent = 'Ждём соперника…';
+    duelWaitText.textContent = 'Отправь код другу';
+  } else {
+    document.getElementById('duelLobbyTitle').textContent = 'В комнате!';
+    duelWaitText.textContent = 'Ждём, пока хост начнёт';
+  }
+  startPolling();
+}
+
+async function leaveRoom(){
+  stopDuelPolling();
+  if (duelCode){
+    try{
+      await fetch('/api/duel/leave', {
+        method:'POST', headers: duelHeaders(),
+        body: JSON.stringify({code: duelCode})
+      });
+    }catch(e){}
+  }
+  duelCode = '';
+  duelRole = '';
+  duelMode = false;
+  duelPanel.classList.add('hide');
+  startOv.classList.remove('hide');
+  homePill.style.display = '';
+}
+
+async function duelStart(){
+  try{
+    const r = await fetch('/api/duel/start', {
+      method:'POST', headers: duelHeaders(),
+      body: JSON.stringify({code: duelCode})
+    });
+    if (!r.ok){
+      const err = await r.json().catch(()=>({}));
+      showToast(err.detail || 'Ошибка', true);
+      return;
+    }
+  }catch(e){ showToast('Ошибка', true); }
+}
+
+function startPolling(){
+  stopDuelPolling();
+  pollDuelStatus();
+  duelPollTimer = setInterval(() => {
+    if (document.hidden) return;
+    pollDuelStatus();
+  }, DUEL_POLL_MS);
+}
+function stopDuelPolling(){
+  if (duelPollTimer){ clearInterval(duelPollTimer); duelPollTimer = null; }
+  if (duelProgressTimer){ clearInterval(duelProgressTimer); duelProgressTimer = null; }
+}
+
+async function pollDuelStatus(){
+  if (!duelCode) return;
+  try{
+    const r = await fetch('/api/duel/status?code=' + encodeURIComponent(duelCode), {headers: duelHeaders()});
+    if (r.status === 404 || r.status === 403){
+      stopDuelPolling();
+      showToast('Комната закрыта');
+      duelCode = ''; duelRole = ''; duelMode = false;
+      duelPanel.classList.add('hide');
+      startOv.classList.remove('hide');
+      homePill.style.display = '';
+      return;
+    }
+    if (!r.ok) return;
+    const data = await r.json();
+    applyDuelState(data);
+  }catch(e){}
+}
+
+function applyDuelState(data){
+  const room = data.room;
+  duelState = room;
+
+  if (room.status === 'playing' || room.status === 'finished'){
+    if (duelRole === 'host'){
+      duelNickYou.textContent = room.host.nick;
+      duelNickThem.textContent = room.guest ? room.guest.nick : 'Соперник';
+      duelScoreThem.textContent = (room.guest && room.guest.score != null) ? room.guest.score : 0;
+    } else {
+      duelNickYou.textContent = room.guest.nick;
+      duelNickThem.textContent = room.host.nick;
+      duelScoreThem.textContent = room.host.score != null ? room.host.score : 0;
+    }
+  }
+
+  if (room.guest){
+    duelPThem.textContent = '🧑 ' + room.guest.nick;
+    duelPThem.classList.remove('empty');
+    duelWaiting.style.display = 'none';
+    if (duelRole === 'host'){
+      duelStartBtn.classList.remove('hide');
+      if (room.status === 'ready' || room.status === 'waiting'){
+        document.getElementById('duelLobbyTitle').textContent = 'Соперник на месте!';
+        duelWaitText.textContent = 'Готов начать';
+      }
+    } else {
+      document.getElementById('duelLobbyTitle').textContent = 'В комнате!';
+      duelWaitText.textContent = 'Ждём, пока хост начнёт';
+    }
+  } else {
+    duelPThem.textContent = '⏳ Ждём…';
+    duelPThem.classList.add('empty');
+    duelWaiting.style.display = 'flex';
+    duelStartBtn.classList.add('hide');
+  }
+
+  if (room.status === 'playing' && !running && countdownOverlay.classList.contains('hide')){
+    stopDuelPolling();
+    startDuelCountdown(room.start_at);
+  }
+  if (room.status === 'finished' && !running && duelResultOverlay.classList.contains('hide')){
+    showDuelResult(room);
+  }
+}
+
+function startDuelCountdown(startAt){
+  duelPanel.classList.add('hide');
+  startOv.classList.add('hide');
+  finishOv.classList.add('hide');
+  duelResultOverlay.classList.add('hide');
+  countdownOverlay.classList.remove('hide');
+
+  if (duelState){
+    duelNickYou.textContent = myNick || 'Ты';
+    const opp = duelRole === 'host'
+      ? (duelState.guest ? duelState.guest.nick : 'Соперник')
+      : duelState.host.nick;
+    duelNickThem.textContent = opp;
+  }
+
+  function tickCountdown(){
+    const now = Date.now() / 1000;
+    const left = startAt - now;
+    if (left <= 0){
+      countdownNum.textContent = 'GO!';
+      countdownNum.classList.add('go');
+      setTimeout(() => {
+        countdownOverlay.classList.add('hide');
+        countdownNum.classList.remove('go');
+        beginDuelPlay();
+      }, 400);
+      return;
+    }
+    const sec = Math.ceil(left);
+    countdownNum.textContent = sec;
+    countdownNum.style.animation = 'none';
+    void countdownNum.offsetWidth;
+    countdownNum.style.animation = '';
+    setTimeout(tickCountdown, 100);
+  }
+  tickCountdown();
+}
+
+function beginDuelPlay(){
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+  duelSubmitted = false;
+  currentRound = 0;
+  totalScore = 0;
+  roundScores = [];
+
+  duelBar.classList.remove('hide');
+  duelScoreYou.textContent = 0;
+  duelScoreThem.textContent = 0;
+  homePill.style.display = 'none';
+
+  // Прогресс — раз в 1.5 сек
+  clearInterval(duelProgressTimer);
+  duelProgressTimer = setInterval(async () => {
+    if (!running || !duelCode) return;
+    if (document.hidden) return;
+    try{
+      await fetch('/api/duel/progress', {
+        method:'POST', headers: duelHeaders(),
+        body: JSON.stringify({code: duelCode, score: totalScore + (running ? score : 0)})
+      });
+    }catch(e){}
+  }, DUEL_PROGRESS_MS);
+
+  startPolling();
+  startRound();
+}
+
+async function duelSubmitScore(finalScore){
+  if (duelSubmitted) return;
+  duelSubmitted = true;
+  clearInterval(duelProgressTimer);
+  duelBar.classList.add('hide');
+  homePill.style.display = '';
+
+  try{
+    const r = await fetch('/api/duel/submit', {
+      method:'POST', headers: duelHeaders(),
+      body: JSON.stringify({code: duelCode, score: finalScore})
+    });
+    if (r.ok){
+      const data = await r.json();
+      if (data.room && data.room.status === 'finished'){
+        showDuelResult(data.room);
+      } else {
+        // Ждём соперника
+        duelResultOverlay.classList.remove('hide');
+        duelVerdict.textContent = 'Ждём соперника…';
+        duelVerdict.className = 'duel-verdict';
+        duelResultYouName.textContent = myNick || 'Ты';
+        duelResultYouScore.textContent = finalScore;
+        duelResultYouBadge.textContent = '✓ Готово';
+        duelResultThemName.textContent = 'Соперник';
+        duelResultThemScore.textContent = '...';
+        duelResultThemBadge.textContent = 'Играет';
+        duelCardYou.className = 'duel-result-card';
+        duelCardThem.className = 'duel-result-card';
+        startPolling();
+      }
+    }
+  }catch(e){ showToast('Не удалось отправить', true); }
+}
+
+function showDuelResult(room){
+  stopDuelPolling();
+  duelSubmitted = true;
+  duelBar.classList.add('hide');
+  homePill.style.display = '';
+
+  const youScore = duelRole === 'host' ? room.host.score : room.guest.score;
+  const themScore = duelRole === 'host' ? room.guest.score : room.host.score;
+  const themNick = duelRole === 'host' ? room.guest.nick : room.host.nick;
+
+  duelResultYouName.textContent = myNick || 'Ты';
+  duelResultYouScore.textContent = youScore;
+  duelResultThemName.textContent = themNick;
+  duelResultThemScore.textContent = themScore;
+
+  duelCardYou.classList.remove('win','lose','draw');
+  duelCardThem.classList.remove('win','lose','draw');
+
+  if (youScore > themScore){
+    duelVerdict.textContent = '🏆 Победа!';
+    duelVerdict.className = 'duel-verdict win';
+    duelCardYou.classList.add('win');
+    duelCardThem.classList.add('lose');
+    duelResultYouBadge.textContent = 'Победитель';
+    duelResultThemBadge.textContent = 'Проиграл';
+  } else if (youScore < themScore){
+    duelVerdict.textContent = '😞 Проигрыш';
+    duelVerdict.className = 'duel-verdict lose';
+    duelCardYou.classList.add('lose');
+    duelCardThem.classList.add('win');
+    duelResultYouBadge.textContent = 'Проиграл';
+    duelResultThemBadge.textContent = 'Победитель';
+  } else {
+    duelVerdict.textContent = '🤝 Ничья';
+    duelVerdict.className = 'duel-verdict draw';
+    duelCardYou.classList.add('draw');
+    duelCardThem.classList.add('draw');
+    duelResultYouBadge.textContent = 'Ничья';
+    duelResultThemBadge.textContent = 'Ничья';
+  }
+
+  duelResultOverlay.classList.remove('hide');
+
+  // Отправляем результат как обычную партию (за монеты и streak)
+  const r = rankFor(youScore);
+  try{
+    const headers = {'Content-Type':'application/json'};
+    const t = localStorage.getItem('mgsu_token');
+    if (t) headers['Authorization'] = 'Bearer ' + t;
+    fetch('/clicker/score', {
+      method:'POST', headers,
+      body: JSON.stringify({nick: '', score: youScore, rank: r.name})
+    }).catch(()=>{});
+  }catch(e){}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   КНОПКИ
+   ═══════════════════════════════════════════════════════════ */
+soloBtn.addEventListener('click', startSolo);
+duelBtn.addEventListener('click', openDuelPanel);
+document.getElementById('btnShowCreate').addEventListener('click', () => {
+  createCodeInput.value = '';
+  createCodeInput.classList.remove('err');
+  showScreen('create');
+  setTimeout(() => createCodeInput.focus(), 100);
+});
+document.getElementById('btnShowJoin').addEventListener('click', () => {
+  joinCodeInput.value = '';
+  joinCodeInput.classList.remove('err');
+  showScreen('join');
+  setTimeout(() => joinCodeInput.focus(), 100);
+});
+document.getElementById('btnBackFromChoice').addEventListener('click', () => {
+  duelPanel.classList.add('hide');
+  startOv.classList.remove('hide');
+  homePill.style.display = '';
+  duelMode = false;
+});
+document.getElementById('btnCreateRoom').addEventListener('click', createRoom);
+document.getElementById('btnBackFromCreate').addEventListener('click', () => showScreen('choice'));
+document.getElementById('btnJoinRoom').addEventListener('click', joinRoom);
+document.getElementById('btnBackFromJoin').addEventListener('click', () => showScreen('choice'));
+document.getElementById('duelLeaveBtn').addEventListener('click', leaveRoom);
+duelStartBtn.addEventListener('click', duelStart);
+
+duelLeaveBarBtn.addEventListener('click', async () => {
+  if (running){
+    if (!confirm('Выйти из дуэли? Результат не отправится.')) return;
+    running = false;
+    clearInterval(timerId);
+    clearInterval(comboDecayTimer);
+    clearTimeout(coinSpawnTimer);
+    document.querySelectorAll('.falling-coin').forEach(c => c.remove());
+    if (duelCode){
+      try{
+        await fetch('/api/duel/leave', {
+          method:'POST', headers: duelHeaders(),
+          body: JSON.stringify({code: duelCode})
+        });
+      }catch(e){}
+    }
+  }
+  duelMode = false;
+  duelCode = '';
+  duelRole = '';
+  duelSubmitted = false;
+  duelBar.classList.add('hide');
+  duelResultOverlay.classList.add('hide');
+  duelPanel.classList.add('hide');
+  startOv.classList.remove('hide');
+  homePill.style.display = '';
+});
+
+duelCodeShow.addEventListener('click', async () => {
+  try{ await navigator.clipboard.writeText(duelCode); showToast('Код скопирован ✓'); }catch(e){}
+});
+
+document.getElementById('duelShareBtn').addEventListener('click', async () => {
+  const url = location.origin + '/games/clicker?duel=' + duelCode;
+  const text = `Сыграем в дуэль в Кликере МГСУ? ${url}`;
+  try{
+    if (navigator.share) await navigator.share({ text, url });
+    else { await navigator.clipboard.writeText(text); showToast('Скопировано ✓'); }
+  }catch(e){}
+});
+
+[createCodeInput, joinCodeInput].forEach(inp => {
+  inp.addEventListener('input', (e) => {
+    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
+    e.target.classList.remove('err');
+  });
+  inp.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter'){
+      if (inp === createCodeInput) createRoom();
+      else joinRoom();
+    }
+  });
+});
+
+againBtn.addEventListener('click', startSolo);
+
+document.getElementById('duelAgainBtn').addEventListener('click', async () => {
+  if (duelCode){
+    try{
+      await fetch('/api/duel/leave', {
+        method:'POST', headers: duelHeaders(),
+        body: JSON.stringify({code: duelCode})
+      });
+    }catch(e){}
+  }
+  stopDuelPolling();
+  clearInterval(timerId);
+  clearInterval(comboDecayTimer);
+  clearTimeout(coinSpawnTimer);
+  document.querySelectorAll('.falling-coin').forEach(c => c.remove());
+
+  duelMode = false;
+  duelCode = '';
+  duelRole = '';
+  duelSubmitted = false;
+  running = false;
+
+  duelResultOverlay.classList.add('hide');
+  duelBar.classList.add('hide');
+  countdownOverlay.classList.add('hide');
+  finishOv.classList.add('hide');
+
+  duelPanel.classList.remove('hide');
+  homePill.style.display = 'none';
+  showScreen('choice');
+});
+
+shareBtn.addEventListener('click', async () => {
+  const r = rankFor(totalScore);
+  const text = `Я ${r.name} ${r.emoji} — ${totalScore} очков за 3 раунда в «Кликере МГСУ». А ты?\nhttps://mgsu-wall.onrender.com/games/clicker`;
+  try{
+    if (navigator.share) await navigator.share({text});
+    else { await navigator.clipboard.writeText(text); showToast('Скопировано!'); }
+  }catch(err){
+    try{ await navigator.clipboard.writeText(text); showToast('Скопировано!'); }
+    catch(e2){ showToast(text); }
+  }
+});
+
+function showToast(text, isError){
+  toast.textContent = text;
+  toast.className = 'toast show' + (isError ? ' err' : '');
+  setTimeout(() => { toast.className = 'toast'; }, 1800);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   АВТО-ВХОД ПО ?duel=CODE
+   ═══════════════════════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(location.search);
+  const codeFromUrl = params.get('duel');
+  if (!codeFromUrl) return;
+  if (!isLoggedIn){
+    alert('Войди в аккаунт, чтобы принять приглашение');
+    setTimeout(() => location.href = '/auth', 600);
+    return;
+  }
+  const code = codeFromUrl.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
+  if (code.length !== 4) return;
+
+  setTimeout(async () => {
+    duelPanel.classList.remove('hide');
+    startOv.classList.add('hide');
+    homePill.style.display = 'none';
+    joinCodeInput.value = code;
+    await joinRoom();
+    history.replaceState(null, '', '/games/clicker');
+  }, 500);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   ИНИЦИАЛИЗАЦИЯ
+   ═══════════════════════════════════════════════════════════ */
+updateMultiplier();
+updateRank();
+document.addEventListener('touchstart', initAudio, {once: true, passive: true});
+document.addEventListener('mousedown', initAudio, {once: true});
+</script>
 </body></html>

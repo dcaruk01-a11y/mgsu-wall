@@ -492,3 +492,32 @@ function renderSiteFooter(){
 
   init();
 })();
+/* ═══════════════════════════════════════════════════════════
+   УВЕДОМЛЕНИЕ О ДОСТИЖЕНИЯХ
+   Вызывается играми после /api/game/finish
+   ═══════════════════════════════════════════════════════════ */
+function showAchievementToast(achievements){
+  if (!achievements || !achievements.length) return;
+
+  achievements.forEach(function(a, idx){
+    setTimeout(function(){
+      var el = document.createElement('div');
+      el.className = 'ach-toast';
+      el.innerHTML =
+        '<div class="ach-toast-emoji">' + (a.emoji || '🏆') + '</div>' +
+        '<div class="ach-toast-text">' +
+          '<small>Новое достижение</small>' +
+          a.name +
+        '</div>';
+      document.body.appendChild(el);
+      requestAnimationFrame(function(){ el.classList.add('show'); });
+
+      setTimeout(function(){
+        el.classList.remove('show');
+        setTimeout(function(){ if (el.parentNode) el.remove(); }, 400);
+      }, 3500);
+    }, idx * 800);
+  });
+}
+
+window.showAchievementToast = showAchievementToast;

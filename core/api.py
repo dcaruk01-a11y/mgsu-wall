@@ -510,3 +510,114 @@ async def api_feedback_app(payload: dict, authorization: str = Header(default=""
             print("feedback app send error:", e)
 
     return {"ok": True}
+# ═══════════════════════════════════════════════════════════
+# ГЛАВНАЯ — ВСЁ ЗА ОДИН ЗАПРОС
+# ═══════════════════════════════════════════════════════════
+
+@router.get("/api/home/init")
+async def api_home_init(authorization: str = Header(default="")):
+    """
+    Всё что нужно главной странице — одним запросом.
+    Экономит 4-5 round-trip'ов к Turso.
+    """
+    import core.users as users
+    from core.institutes import get_institutes_rating
+
+    # ─── Игры ───
+    games_list = [
+        {
+            "key": k,
+            "title": v["title"],
+            "enabled": v["enabled"],
+            "status": v.get("status", "available"),
+            "url": v.get("url", ""),
+        }
+        for k, v in state.games_config.items()
+    ]
+
+    # ─── Тема ───
+    theme = state.theme_config.get("current", "white")
+
+    # ─── Расписание ───
+    sch = state.schedule_str()
+    schedule_out = {
+        "is_open": state.is_open_now(),
+        "opens_at": f"{sch['open_hour']:02d}:{sch['open_minute']:02d}",
+        "closes_at": f"{sch['close_hour']:02d}:{sch['close_minute']:02d}",
+    }
+
+    # ─── Топ дня (3) ───
+    top_day_list = []
+    try:
+        from core.top import top_day
+        top_day_list = await top_day(3)
+    except Exception as e:
+        print("home init top_day error:", e)
+
+    # ─── Топ институтов (3) ───
+    top_inst = []
+    try:
+        top_inst = await get_institutes_rating(3)
+    except Exception as e:
+        print("home init institutes error:", e)
+
+    # ─── Блок разработчиков ───
+    dc = state.dev_credits_config
+    if dc.get("enabled", True):
+        dev_credits = {
+            "enabled": True,
+            "title": dc.get("title", ""),
+            "subtitle": dc.get("subtitle", ""),
+            "footer": dc.get("footer", ""),
+            "cards": dc.get("cards", []),
+        }
+    else:
+        dev_credits = {"enabled": False}
+
+    # ─── Пользователь (если авторизован) ───
+    user_info = None
+    game_tasks = {}
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    if token:
+        user = await users.get_user_by_token(token)
+        if user:
+            user_info = {
+                "uid": user["uid"],
+                "display_name": user["display_name"],
+                "active_char": user.get("active_char", "student"),
+                "active_frame": user.get("active_frame", ""),
+                "coins": user.get("coins", 0),
+                "streak": user.get("streak", 0),
+            }
+
+            # ─── Задания по играм (для бейджиков на карточках) ───
+            try:
+                import core.daily_tasks as daily_tasks
+                st = await daily_tasks.get_or_create_day(user["uid"])
+                for t in st["tasks"]:
+                    g = t["game"]
+                    if g not in game_tasks:
+                        game_tasks[g] = []
+                    game_tasks[g].append({
+                        "key": t["key"],
+                        "text": t["text"],
+                        "target": t["target"],
+                        "reward": t["reward"],
+                        "progress": st["progress"].get(t["key"], 0),
+                        "done": t["key"] in st["claimed"],
+                    })
+            except Exception as e:
+                print("home init tasks error:", e)
+
+    return {
+        "ok": True,
+        "theme": theme,
+        "schedule": schedule_out,
+        "games": games_list,
+        "top_day": top_day_list,
+        "top_institutes": top_inst,
+        "dev_credits": dev_credits,
+        "user": user_info,
+        "game_tasks": game_tasks,
+    }

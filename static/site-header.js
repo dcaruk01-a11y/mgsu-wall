@@ -237,7 +237,7 @@ function renderSiteFooter(){
   container.className = 'site-footer';
   container.innerHTML =
     '<div class="site-footer-inner">' +
-      '<div class="site-footer-left">© 2026 · Не является официальным сайтом НИУ МГСУ</div>' +
+      + '<div class="site-footer-left">© 2026 · Не является официальным сайтом НИУ МГСУ · <span class="site-version">v1.0.0</span></div>' +
       '<div class="site-footer-right">' +
         '<a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>' +
         '<span class="site-footer-dot">·</span>' +

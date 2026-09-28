@@ -1,305 +1,72 @@
-from fastapi import APIRouter, Header, HTTPException
-from datetime import datetime
-from config import MSK, TG_FEEDBACK_BOT_TOKEN, TG_ADMIN_ID
-import httpx, time, aiosqlite
-from config import DB_PATH
+import asyncio
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+from core.storage import db_init
+from core.analytics import db_init_stats, load_history
+from core.users import db_init_users
+from core.ip_tracking import db_init_ip
+from core.top import db_init_top
+from core.daily_tasks import db_init_tasks
+from core.settings import db_init_settings
+from core.content_plan import db_init_content
+from core.login_guard import db_init_login_guard
+from core.registration_guard import db_init_registration_guard
+from core.institutes import db_init_institutes
+from core.achievements import db_init_achievements
+from core.frames import db_init_frames
+from core.websocket import router as ws_router
+from core.api import router as api_router
+from core.clicker import router as clicker_router
+from core.admin import router as admin_router
+from core.pages import router as pages_router
+from core.themes import router as themes_router
+from core.auth import router as auth_router
+from core.ratings import router as ratings_router
+from core.game_score import router as game_score_router
+from core.tasks_api import router as tasks_api_router
+from core.shop import router as shop_router
+from core.duel import router as duel_router
+from core.tasks import daily_loop
 import core.state as state
-import core.analytics as analytics
-from core.storage import make_snapshot, post_to_telegram
+from feedback_bot import feedback_bot_loop
+from core.content_publisher import content_publisher_loop
 
-router = APIRouter()
+app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
-
-@router.get("/status")
-async def status_endpoint():
-    now = datetime.now(MSK)
-    sch = state.schedule_str()
-    return {
-        "open": state.is_open_now(),
-        "opens_at": f"{sch['open_hour']:02d}:{sch['open_minute']:02d}",
-        "closes_at": f"{sch['close_hour']:02d}:{sch['close_minute']:02d}",
-        "open_hour": sch["open_hour"],
-        "open_minute": sch["open_minute"],
-        "close_hour": sch["close_hour"],
-        "close_minute": sch["close_minute"],
-        "force_override": sch["force_override"],
-        "current_time_msk": now.strftime("%H:%M"),
-    }
+app.include_router(pages_router)
+app.include_router(api_router)
+app.include_router(clicker_router)
+app.include_router(admin_router)
+app.include_router(themes_router)
+app.include_router(auth_router)
+app.include_router(ratings_router)
+app.include_router(game_score_router)
+app.include_router(tasks_api_router)
+app.include_router(shop_router)
+app.include_router(duel_router)
+app.include_router(ws_router)
 
 
-@router.post("/api/track")
-async def api_track(payload: dict):
-    uid = str(payload.get("uid", ""))[:64]
-    analytics.track_visit(uid)
-    return {"ok": True}
-
-
-@router.post("/api/session")
-async def api_session(payload: dict):
-    try:
-        dur = float(payload.get("duration", 0))
-    except Exception:
-        dur = 0
-    analytics.track_session(dur)
-    return {"ok": True}
-
-
-@router.get("/api/games")
-async def api_games():
-    return {
-        "games": [
-            {
-                "key": k,
-                "title": v["title"],
-                "enabled": v["enabled"],
-                "status": v.get("status", "available"),
-                "url": v.get("url", ""),
-            }
-            for k, v in state.games_config.items()
-        ],
-        "theme": state.theme_config["current"],
-    }
-
-
-@router.get("/api/dev-credits")
-async def api_dev_credits():
-    dc = state.dev_credits_config
-    if not dc.get("enabled", True):
-        return {"enabled": False}
-    return {
-        "enabled": True,
-        "title": dc.get("title", ""),
-        "subtitle": dc.get("subtitle", ""),
-        "footer": dc.get("footer", ""),
-        "cards": dc.get("cards", []),
-    }
-
-
-@router.get("/api/top-day")
-async def api_top_day():
-    try:
-        from core.top import top_day
-        top = await top_day(3)
-    except Exception as e:
-        print("top-day error:", e)
-        top = []
-    return {"top": top}
-
-
-@router.get("/snapshot")
-async def manual_snapshot():
-    path = await make_snapshot()
-    await post_to_telegram(path)
-    return {"ok": True, "path": path}
-
-
-# ═══════════════════════════════════════════════════════════
-# ИНСТИТУТЫ
-# ═══════════════════════════════════════════════════════════
-
-@router.get("/api/institutes")
-async def api_institutes():
-    """Список всех институтов + рейтинг."""
-    from core.institutes import INSTITUTES, get_institutes_rating
-    rating = await get_institutes_rating()
-    return {
-        "ok": True,
-        "institutes": INSTITUTES,
-        "rating": rating,
-    }
-
-
-@router.get("/api/institutes/top")
-async def api_institutes_top():
-    """Топ-3 института для плашки на главной."""
-    from core.institutes import get_institutes_rating
-    rating = await get_institutes_rating(3)
-    return {"ok": True, "top": rating}
-
-
-@router.get("/api/institutes/my")
-async def api_my_institute(authorization: str = Header(default="")):
-    """Информация об институте игрока: мои очки, копилка, место."""
-    import core.users as users
-    from core.institutes import get_player_institute_info
-
-    token = (authorization or "").replace("Bearer ", "").strip()
-    user = await users.get_user_by_token(token) if token else None
-    if not user:
-        raise HTTPException(status_code=401, detail="Не авторизован")
-
-    inst_key = user.get("institute") or ""
-    if not inst_key:
-        return {"ok": True, "has_institute": False}
-
-    info = await get_player_institute_info(user["uid"], inst_key)
-    return {"ok": True, "has_institute": True, "info": info}
-
-
-@router.get("/api/institutes/players")
-async def api_institute_players_q(key: str = "", limit: int = 20):
-    """Игроки внутри института по query-параметру."""
-    from core.institutes import INSTITUTE_MAP, get_institute_players
-    if key not in INSTITUTE_MAP:
-        raise HTTPException(status_code=404, detail="Институт не найден")
-    limit = max(5, min(limit, 50))
-    players = await get_institute_players(key, limit)
-    return {"ok": True, "players": players}
-
-
-@router.get("/api/institutes/{key}/players")
-async def api_institute_players(key: str):
-    """Топ игроков внутри института (по URL)."""
-    from core.institutes import INSTITUTE_MAP, get_institute_players
-    if key not in INSTITUTE_MAP:
-        raise HTTPException(status_code=404, detail="Институт не найден")
-    players = await get_institute_players(key, 20)
-    return {"ok": True, "players": players}
-
-
-@router.post("/api/institutes/set")
-async def api_institutes_set(payload: dict, authorization: str = Header(default="")):
-    """Выбрать или сменить институт. Смена = обнуление прогресса."""
-    import core.users as users
-    from core.institutes import get_institute
-
-    token = (authorization or "").replace("Bearer ", "").strip()
-    user = await users.get_user_by_token(token) if token else None
-    if not user:
-        raise HTTPException(status_code=401, detail="Не авторизован")
-
-    key = str(payload.get("institute", "")).strip()
-    inst = get_institute(key)
-    if not inst:
-        raise HTTPException(status_code=400, detail="Неизвестный институт")
-
-    r = await users.set_institute(user["uid"], key)
-    if not r["ok"]:
-        raise HTTPException(status_code=400, detail=r.get("error", "Ошибка"))
-
-    return {
-        "ok": True,
-        "institute": key,
-        "was_change": r.get("was_change", False),
-    }
-
-
-# ═══════════════════════════════════════════════════════════
-# FEEDBACK
-# ═══════════════════════════════════════════════════════════
-
-@router.get("/api/feedback/check")
-async def api_feedback_check(authorization: str = Header(default="")):
-    token = (authorization or "").replace("Bearer ", "").strip()
-    if not token:
-        return {"ok": True, "pending": False}
-    try:
-        import core.users as users
-        user = await users.get_user_by_token(token)
-        if not user:
-            return {"ok": True, "pending": False}
-
-        uid = user["uid"]
-        async with aiosqlite.connect(DB_PATH) as db:
-            cur = await db.execute("""
-                SELECT COALESCE(feedback_request_at, 0), COALESCE(feedback_seen_at, 0)
-                FROM users WHERE uid=?
-            """, (uid,))
-            row = await cur.fetchone()
-
-        if not row:
-            return {"ok": True, "pending": False}
-
-        req_at, seen_at = row[0] or 0, row[1] or 0
-        pending = req_at > 0 and seen_at < req_at
-        return {"ok": True, "pending": pending, "requested_at": req_at}
-    except Exception as e:
-        print("feedback check error:", e)
-        return {"ok": True, "pending": False}
-
-
-@router.post("/api/feedback/seen")
-async def api_feedback_seen(authorization: str = Header(default="")):
-    token = (authorization or "").replace("Bearer ", "").strip()
-    if not token:
-        return {"ok": False}
-    try:
-        import core.users as users
-        user = await users.get_user_by_token(token)
-        if not user:
-            return {"ok": False}
-        async with aiosqlite.connect(DB_PATH) as db:
-            await db.execute(
-                "UPDATE users SET feedback_seen_at=? WHERE uid=?",
-                (time.time(), user["uid"])
-            )
-            await db.commit()
-        return {"ok": True}
-    except Exception as e:
-        print("feedback seen error:", e)
-        return {"ok": False}
-
-
-@router.post("/api/feedback/app")
-async def api_feedback_app(payload: dict, authorization: str = Header(default="")):
-    stars = max(0, min(int(payload.get("stars", 0) or 0), 5))
-    text = str(payload.get("text", ""))[:1000].strip()
-    page = str(payload.get("page", ""))[:100]
-    ua = str(payload.get("ua", ""))[:200]
-
-    if stars <= 0:
-        return {"ok": False, "error": "Нужна оценка"}
-
-    uid = ""
-    nick = "Гость"
-    token = (authorization or "").replace("Bearer ", "").strip()
-    if token:
-        try:
-            import core.users as users
-            user = await users.get_user_by_token(token)
-            if user:
-                uid = user["uid"]
-                nick = user["display_name"]
-        except Exception:
-            pass
-
-    if uid:
-        try:
-            async with aiosqlite.connect(DB_PATH) as db:
-                await db.execute("""
-                    UPDATE users SET feedback_request_at=0, feedback_seen_at=? WHERE uid=?
-                """, (time.time(), uid))
-                await db.commit()
-        except Exception:
-            pass
-
-    if TG_FEEDBACK_BOT_TOKEN and TG_ADMIN_ID:
-        stars_str = "⭐" * stars + "☆" * (5 - stars)
-        msg = (
-            f"💌 <b>Обратная связь из приложения</b>\n\n"
-            f"<b>Оценка:</b> {stars_str} ({stars}/5)\n"
-            f"<b>Игрок:</b> {nick}"
-        )
-        if uid:
-            msg += f" (<code>{uid}</code>)"
-        if page:
-            msg += f"\n<b>Страница:</b> <code>{page}</code>"
-        if text:
-            safe = text.replace("<", "&lt;").replace(">", "&gt;")
-            msg += f"\n\n<b>Текст:</b>\n{safe}"
-        else:
-            msg += f"\n\n<i>Без комментария</i>"
-
-        try:
-            api_url = f"https://api.telegram.org/bot{TG_FEEDBACK_BOT_TOKEN}/sendMessage"
-            async with httpx.AsyncClient(timeout=10) as c:
-                await c.post(api_url, json={
-                    "chat_id": TG_ADMIN_ID,
-                    "text": msg,
-                    "parse_mode": "HTML",
-                    "disable_web_page_preview": True,
-                })
-        except Exception as e:
-            print("feedback app send error:", e)
-
-    return {"ok": True}
+@app.on_event("startup")
+async def on_startup():
+    await db_init()
+    await db_init_stats()
+    await db_init_users()
+    await db_init_ip()
+    await db_init_top()
+    await db_init_tasks()
+    await db_init_settings()
+    await db_init_content()
+    await db_init_login_guard()
+    await db_init_registration_guard()
+    await db_init_institutes()
+    await db_init_achievements()
+    await db_init_frames()
+    await state.load_all_settings()
+    await load_history()
+    asyncio.create_task(daily_loop())
+    asyncio.create_task(feedback_bot_loop())
+    asyncio.create_task(content_publisher_loop())

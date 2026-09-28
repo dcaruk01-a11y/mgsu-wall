@@ -588,16 +588,55 @@
   </a>
 </section>
 
-<!-- ══════════ ИНСТИТУТ ВПЕРЕДИ ══════════ -->
-<section class="mini-top" id="miniInstSection" style="display:none;">
-  <a href="/ratings" class="mini-top-inner inst">
-    <span class="mini-top-label">🏛 Впереди</span>
-    <div class="mini-top-players" id="miniInstList">
-      <span class="mini-top-empty">Загрузка…</span>
-    </div>
-    <span class="mini-top-arrow">→</span>
-  </a>
-</section>
+/* ═══════════════════════════════════════════════════════════
+   ИНСТИТУТ ВПЕРЕДИ — только отрисовка
+   ═══════════════════════════════════════════════════════════ */
+function renderTopInstitute(top){
+  const section = document.getElementById('miniInstSection');
+  const list = document.getElementById('miniInstList');
+  if (!section || !list) return;
+
+  if (!top || !top.length){
+    section.style.display = 'none';
+    return;
+  }
+
+  const first = top[0];
+  section.style.display = 'block';
+  list.innerHTML = '';
+
+  const el = document.createElement('span');
+  el.className = 'mini-top-player';
+  el.innerHTML =
+    '<span class="emoji">' + (first.emoji || '🏛') + '</span>' +
+    '<span class="nick"></span>' +
+    '<span class="score">' + first.total + '</span>';
+  el.querySelector('.nick').textContent = first.short || '';
+  list.appendChild(el);
+
+  // Если есть второй — покажем маленько
+  if (top.length > 1){
+    const el2 = document.createElement('span');
+    el2.className = 'mini-top-player';
+    el2.style.opacity = '0.6';
+    el2.style.fontSize = '11px';
+    el2.innerHTML =
+      '<span class="emoji" style="font-size:13px;">' + (top[1].emoji || '🏛') + '</span>' +
+      '<span class="nick"></span>' +
+      '<span class="score" style="color:#6FA8FF;">' + top[1].total + '</span>';
+    el2.querySelector('.nick').textContent = top[1].short || '';
+    list.appendChild(el2);
+  }
+}
+
+// Fallback — если /api/home/init упал, грузим отдельно
+async function loadTopInstitute(){
+  try{
+    const r = await fetch('/api/institutes/top');
+    const data = await r.json();
+    renderTopInstitute(data.top || []);
+  }catch(e){}
+}
 
 <!-- ══════════ ИГРЫ ══════════ -->
 <section id="games">
@@ -974,31 +1013,45 @@ async function loadTopInstitute(){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   БЛОК РАЗРАБОТЧИКОВ
+   БЛОК РАЗРАБОТЧИКОВ — только отрисовка
    ═══════════════════════════════════════════════════════════ */
+function renderDevCredits(cfg){
+  const section = document.getElementById('devCreditsSection');
+  if (!section) return;
+
+  if (!cfg || !cfg.enabled){
+    section.style.display = 'none';
+    return;
+  }
+
+  document.getElementById('dcTitleEl').textContent = cfg.title || '';
+  document.getElementById('dcSubtitleEl').textContent = cfg.subtitle || '';
+  document.getElementById('dcFooterEl').textContent = cfg.footer || '';
+
+  const grid = document.getElementById('dcGridEl');
+  grid.innerHTML = '';
+  (cfg.cards || []).forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'dev-card';
+    el.innerHTML = '<div class="dev-card__role"></div><div class="dev-card__name"></div><div class="dev-card__note"></div>';
+    el.querySelector('.dev-card__role').textContent = c.role || '';
+    el.querySelector('.dev-card__name').textContent = c.name || '';
+    el.querySelector('.dev-card__note').textContent = c.note || '';
+    grid.appendChild(el);
+  });
+
+  if (!cfg.cards || !cfg.cards.length) grid.style.display = 'none';
+  else grid.style.display = '';
+
+  section.style.display = 'block';
+}
+
+// Fallback — если /api/home/init упал, грузим отдельно
 async function loadDevCredits(){
   try{
     const r = await fetch('/api/dev-credits');
     const cfg = await r.json();
-    if (!cfg.enabled) return;
-    const section = document.getElementById('devCreditsSection');
-    document.getElementById('dcTitleEl').textContent = cfg.title || '';
-    document.getElementById('dcSubtitleEl').textContent = cfg.subtitle || '';
-    document.getElementById('dcFooterEl').textContent = cfg.footer || '';
-    const grid = document.getElementById('dcGridEl');
-    grid.innerHTML = '';
-    (cfg.cards || []).forEach(c => {
-      const el = document.createElement('div');
-      el.className = 'dev-card';
-      el.innerHTML = '<div class="dev-card__role"></div><div class="dev-card__name"></div><div class="dev-card__note"></div>';
-      el.querySelector('.dev-card__role').textContent = c.role || '';
-      el.querySelector('.dev-card__name').textContent = c.name || '';
-      el.querySelector('.dev-card__note').textContent = c.note || '';
-      grid.appendChild(el);
-    });
-    if (!cfg.cards || !cfg.cards.length) grid.style.display = 'none';
-    else grid.style.display = '';
-    section.style.display = 'block';
+    renderDevCredits(cfg);
   }catch(e){}
 }
 

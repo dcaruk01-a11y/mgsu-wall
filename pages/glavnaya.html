@@ -1090,6 +1090,67 @@ async function loadHome(){
     const enabled = (data.games || []).filter(g => g.enabled);
     renderTiles(enabled);
 
+    // ─── Задания по играм (бейджики 🎯) ───
+    if (data.game_tasks && Object.keys(data.game_tasks).length){
+      applyGameTasks(data.game_tasks);
+    }
+
+    // ─── Топ дня ───
+    renderMiniTop(data.top_day || []);
+
+    // ─── Топ институтов ───
+    renderTopInstitute(data.top_institutes || []);
+
+    // ─── Блок разработчиков ───
+    renderDevCredits(data.dev_credits || {enabled: false});
+
+  }catch(e){
+    console.warn('home/init failed, fallback:', e);
+    loadGames();
+    loadMiniTop();
+    loadTopInstitute();
+    loadDevCredits();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ЗАДАНИЯ НА КАРТОЧКАХ — из данных init
+   ═══════════════════════════════════════════════════════════ */
+function applyGameTasks(tasksMap){
+  gameTasksCache = tasksMap;
+  document.querySelectorAll('.game-card').forEach(card => {
+    const key = card.dataset.gameKey;
+    if (!key) return;
+    const list = gameTasksCache[key];
+    if (list && list.length){
+      card.classList.add('has-task');
+      const badge = card.querySelector('.game-card-task');
+      if (badge){
+        const doneCount = list.filter(t => t.done).length;
+        badge.textContent = '🎯 ' + list.length +
+          (doneCount ? ' (' + doneCount + '✓)' : '');
+      }
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ГЛАВНЫЙ ЗАГРУЗЧИК — один запрос вместо пяти
+   ═══════════════════════════════════════════════════════════ */
+async function loadHome(){
+  const headers = {};
+  const token = localStorage.getItem('mgsu_token') || '';
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+
+  try{
+    const r = await fetch('/api/home/init', {headers: headers});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+
+    // ─── Игры ───
+    const enabled = (data.games || []).filter(g => g.enabled);
+    renderTiles(enabled);
+
     // ─── Задания по играм (если пришли) ───
     if (data.game_tasks && Object.keys(data.game_tasks).length){
       applyGameTasks(data.game_tasks);

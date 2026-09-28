@@ -1,14 +1,13 @@
 """
 Сбор IP, подсети и часов активности.
-Все заходы сохраняются в таблицу visits, агрегат по часам — в daily_hours.
+Все заходы сохраняются в visits. Есть группировка по зонам.
 """
 import time, aiosqlite
-from datetime import datetime
+from datetime import datetime, timedelta
 from config import DB_PATH, MSK, today_str
 
 
 def normalize_ip(ip: str) -> str:
-    """Убирает IPv6-обёртку и пустые значения."""
     if not ip:
         return "unknown"
     ip = ip.strip()
@@ -18,10 +17,6 @@ def normalize_ip(ip: str) -> str:
 
 
 def get_subnet(ip: str) -> str:
-    """
-    Возвращает подсеть вида '123.45.67' (первые 3 октета IPv4).
-    Для IPv6 — берёт первые 4 группы.
-    """
     if not ip or ip == "unknown":
         return "unknown"
     if ":" in ip:
@@ -35,10 +30,10 @@ def get_subnet(ip: str) -> str:
 
 def classify_device(user_agent: str) -> str:
     ua = (user_agent or "").lower()
+    if "ipad" in ua or "tablet" in ua:
+        return "tablet"
     if "mobile" in ua or "android" in ua or "iphone" in ua:
         return "mobile"
-    if "tablet" in ua or "ipad" in ua:
-        return "tablet"
     return "desktop"
 
 
@@ -55,9 +50,31 @@ async def db_init_ip():
                 ts REAL
             )
         """)
+        # Миграции: page, action, user_agent
+        try:
+            cur = await db.execute("PRAGMA table_info(visits)")
+            existing = {row[1] for row in await cur.fetchall()}
+        except Exception:
+            existing = set()
+
+        for col, ddl in [
+            ("page",       "ALTER TABLE visits ADD COLUMN page TEXT DEFAULT ''"),
+            ("action",     "ALTER TABLE visits ADD COLUMN action TEXT DEFAULT 'visit'"),
+            ("user_agent", "ALTER TABLE visits ADD COLUMN user_agent TEXT DEFAULT ''"),
+        ]:
+            if col not in existing:
+                try:
+                    await db.execute(ddl)
+                except Exception as e:
+                    print("visits migration:", e)
+
         await db.execute("""
             CREATE INDEX IF NOT EXISTS idx_visits_day_hour
             ON visits (hour, ts)
+        """)
+        await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_visits_subnet
+            ON visits (subnet, ts)
         """)
         await db.execute("""
             CREATE TABLE IF NOT EXISTS daily_hours (
@@ -81,8 +98,9 @@ async def db_init_ip():
         await db.commit()
 
 
-async def track_visit(ip: str, user_agent: str, uid: str = ""):
-    """Сохраняет заход и обновляет агрегаты."""
+async def track_visit(ip: str, user_agent: str, uid: str = "",
+                      page: str = "", action: str = "visit"):
+    """Сохраняет заход."""
     ip = normalize_ip(ip)
     subnet = get_subnet(ip)
     device = classify_device(user_agent)
@@ -91,41 +109,33 @@ async def track_visit(ip: str, user_agent: str, uid: str = ""):
     hour = now_msk.hour
     day = today_str()
 
-    async with aiosqlite.connect(DB_PATH) as db:
-        # 1. Запись в visits
-        await db.execute("""
-            INSERT INTO visits (uid, ip, subnet, device, hour, ts)
-            VALUES (?,?,?,?,?,?)
-        """, (uid or "", ip, subnet, device, hour, now_ts))
+    page = (page or "")[:100]
+    action = (action or "visit")[:30]
+    user_agent = (user_agent or "")[:200]
 
-        # 2. Агрегат по часам
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO visits (uid, ip, subnet, device, hour, ts, page, action, user_agent)
+            VALUES (?,?,?,?,?,?,?,?,?)
+        """, (uid or "", ip, subnet, device, hour, now_ts, page, action, user_agent))
+
+        # Агрегат по часам
         cur = await db.execute(
-            "SELECT visits, uniques FROM daily_hours WHERE day=? AND hour=?",
+            "SELECT visits FROM daily_hours WHERE day=? AND hour=?",
             (day, hour)
         )
         row = await cur.fetchone()
         if row:
-            visits, uniques = row
-            inc_unique = 0
-            if uid:
-                # проверяем, был ли этот uid в этот час
-                c2 = await db.execute(
-                    "SELECT 1 FROM visits WHERE uid=? AND hour=? AND ts >= ? LIMIT 1",
-                    (uid, hour, now_ts - 3600 * 24)
-                )
-                is_new = await c2.fetchone() is None
-                inc_unique = 1 if is_new else 0
             await db.execute("""
-                UPDATE daily_hours SET visits=visits+1, uniques=uniques+?
-                WHERE day=? AND hour=?
-            """, (inc_unique, day, hour))
+                UPDATE daily_hours SET visits=visits+1 WHERE day=? AND hour=?
+            """, (day, hour))
         else:
             await db.execute("""
                 INSERT INTO daily_hours (day, hour, visits, uniques)
                 VALUES (?,?,?,?)
-            """, (day, hour, 1, 1 if uid else 0))
+            """, (day, hour, 1, 0))
 
-        # 3. IP-тег (если новая подсеть — создаём запись)
+        # IP-тег
         cur = await db.execute("SELECT subnet FROM ip_tags WHERE subnet=?", (subnet,))
         if await cur.fetchone():
             await db.execute("""
@@ -140,10 +150,267 @@ async def track_visit(ip: str, user_agent: str, uid: str = ""):
         await db.commit()
 
 
-# ============ АНАЛИТИКА ДЛЯ АДМИНКИ ============
+# ═══════════════════════════════════════════════════════════
+# ЖИВАЯ ЛЕНТА — последние N заходов
+# ═══════════════════════════════════════════════════════════
+async def get_live_feed(limit: int = 60, days: int = 7):
+    limit = max(10, min(limit, 200))
+    days = max(1, min(days, 90))
+    cutoff = time.time() - days * 86400
 
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("""
+            SELECT v.ts, v.ip, v.subnet, v.device, v.uid, v.page, v.action,
+                   COALESCE(u.display_name, '') as nick,
+                   COALESCE(u.active_char, 'student') as active_char
+            FROM visits v
+            LEFT JOIN users u ON u.uid = v.uid
+            WHERE v.ts > ?
+            ORDER BY v.ts DESC
+            LIMIT ?
+        """, (cutoff, limit))
+        rows = await cur.fetchall()
+
+    result = []
+    for r in rows:
+        ts, ip, subnet, device, uid, page, action, nick, active_char = r
+        result.append({
+            "ts": ts,
+            "ip": ip,
+            "subnet": subnet,
+            "device": device or "desktop",
+            "uid": uid or "",
+            "nick": nick or "",
+            "active_char": active_char or "student",
+            "page": page or "",
+            "action": action or "visit",
+            "logged_in": bool(uid),
+        })
+    return result
+
+
+# ═══════════════════════════════════════════════════════════
+# ЗОНЫ IP — группировка подсетей
+# ═══════════════════════════════════════════════════════════
+async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
+    days = max(1, min(days, 90))
+    cutoff = time.time() - days * 86400
+
+    order = "visits DESC"
+    if sort_by == "recent":
+        order = "last_seen DESC"
+    elif sort_by == "users":
+        order = "users_count DESC"
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute(f"""
+            SELECT subnet,
+                   COUNT(*) as visits,
+                   COUNT(DISTINCT CASE WHEN uid != '' THEN uid END) as users_count,
+                   COUNT(DISTINCT device) as device_count,
+                   SUM(CASE WHEN device = 'mobile' THEN 1 ELSE 0 END) as mobile_count,
+                   MIN(ts) as first_seen,
+                   MAX(ts) as last_seen
+            FROM visits
+            WHERE ts > ?
+            GROUP BY subnet
+            ORDER BY {order}
+            LIMIT 100
+        """, (cutoff,))
+        rows = await cur.fetchall()
+
+        zones = []
+        for r in rows:
+            subnet = r[0]
+            if subnet == "unknown":
+                continue
+
+            # Пользователи с этого subnet
+            cur2 = await db.execute("""
+                SELECT DISTINCT uid FROM visits
+                WHERE subnet = ? AND uid != '' AND ts > ?
+                LIMIT 5
+            """, (subnet, cutoff))
+            uids = [row[0] for row in await cur2.fetchall()]
+
+            users = []
+            if uids:
+                placeholders = ",".join("?" * len(uids))
+                cur3 = await db.execute(
+                    f"SELECT uid, display_name FROM users WHERE uid IN ({placeholders})",
+                    uids
+                )
+                nick_map = {row[0]: row[1] for row in await cur3.fetchall()}
+                users = [{"uid": u, "nick": nick_map.get(u, "?")} for u in uids]
+
+            # Тег
+            cur4 = await db.execute(
+                "SELECT tag, label FROM ip_tags WHERE subnet=?", (subnet,)
+            )
+            tag_row = await cur4.fetchone()
+            tag = tag_row[0] if tag_row else "unknown"
+            label = tag_row[1] if tag_row else ""
+
+            zones.append({
+                "subnet": subnet,
+                "visits": r[1] or 0,
+                "users_count": r[2] or 0,
+                "device_count": r[3] or 0,
+                "mobile_count": r[4] or 0,
+                "first_seen": r[5],
+                "last_seen": r[6],
+                "tag": tag,
+                "label": label,
+                "users": users,
+            })
+
+    return zones
+
+
+async def set_ip_tag(subnet: str, tag: str, label: str = ""):
+    if tag not in ("mgsu", "dorm", "mobile", "other", "unknown"):
+        tag = "unknown"
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO ip_tags (subnet, tag, label, first_seen, last_seen, visits)
+            VALUES (?, ?, ?, ?, ?, 0)
+            ON CONFLICT(subnet) DO UPDATE SET tag=?, label=?
+        """, (subnet, tag, label[:60], time.time(), time.time(), tag, label[:60]))
+        await db.commit()
+    return {"ok": True}
+
+
+# ═══════════════════════════════════════════════════════════
+# ЧАСЫ С РАЗБИВКОЙ ПО УСТРОЙСТВАМ
+# ═══════════════════════════════════════════════════════════
+async def get_hourly_full(days: int = 7):
+    days = max(1, min(days, 90))
+    cutoff = time.time() - days * 86400
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("""
+            SELECT hour,
+                   COUNT(*) as visits,
+                   SUM(CASE WHEN device = 'mobile' THEN 1 ELSE 0 END) as mobile,
+                   SUM(CASE WHEN device = 'desktop' THEN 1 ELSE 0 END) as desktop,
+                   SUM(CASE WHEN device = 'tablet' THEN 1 ELSE 0 END) as tablet,
+                   COUNT(DISTINCT CASE WHEN uid != '' THEN uid END) as uniques
+            FROM visits
+            WHERE ts > ?
+            GROUP BY hour
+        """, (cutoff,))
+        rows = await cur.fetchall()
+
+    result = {h: {"visits": 0, "mobile": 0, "desktop": 0, "tablet": 0, "uniques": 0} for h in range(24)}
+    for r in rows:
+        h = r[0]
+        if 0 <= h <= 23:
+            result[h] = {
+                "visits": r[1] or 0,
+                "mobile": r[2] or 0,
+                "desktop": r[3] or 0,
+                "tablet": r[4] or 0,
+                "uniques": r[5] or 0,
+            }
+
+    return [{"hour": h, **result[h]} for h in range(24)]
+
+
+async def get_hourly_stats(days: int = 1):
+    """Оставлено для совместимости."""
+    hourly = await get_hourly_full(days)
+    return [{"hour": h["hour"], "visits": h["visits"], "uniques": h["uniques"]} for h in hourly]
+
+
+# ═══════════════════════════════════════════════════════════
+# ВОРОНКА
+# ═══════════════════════════════════════════════════════════
+async def get_funnel(days: int = 7):
+    days = max(1, min(days, 90))
+    cutoff = time.time() - days * 86400
+    cutoff_day = (datetime.now(MSK) - timedelta(days=days)).strftime("%Y-%m-%d")
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        # Уникальных IP (не uid, а именно IP — гости тоже считаются)
+        cur = await db.execute(
+            "SELECT COUNT(DISTINCT ip) FROM visits WHERE ts > ? AND ip != 'unknown'",
+            (cutoff,)
+        )
+        visits_ips = (await cur.fetchone())[0] or 0
+
+        # Уникальных uid (залогиненные)
+        cur = await db.execute(
+            "SELECT COUNT(DISTINCT uid) FROM visits WHERE ts > ? AND uid != ''",
+            (cutoff,)
+        )
+        users_seen = (await cur.fetchone())[0] or 0
+
+        # Зарегистрировались
+        cur = await db.execute(
+            "SELECT COUNT(*) FROM users WHERE created_at > ?",
+            (cutoff,)
+        )
+        registered = (await cur.fetchone())[0] or 0
+
+        # Играли (уникальные uid в scores)
+        cur = await db.execute(
+            "SELECT COUNT(DISTINCT uid) FROM scores WHERE ts > ?",
+            (cutoff,)
+        )
+        played = (await cur.fetchone())[0] or 0
+
+        # Вернулись (uid с 2+ разными днями)
+        cur = await db.execute("""
+            SELECT COUNT(*) FROM (
+                SELECT uid, COUNT(DISTINCT substr(date(ts, 'unixepoch'), 1, 10)) as days
+                FROM visits
+                WHERE ts > ? AND uid != ''
+                GROUP BY uid
+                HAVING days >= 2
+            )
+        """, (cutoff,))
+        returned = (await cur.fetchone())[0] or 0
+
+    return {
+        "ips": visits_ips,
+        "users": users_seen,
+        "registered": registered,
+        "played": played,
+        "returned": returned,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# СВОДКА
+# ═══════════════════════════════════════════════════════════
+async def get_summary(days: int = 7):
+    days = max(1, min(days, 90))
+    cutoff = time.time() - days * 86400
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("""
+            SELECT COUNT(*) as visits,
+                   COUNT(DISTINCT ip) as uniq_ips,
+                   COUNT(DISTINCT CASE WHEN uid != '' THEN uid END) as uniq_users,
+                   SUM(CASE WHEN device = 'mobile' THEN 1 ELSE 0 END) as mobile,
+                   SUM(CASE WHEN device = 'desktop' THEN 1 ELSE 0 END) as desktop
+            FROM visits WHERE ts > ?
+        """, (cutoff,))
+        r = await cur.fetchone()
+
+    return {
+        "visits": r[0] or 0,
+        "uniq_ips": r[1] or 0,
+        "uniq_users": r[2] or 0,
+        "mobile": r[3] or 0,
+        "desktop": r[4] or 0,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# СТАРЫЕ ФУНКЦИИ (для совместимости с админкой)
+# ═══════════════════════════════════════════════════════════
 async def get_ip_summary():
-    """Список подсетей с тегами для админки."""
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("""
             SELECT subnet, tag, label, visits, first_seen, last_seen
@@ -154,72 +421,22 @@ async def get_ip_summary():
         rows = await cur.fetchall()
     return [
         {
-            "subnet": r[0],
-            "tag": r[1],
-            "label": r[2],
-            "visits": r[3],
-            "first_seen": r[4],
-            "last_seen": r[5],
+            "subnet": r[0], "tag": r[1], "label": r[2],
+            "visits": r[3], "first_seen": r[4], "last_seen": r[5],
         }
         for r in rows
     ]
 
 
-async def set_ip_tag(subnet: str, tag: str, label: str = ""):
-    if tag not in ("mgsu", "dorm", "mobile", "other", "unknown"):
-        tag = "unknown"
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
-            "UPDATE ip_tags SET tag=?, label=? WHERE subnet=?",
-            (tag, label[:60], subnet)
-        )
-        await db.commit()
-    return {"ok": True}
-
-
-async def get_hourly_stats(days: int = 1):
-    """
-    Агрегат по часам за последние N дней.
-    Возвращает список из 24 записей.
-    """
-    from datetime import timedelta
-    days = max(1, min(days, 30))
-    cutoff_day = (datetime.now(MSK) - timedelta(days=days - 1)).strftime("%Y-%m-%d")
-
-    result = {h: {"visits": 0, "uniques": 0} for h in range(24)}
-
-    async with aiosqlite.connect(DB_PATH) as db:
-        cur = await db.execute("""
-            SELECT hour, SUM(visits), SUM(uniques)
-            FROM daily_hours
-            WHERE day >= ?
-            GROUP BY hour
-        """, (cutoff_day,))
-        rows = await cur.fetchall()
-
-    for r in rows:
-        h, v, u = r[0], r[1] or 0, r[2] or 0
-        if 0 <= h <= 23:
-            result[h] = {"visits": v, "uniques": u}
-
-    return [
-        {"hour": h, "visits": result[h]["visits"], "uniques": result[h]["uniques"]}
-        for h in range(24)
-    ]
-
-
 async def get_device_stats(days: int = 7):
-    from datetime import timedelta
     days = max(1, min(days, 30))
     cutoff_ts = time.time() - days * 86400
-
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("""
             SELECT device, COUNT(*) FROM visits
             WHERE ts >= ? GROUP BY device
         """, (cutoff_ts,))
         rows = await cur.fetchall()
-
     total = sum(r[1] for r in rows) or 1
     return [
         {"device": r[0] or "unknown", "count": r[1], "pct": round(r[1] / total * 100)}
@@ -228,27 +445,20 @@ async def get_device_stats(days: int = 7):
 
 
 async def get_geo_summary():
-    """Сколько заходов в каждой категории IP."""
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("""
             SELECT tag, SUM(visits) FROM ip_tags GROUP BY tag
         """)
         rows = await cur.fetchall()
-
     labels = {
-        "mgsu": "МГСУ",
-        "dorm": "Общежитие",
-        "mobile": "Мобильный",
-        "other": "Другое",
-        "unknown": "Не размечено",
+        "mgsu": "МГСУ", "dorm": "Общежитие", "mobile": "Мобильный",
+        "other": "Другое", "unknown": "Не размечено",
     }
     total = sum(r[1] or 0 for r in rows) or 1
     return [
         {
-            "tag": r[0],
-            "label": labels.get(r[0], r[0]),
-            "visits": r[1] or 0,
-            "pct": round((r[1] or 0) / total * 100),
+            "tag": r[0], "label": labels.get(r[0], r[0]),
+            "visits": r[1] or 0, "pct": round((r[1] or 0) / total * 100),
         }
         for r in rows
     ]

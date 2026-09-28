@@ -1,10 +1,11 @@
-"""Страницы админки и вход/выход."""
+"""Страницы админки, вход/выход, пометка админа."""
 import time, secrets, asyncio
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import FileResponse
 
 from config import ADMIN_PASSWORD
 import core.state as state
+import core.ip_tracking as ip_tracking
 
 router = APIRouter()
 
@@ -19,8 +20,6 @@ async def admin_login_page():
     return FileResponse("pages/admin/login.html")
 
 
-# ⚠️ ВАЖНО: /admin/users регистрируется ДО /admin/player/{uid}
-# Иначе FastAPI может сматчить /admin/users как {uid}="users"
 @router.get("/admin/users")
 async def admin_users_page():
     return FileResponse("pages/admin/users.html")
@@ -105,3 +104,28 @@ async def admin_check():
         "admin_password_set": bool(ADMIN_PASSWORD),
         "length": len(ADMIN_PASSWORD) if ADMIN_PASSWORD else 0,
     }
+
+
+@router.post("/admin/api/mark-admin")
+async def admin_mark(visitor_id: str = "", authorization: str = Header(default="")):
+    """
+    Помечает visitor_id как админский.
+    Вызывается после успешного логина в админку.
+    Все заходы этого браузера исключаются из статистики.
+    """
+    token = authorization.replace("Bearer ", "").strip()
+    if not token or token not in state.admin_tokens:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    exp = state.admin_tokens.get(token)
+    if not exp or exp < time.time():
+        raise HTTPException(status_code=401, detail="Token expired")
+
+    visitor_id = (visitor_id or "").strip()[:64]
+    if visitor_id:
+        try:
+            await ip_tracking.mark_admin_visitor(visitor_id)
+        except Exception as e:
+            print("mark_admin error:", e)
+            raise HTTPException(status_code=500, detail="Ошибка пометки")
+
+    return {"ok": True, "visitor_id": visitor_id}

@@ -52,9 +52,6 @@
 })();
 
 
-/* ═══════════════════════════════════════════════════════════
-   ГДЕ МЫ СЕЙЧАС
-   ═══════════════════════════════════════════════════════════ */
 function isOnHomePage(){
   var p = location.pathname;
   return p === '/glavnaya' || p === '/' || p === '' || p === '/index.html';
@@ -64,9 +61,7 @@ function isGamePage(){
   return location.pathname.indexOf('/games/') === 0;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   СКИНЫ ПЕРСОНАЖЕЙ
-   ═══════════════════════════════════════════════════════════ */
+/* Эмодзи скинов */
 var CHAR_EMOJI = {
   student: '🎓',
   sso: '👷',
@@ -75,6 +70,16 @@ var CHAR_EMOJI = {
   prof: '🧑‍🏫',
   dean: '🧑‍💼',
   legend: '👑'
+};
+
+/* Цвета рамок */
+var FRAME_COLORS = {
+  frame_blue:    '#3b82f6',
+  frame_green:   '#22c55e',
+  frame_purple:  '#a855f7',
+  frame_gold:    '#eab308',
+  frame_red:     '#ef4444',
+  frame_rainbow: 'conic-gradient(from 0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)'
 };
 
 
@@ -91,16 +96,25 @@ function renderSiteHeader(active, opts){
   var isLoggedIn = !!token;
   var nick = localStorage.getItem('mgsu_nick') || '';
 
-  // ★ Скин игрока
   var activeChar = localStorage.getItem('mgsu_active_char') || 'student';
   var avatarIcon = CHAR_EMOJI[activeChar] || '🎓';
+
+  var activeFrame = localStorage.getItem('mgsu_active_frame') || '';
+  var frameStyle = '';
+  if (activeFrame && FRAME_COLORS[activeFrame]){
+    var color = FRAME_COLORS[activeFrame];
+    if (activeFrame === 'frame_rainbow'){
+      frameStyle = 'background:' + color + ';padding:2px;';
+    } else {
+      frameStyle = 'box-shadow:0 0 0 2.5px ' + color + ';';
+    }
+  }
 
   var onHome = isOnHomePage();
 
   var brandHref = onHome ? '#' : '/glavnaya';
   var brandClick = onHome ? ' onclick="scrollToTop(event)"' : '';
 
-  /* 🎮 Игры */
   var gamesHref = onHome ? '#games' : '/glavnaya#games';
   var gamesClick = onHome ? ' onclick="scrollToGames(event)"' : '';
   var gamesActive = (onHome && active === 'games') ? ' active' : '';
@@ -110,7 +124,6 @@ function renderSiteHeader(active, opts){
       '<span class="site-header-link-label">Игры</span>' +
     '</a>';
 
-  /* 🏆 Рейтинг */
   var rActive = (active === 'ratings') ? ' active' : '';
   var ratingsLink =
     '<a href="/ratings" data-key="ratings" class="site-header-link' + rActive + '" title="Рейтинг">' +
@@ -118,7 +131,6 @@ function renderSiteHeader(active, opts){
       '<span class="site-header-link-label">Рейтинг</span>' +
     '</a>';
 
-  /* 🛍 Магазин */
   var sActive = (active === 'shop') ? ' active' : '';
   var shopLink =
     '<a href="/shop" data-key="shop" class="site-header-link' + sActive + '" title="Магазин">' +
@@ -126,11 +138,10 @@ function renderSiteHeader(active, opts){
       '<span class="site-header-link-label">Магазин</span>' +
     '</a>';
 
-  /* ПРАВАЯ ЧАСТЬ */
   var profileHtml = '';
   if (isLoggedIn){
     profileHtml =
-      '<a href="/profile" class="site-header-avatar' + (active==='profile'?' active':'') + '" title="' + (nick || 'Профиль') + '">' +
+      '<a href="/profile" class="site-header-avatar' + (active==='profile'?' active':'') + '" title="' + (nick || 'Профиль') + '" style="' + frameStyle + '">' +
         '<span>' + avatarIcon + '</span>' +
       '</a>';
   } else {
@@ -160,23 +171,53 @@ function renderSiteHeader(active, opts){
     setupScrollSpy();
   }
 
-  // ★ Подтягиваем профиль если залогинен (обновляем ник и скин)
+  // Обновляем профиль из БД
   if (isLoggedIn){
     fetch('/api/auth/me', {headers:{'Authorization': 'Bearer ' + token}})
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(d){
         if (d && d.user){
           localStorage.setItem('mgsu_nick', d.user.display_name);
+
           if (d.user.active_char){
             localStorage.setItem('mgsu_active_char', d.user.active_char);
           }
+
+          if (d.user.active_frame !== undefined){
+            if (d.user.active_frame){
+              localStorage.setItem('mgsu_active_frame', d.user.active_frame);
+            } else {
+              localStorage.removeItem('mgsu_active_frame');
+            }
+          }
+
           var av = container.querySelector('.site-header-avatar span');
           if (av){
             var ch = d.user.active_char || 'student';
             av.textContent = CHAR_EMOJI[ch] || '🎓';
           }
+
           var avatarEl = container.querySelector('.site-header-avatar');
-          if (avatarEl) avatarEl.title = d.user.display_name || 'Профиль';
+          if (avatarEl){
+            avatarEl.title = d.user.display_name || 'Профиль';
+            var fr = d.user.active_frame || '';
+            if (fr && FRAME_COLORS[fr]){
+              var color = FRAME_COLORS[fr];
+              if (fr === 'frame_rainbow'){
+                avatarEl.style.background = color;
+                avatarEl.style.padding = '2px';
+                avatarEl.style.boxShadow = '';
+              } else {
+                avatarEl.style.boxShadow = '0 0 0 2.5px ' + color;
+                avatarEl.style.background = '';
+                avatarEl.style.padding = '';
+              }
+            } else {
+              avatarEl.style.boxShadow = '';
+              avatarEl.style.background = '';
+              avatarEl.style.padding = '';
+            }
+          }
         }
       })
       .catch(function(){});
@@ -184,9 +225,6 @@ function renderSiteHeader(active, opts){
 }
 
 
-/* ═══════════════════════════════════════════════════════════
-   СКРОЛЛ-СПАЙ (только на главной)
-   ═══════════════════════════════════════════════════════════ */
 function setupScrollSpy(){
   var gamesSection = document.getElementById('games');
   var gamesLink = document.querySelector('.site-header-link[data-key="games"]');
@@ -210,9 +248,6 @@ function setupScrollSpy(){
 }
 
 
-/* ═══════════════════════════════════════════════════════════
-   ВСПОМОГАТЕЛЬНЫЕ
-   ═══════════════════════════════════════════════════════════ */
 function scrollToGames(e){
   var el = document.getElementById('games');
   if (!el) return;
@@ -237,7 +272,7 @@ function renderSiteFooter(){
   container.className = 'site-footer';
   container.innerHTML =
     '<div class="site-footer-inner">' +
-      + '<div class="site-footer-left">© 2026 · Не является официальным сайтом НИУ МГСУ · <span class="site-version">v1.0.0</span></div>' +
+      '<div class="site-footer-left">© 2026 · Не является официальным сайтом НИУ МГСУ · <span class="site-version">v1.0.0</span></div>' +
       '<div class="site-footer-right">' +
         '<a href="https://t.me/mgsu_feedback_bot" target="_blank" rel="noopener">Предложить идею</a>' +
         '<span class="site-footer-dot">·</span>' +
@@ -312,6 +347,36 @@ function renderSiteFooter(){
 
 
 /* ═══════════════════════════════════════════════════════════
+   УВЕДОМЛЕНИЕ О ДОСТИЖЕНИЯХ
+   ═══════════════════════════════════════════════════════════ */
+function showAchievementToast(achievements){
+  if (!achievements || !achievements.length) return;
+
+  achievements.forEach(function(a, idx){
+    setTimeout(function(){
+      var el = document.createElement('div');
+      el.className = 'ach-toast';
+      el.innerHTML =
+        '<div class="ach-toast-emoji">' + (a.emoji || '🏆') + '</div>' +
+        '<div class="ach-toast-text">' +
+          '<small>Новое достижение</small>' +
+          a.name +
+        '</div>';
+      document.body.appendChild(el);
+      requestAnimationFrame(function(){ el.classList.add('show'); });
+
+      setTimeout(function(){
+        el.classList.remove('show');
+        setTimeout(function(){ if (el.parentNode) el.remove(); }, 400);
+      }, 3500);
+    }, idx * 800);
+  });
+}
+
+window.showAchievementToast = showAchievementToast;
+
+
+/* ═══════════════════════════════════════════════════════════
    FEEDBACK POPUP
    ═══════════════════════════════════════════════════════════ */
 (function(){
@@ -370,7 +435,7 @@ function renderSiteFooter(){
           '<button type="button" class="mgsu-fb-star" data-star="4">⭐</button>' +
           '<button type="button" class="mgsu-fb-star" data-star="5">⭐</button>' +
         '</div>' +
-        '<textarea class="mgsu-fb-textarea" id="mgsuFbText" maxlength="500" placeholder="Что улучшить? Что добавить? Что не понравилось? (необязательно)"></textarea>' +
+        '<textarea class="mgsu-fb-textarea" id="mgsuFbText" maxlength="500" placeholder="Что улучшить? Что добавить? (необязательно)"></textarea>' +
         '<div class="mgsu-fb-actions">' +
           '<button type="button" class="mgsu-fb-send" id="mgsuFbSend">Отправить разработчику</button>' +
           '<button type="button" class="mgsu-fb-later" id="mgsuFbLater">Может быть позже</button>' +
@@ -492,32 +557,3 @@ function renderSiteFooter(){
 
   init();
 })();
-/* ═══════════════════════════════════════════════════════════
-   УВЕДОМЛЕНИЕ О ДОСТИЖЕНИЯХ
-   Вызывается играми после /api/game/finish
-   ═══════════════════════════════════════════════════════════ */
-function showAchievementToast(achievements){
-  if (!achievements || !achievements.length) return;
-
-  achievements.forEach(function(a, idx){
-    setTimeout(function(){
-      var el = document.createElement('div');
-      el.className = 'ach-toast';
-      el.innerHTML =
-        '<div class="ach-toast-emoji">' + (a.emoji || '🏆') + '</div>' +
-        '<div class="ach-toast-text">' +
-          '<small>Новое достижение</small>' +
-          a.name +
-        '</div>';
-      document.body.appendChild(el);
-      requestAnimationFrame(function(){ el.classList.add('show'); });
-
-      setTimeout(function(){
-        el.classList.remove('show');
-        setTimeout(function(){ if (el.parentNode) el.remove(); }, 400);
-      }, 3500);
-    }, idx * 800);
-  });
-}
-
-window.showAchievementToast = showAchievementToast;

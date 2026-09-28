@@ -152,6 +152,19 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
     except Exception as e:
         print("tasks error:", e)
 
+        # ★ 9.5. Проверка достижений
+    achievements_new = []
+    try:
+        updated_user_for_ach = await users.get_user_by_token(token)
+        if updated_user_for_ach:
+            from core.achievements import check_and_grant
+            achievements_new = await check_and_grant(
+                uid, updated_user_for_ach,
+                {"game": game, "raw_score": raw, "win": (payload.extra or {}).get("win")}
+            )
+    except Exception as e:
+        print("achievements error:", e)
+
     # 10. Streak-бонусы
     streak_bonus = 0
     if streak_info.get("ok") and streak_info.get("changed"):
@@ -188,8 +201,12 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
             "rank_bonus_pct": rank_bonus_pct,
             "institute": (updated_user.get("institute") if updated_user else "") or "",
         },
-        "streak_bonus": streak_bonus,
+                "streak_bonus": streak_bonus,
         "tasks_completed": completed,
+        "achievements_new": [
+            {"key": a["key"], "name": a["name"], "emoji": a["emoji"], "desc": a["desc"]}
+            for a in achievements_new
+        ],
     }
 
 

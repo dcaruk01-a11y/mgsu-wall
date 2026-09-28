@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, HTTPException
 from datetime import datetime
 from config import MSK, TG_FEEDBACK_BOT_TOKEN, TG_ADMIN_ID
 import httpx, time, aiosqlite
@@ -94,16 +94,75 @@ async def manual_snapshot():
 
 
 # ═══════════════════════════════════════════════════════════
-# FEEDBACK — обратная связь
+# ИНСТИТУТЫ
+# ═══════════════════════════════════════════════════════════
+
+@router.get("/api/institutes")
+async def api_institutes():
+    """Список всех институтов + рейтинг."""
+    from core.institutes import INSTITUTES, get_institutes_rating
+    rating = await get_institutes_rating()
+    return {
+        "ok": True,
+        "institutes": INSTITUTES,
+        "rating": rating,
+    }
+
+
+@router.get("/api/institutes/top")
+async def api_institutes_top():
+    """Топ-3 института для плашки на главной."""
+    from core.institutes import get_institutes_rating
+    rating = await get_institutes_rating(3)
+    return {"ok": True, "top": rating}
+
+
+@router.get("/api/institutes/{key}/players")
+async def api_institute_players(key: str):
+    """Топ-10 игроков внутри института."""
+    from core.institutes import INSTITUTE_MAP, get_institute_players
+    if key not in INSTITUTE_MAP:
+        raise HTTPException(status_code=404, detail="Институт не найден")
+    players = await get_institute_players(key, 10)
+    return {"ok": True, "players": players}
+
+
+@router.post("/api/institutes/set")
+async def api_institutes_set(payload: dict, authorization: str = Header(default="")):
+    """Выбрать или сменить институт. Смена = обнуление."""
+    import core.users as users
+    from core.institutes import get_institute
+
+    token = (authorization or "").replace("Bearer ", "").strip()
+    user = await users.get_user_by_token(token) if token else None
+    if not user:
+        raise HTTPException(status_code=401, detail="Не авторизован")
+
+    key = str(payload.get("institute", "")).strip()
+    inst = get_institute(key)
+    if not inst:
+        raise HTTPException(status_code=400, detail="Неизвестный институт")
+
+    r = await users.set_institute(user["uid"], key)
+    if not r["ok"]:
+        raise HTTPException(status_code=400, detail=r.get("error", "Ошибка"))
+
+    return {
+        "ok": True,
+        "institute": key,
+        "was_change": r.get("was_change", False),
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# FEEDBACK
 # ═══════════════════════════════════════════════════════════
 
 @router.get("/api/feedback/check")
 async def api_feedback_check(authorization: str = Header(default="")):
-    """Проверяет, есть ли у игрока активный запрос отзыва от админа."""
     token = (authorization or "").replace("Bearer ", "").strip()
     if not token:
         return {"ok": True, "pending": False}
-
     try:
         import core.users as users
         user = await users.get_user_by_token(token)
@@ -131,25 +190,20 @@ async def api_feedback_check(authorization: str = Header(default="")):
 
 @router.post("/api/feedback/seen")
 async def api_feedback_seen(authorization: str = Header(default="")):
-    """Игрок увидел попап — помечаем."""
     token = (authorization or "").replace("Bearer ", "").strip()
     if not token:
         return {"ok": False}
-
     try:
         import core.users as users
         user = await users.get_user_by_token(token)
         if not user:
             return {"ok": False}
-
-        uid = user["uid"]
         async with aiosqlite.connect(DB_PATH) as db:
             await db.execute(
                 "UPDATE users SET feedback_seen_at=? WHERE uid=?",
-                (time.time(), uid)
+                (time.time(), user["uid"])
             )
             await db.commit()
-
         return {"ok": True}
     except Exception as e:
         print("feedback seen error:", e)
@@ -158,7 +212,6 @@ async def api_feedback_seen(authorization: str = Header(default="")):
 
 @router.post("/api/feedback/app")
 async def api_feedback_app(payload: dict, authorization: str = Header(default="")):
-    """Приём обратной связи из попапа. Отправляет админу в Telegram."""
     stars = max(0, min(int(payload.get("stars", 0) or 0), 5))
     text = str(payload.get("text", ""))[:1000].strip()
     page = str(payload.get("page", ""))[:100]
@@ -180,7 +233,6 @@ async def api_feedback_app(payload: dict, authorization: str = Header(default=""
         except Exception:
             pass
 
-    # Сбрасываем pending-запрос
     if uid:
         try:
             async with aiosqlite.connect(DB_PATH) as db:
@@ -191,7 +243,6 @@ async def api_feedback_app(payload: dict, authorization: str = Header(default=""
         except Exception:
             pass
 
-    # Отправляем в ТГ
     if TG_FEEDBACK_BOT_TOKEN and TG_ADMIN_ID:
         stars_str = "⭐" * stars + "☆" * (5 - stars)
         msg = (

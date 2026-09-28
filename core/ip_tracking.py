@@ -111,7 +111,7 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
 
     page = (page or "")[:100]
     action = (action or "visit")[:30]
-    user_agent = (user_agent or "")[:200]
+    user_agent = (user_agent or "")[:300]
 
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
@@ -151,7 +151,7 @@ async def track_visit(ip: str, user_agent: str, uid: str = "",
 
 
 # ═══════════════════════════════════════════════════════════
-# ЖИВАЯ ЛЕНТА — последние N заходов
+# ЖИВАЯ ЛЕНТА
 # ═══════════════════════════════════════════════════════════
 async def get_live_feed(limit: int = 60, days: int = 7):
     limit = max(10, min(limit, 200))
@@ -190,7 +190,7 @@ async def get_live_feed(limit: int = 60, days: int = 7):
 
 
 # ═══════════════════════════════════════════════════════════
-# ЗОНЫ IP — группировка подсетей
+# ЗОНЫ IP — с устройствами и игроками
 # ═══════════════════════════════════════════════════════════
 async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
     days = max(1, min(days, 90))
@@ -207,7 +207,6 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
             SELECT subnet,
                    COUNT(*) as visits,
                    COUNT(DISTINCT CASE WHEN uid != '' THEN uid END) as users_count,
-                   COUNT(DISTINCT device) as device_count,
                    SUM(CASE WHEN device = 'mobile' THEN 1 ELSE 0 END) as mobile_count,
                    MIN(ts) as first_seen,
                    MAX(ts) as last_seen
@@ -225,11 +224,11 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
             if subnet == "unknown":
                 continue
 
-            # Пользователи с этого subnet
+            # Игроки с этого subnet
             cur2 = await db.execute("""
                 SELECT DISTINCT uid FROM visits
                 WHERE subnet = ? AND uid != '' AND ts > ?
-                LIMIT 5
+                LIMIT 10
             """, (subnet, cutoff))
             uids = [row[0] for row in await cur2.fetchall()]
 
@@ -243,11 +242,20 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
                 nick_map = {row[0]: row[1] for row in await cur3.fetchall()}
                 users = [{"uid": u, "nick": nick_map.get(u, "?")} for u in uids]
 
+            # Устройства — берём User-Agent и упрощаем
+            cur4 = await db.execute("""
+                SELECT DISTINCT user_agent FROM visits
+                WHERE subnet = ? AND user_agent != '' AND ts > ?
+                LIMIT 30
+            """, (subnet, cutoff))
+            agents = [row[0] for row in await cur4.fetchall()]
+            devices = _simplify_agents(agents)
+
             # Тег
-            cur4 = await db.execute(
+            cur5 = await db.execute(
                 "SELECT tag, label FROM ip_tags WHERE subnet=?", (subnet,)
             )
-            tag_row = await cur4.fetchone()
+            tag_row = await cur5.fetchone()
             tag = tag_row[0] if tag_row else "unknown"
             label = tag_row[1] if tag_row else ""
 
@@ -255,16 +263,43 @@ async def get_ip_zones(days: int = 7, sort_by: str = "visits"):
                 "subnet": subnet,
                 "visits": r[1] or 0,
                 "users_count": r[2] or 0,
-                "device_count": r[3] or 0,
-                "mobile_count": r[4] or 0,
-                "first_seen": r[5],
-                "last_seen": r[6],
+                "mobile_count": r[3] or 0,
+                "first_seen": r[4],
+                "last_seen": r[5],
                 "tag": tag,
                 "label": label,
                 "users": users,
+                "devices": devices,
             })
 
     return zones
+
+
+def _simplify_agents(agents: list) -> list:
+    """Превращает User-Agent в понятные названия устройств."""
+    result = []
+    seen = set()
+    for ua in agents:
+        ua_l = (ua or "").lower()
+        name = "Неизвестно"
+        if "iphone" in ua_l:
+            name = "iPhone (Safari)"
+            if "crios" in ua_l:
+                name = "iPhone (Chrome)"
+        elif "ipad" in ua_l:
+            name = "iPad"
+        elif "android" in ua_l:
+            name = "Android"
+        elif "windows" in ua_l:
+            name = "Windows ПК"
+        elif "macintosh" in ua_l or "mac os" in ua_l:
+            name = "Mac"
+        elif "linux" in ua_l:
+            name = "Linux"
+        if name not in seen:
+            seen.add(name)
+            result.append(name)
+    return result[:5]
 
 
 async def set_ip_tag(subnet: str, tag: str, label: str = ""):
@@ -328,38 +363,32 @@ async def get_hourly_stats(days: int = 1):
 async def get_funnel(days: int = 7):
     days = max(1, min(days, 90))
     cutoff = time.time() - days * 86400
-    cutoff_day = (datetime.now(MSK) - timedelta(days=days)).strftime("%Y-%m-%d")
 
     async with aiosqlite.connect(DB_PATH) as db:
-        # Уникальных IP (не uid, а именно IP — гости тоже считаются)
         cur = await db.execute(
             "SELECT COUNT(DISTINCT ip) FROM visits WHERE ts > ? AND ip != 'unknown'",
             (cutoff,)
         )
         visits_ips = (await cur.fetchone())[0] or 0
 
-        # Уникальных uid (залогиненные)
         cur = await db.execute(
             "SELECT COUNT(DISTINCT uid) FROM visits WHERE ts > ? AND uid != ''",
             (cutoff,)
         )
         users_seen = (await cur.fetchone())[0] or 0
 
-        # Зарегистрировались
         cur = await db.execute(
             "SELECT COUNT(*) FROM users WHERE created_at > ?",
             (cutoff,)
         )
         registered = (await cur.fetchone())[0] or 0
 
-        # Играли (уникальные uid в scores)
         cur = await db.execute(
             "SELECT COUNT(DISTINCT uid) FROM scores WHERE ts > ?",
             (cutoff,)
         )
         played = (await cur.fetchone())[0] or 0
 
-        # Вернулись (uid с 2+ разными днями)
         cur = await db.execute("""
             SELECT COUNT(*) FROM (
                 SELECT uid, COUNT(DISTINCT substr(date(ts, 'unixepoch'), 1, 10)) as days
@@ -408,7 +437,7 @@ async def get_summary(days: int = 7):
 
 
 # ═══════════════════════════════════════════════════════════
-# СТАРЫЕ ФУНКЦИИ (для совместимости с админкой)
+# СТАРЫЕ ФУНКЦИИ (для совместимости)
 # ═══════════════════════════════════════════════════════════
 async def get_ip_summary():
     async with aiosqlite.connect(DB_PATH) as db:

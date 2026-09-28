@@ -25,12 +25,11 @@
   padding:18px 20px;border-radius:16px;
   background:rgba(128,128,128,0.10);
   border:1px solid rgba(128,128,128,0.18);
-  transition:all .2s;
+  transition:background .2s, border-color .2s;
 }
-.item:hover{background:rgba(128,128,128,0.18);}
 .item.owned{border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08);}
 .item.active{border-color:rgba(128,128,128,0.6);background:rgba(128,128,128,0.22);}
-.item.locked{opacity:0.55;}
+.item.locked{opacity:0.75;}
 .item-emoji{
   font-size:44px;line-height:1;flex-shrink:0;
   width:60px;height:60px;
@@ -41,6 +40,8 @@
 .item-name{font-size:17px;font-weight:800;margin-bottom:4px;color:inherit;}
 .item-desc{font-size:13px;opacity:0.7;line-height:1.4;}
 .item-price{font-size:12px;font-weight:700;margin-top:6px;color:#FFD700;font-variant-numeric:tabular-nums;}
+.item-price.no-money{color:#FF8B8B;}
+.item-price.owned{color:#4ADE80;}
 .item-actions{flex-shrink:0;}
 .item-btn{
   padding:10px 18px;border-radius:10px;
@@ -51,8 +52,15 @@
 }
 .item-btn:hover:not(:disabled){background:rgba(128,128,128,0.24);}
 .item-btn.primary{background:rgba(128,128,128,0.25);}
-.item-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.item-btn:disabled{cursor:not-allowed;opacity:0.75;filter:grayscale(0.3);}
 .item-btn.equipped{background:rgba(74,222,128,0.15);color:#4ADE80;border-color:rgba(74,222,128,0.5);}
+.item-btn.cant-afford{
+  background:rgba(255,77,94,0.08);
+  color:#FF8B8B;
+  border-color:rgba(255,77,94,0.3);
+  font-size:12px;
+  cursor:not-allowed;
+}
 .guest-hint{
   padding:24px;border-radius:16px;
   background:rgba(128,128,128,0.10);
@@ -117,6 +125,8 @@ function escapeHtml(s){
   });
 }
 
+let currentCoins = 0;
+
 async function loadShop(){
   try{
     const res = await api('/api/shop/catalog');
@@ -127,7 +137,8 @@ async function loadShop(){
       document.getElementById('coinsValue').textContent = '0';
       return;
     }
-    document.getElementById('coinsValue').textContent = data.coins || 0;
+    currentCoins = data.coins || 0;
+    document.getElementById('coinsValue').textContent = currentCoins;
     renderItems(data.items || []);
   }catch(e){
     document.getElementById('itemsBox').innerHTML = '<div style="text-align:center;padding:40px;opacity:0.5;">Ошибка загрузки</div>';
@@ -137,6 +148,7 @@ async function loadShop(){
 function renderItems(items){
   const box = document.getElementById('itemsBox');
   box.innerHTML = '';
+
   items.forEach(function(it){
     const el = document.createElement('div');
     let cls = 'item';
@@ -144,17 +156,31 @@ function renderItems(items){
     else if (it.owned) cls += ' owned';
     else if (!it.can_afford) cls += ' locked';
     el.className = cls;
+
+    let priceHtml = '';
+    if (it.key !== 'student'){
+      if (it.owned){
+        priceHtml = '<div class="item-price owned">✓ Уже куплен</div>';
+      } else if (it.can_afford){
+        priceHtml = '<div class="item-price">💰 ' + it.price + '</div>';
+      } else {
+        const need = it.price - currentCoins;
+        priceHtml = '<div class="item-price no-money">💰 ' + it.price + ' · не хватает ' + need + '</div>';
+      }
+    }
+
     el.innerHTML =
       '<div class="item-emoji">' + it.emoji + '</div>' +
       '<div class="item-info">' +
         '<div class="item-name">' + escapeHtml(it.name) + '</div>' +
         '<div class="item-desc">' + escapeHtml(it.desc) + '</div>' +
-        (it.key === 'student' ? '' : '<div class="item-price">💰 ' + it.price + '</div>') +
+        priceHtml +
       '</div>' +
       '<div class="item-actions"></div>';
+
     const actions = el.querySelector('.item-actions');
     const btn = document.createElement('button');
-    btn.className = 'item-btn';
+
     if (it.active){
       btn.textContent = '✓ Активен';
       btn.className = 'item-btn equipped';
@@ -163,11 +189,17 @@ function renderItems(items){
       btn.textContent = 'Выбрать';
       btn.className = 'item-btn primary';
       btn.onclick = function(){ equip(it.key); };
+    } else if (!it.can_afford){
+      btn.textContent = 'Не хватает 💰';
+      btn.className = 'item-btn cant-afford';
+      btn.disabled = true;
+      btn.title = 'Недостаточно монет';
     } else {
-      btn.textContent = it.can_afford ? 'Купить' : 'Не хватает';
-      btn.disabled = !it.can_afford;
+      btn.textContent = 'Купить';
+      btn.className = 'item-btn';
       btn.onclick = function(){ buy(it.key); };
     }
+
     actions.appendChild(btn);
     box.appendChild(el);
   });
@@ -176,7 +208,13 @@ function renderItems(items){
 async function buy(key){
   try{
     const res = await api('/api/shop/buy', {method:'POST', body: JSON.stringify({key: key})});
-    if (res.status !== 200){ showToast(res.data.detail || 'Ошибка', true); return; }
+    if (res.status !== 200){
+      showToast(res.data.detail || 'Ошибка', true);
+      setTimeout(loadShop, 500);
+      return;
+    }
+    // ★ Сохраняем скин для шапки
+    try{ localStorage.setItem('mgsu_active_char', key); }catch(e){}
     showToast('Куплено! Персонаж активирован');
     loadShop();
   }catch(e){ showToast('Ошибка соединения', true); }
@@ -186,6 +224,8 @@ async function equip(key){
   try{
     const res = await api('/api/shop/equip', {method:'POST', body: JSON.stringify({key: key})});
     if (res.status !== 200){ showToast(res.data.detail || 'Ошибка', true); return; }
+    // ★ Сохраняем скин для шапки
+    try{ localStorage.setItem('mgsu_active_char', key); }catch(e){}
     showToast('Персонаж выбран');
     loadShop();
   }catch(e){ showToast('Ошибка соединения', true); }

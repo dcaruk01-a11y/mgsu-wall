@@ -1,6 +1,6 @@
 """
 Универсальный эндпоинт сохранения результата игры.
-С дневными лимитами и бонусом ранга к монетам.
+С дневными лимитами, бонусом ранга и очками для института.
 """
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
@@ -99,10 +99,10 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
     plays_today = await _get_daily_plays(uid, game)
     mult = daily_multiplier(plays_today)
 
-    # 2. Итоговые очки
+    # 2. Очки
     points = int(raw * GAME_WEIGHTS[game] * mult)
 
-    # ★ 3. Бонус ранга к монетам
+    # 3. Бонус ранга
     rank_data = users.get_account_rank(
         user.get("total_score", 0),
         user.get("games_played", 0),
@@ -112,7 +112,7 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
     # 4. Streak
     streak_info = await users.apply_streak(uid)
 
-    # 5. Рекорд
+    # 5. Рекорд (для кликера)
     is_record = False
     if game == "clicker":
         async with aiosqlite.connect(DB_PATH) as db:
@@ -123,7 +123,7 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
             prev = row[0] or 0
         is_record = raw > prev
 
-    # 6. Начисляем очки и монеты (+ бонус ранга)
+    # 6. Начисляем очки и монеты
     progress = await users.apply_score_and_coins(
         uid, points, game, is_record,
         daily_mult=mult,
@@ -136,35 +136,40 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
     except Exception as e:
         print("top save error:", e)
 
-        # ★ 7.5. Очки в копилку института
+    # 8. Очки в копилку института
     try:
-        if user.get("institute"):
+        inst = user.get("institute") or ""
+        if inst:
             from core.institutes import add_score
-            await add_score(uid, user["institute"], points)
+            await add_score(uid, inst, points)
     except Exception as e:
         print("institute score error:", e)
 
-    # 8. Задания
+    # 9. Задания
     completed = []
     try:
         completed = await tasks.check_game_completion(uid, game, raw, payload.extra or {})
     except Exception as e:
         print("tasks error:", e)
 
-    # 9. Streak-бонусы
+    # 10. Streak-бонусы
     streak_bonus = 0
     if streak_info.get("ok") and streak_info.get("changed"):
         s = streak_info.get("streak", 0)
-        if s == 3:    streak_bonus = 100
-        elif s == 7:  streak_bonus = 500
-        elif s == 14: streak_bonus = 1500
-        elif s == 30: streak_bonus = 5000
+        if s == 3:
+            streak_bonus = 100
+        elif s == 7:
+            streak_bonus = 500
+        elif s == 14:
+            streak_bonus = 1500
+        elif s == 30:
+            streak_bonus = 5000
         if streak_bonus:
             await users.add_coins(uid, streak_bonus, f"streak-{s}")
 
     updated_user = await users.get_user_by_token(token)
 
-     return {
+    return {
         "ok": True,
         "logged_in": True,
         "game": game,

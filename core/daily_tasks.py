@@ -13,7 +13,7 @@ TASK_POOL = [
     {"key": "broadway_400",   "text": "Пройди 400 метров по Бродвею",     "game": "broadway",  "target": 400, "reward": 150},
     {"key": "broadway_700",   "text": "Пройди 700 метров по Бродвею",     "game": "broadway",  "target": 700, "reward": 250},
     {"key": "campus_vote",    "text": "Проголосуй в «Построй кампус»",    "game": "campus",    "target": 1,   "reward": 100},
-        {"key": "grable_500",     "text": "Набери 500 очков в Столовой",      "game": "grable",    "target": 500, "reward": 200},
+    {"key": "grable_500",     "text": "Набери 500 очков в Столовой",      "game": "grable",    "target": 500, "reward": 200},
     {"key": "grable_1500",    "text": "Набери 1500 очков в Столовой",     "game": "grable",    "target": 1500,"reward": 300},
     {"key": "wall_50",        "text": "Нарисуй 50 штрихов на Стене",      "game": "wall",      "target": 50,  "reward": 100},
     {"key": "tetris_500",     "text": "Набери 500 очков в Тетрисе",       "game": "tetris",    "target": 500, "reward": 150},
@@ -41,22 +41,16 @@ async def db_init_tasks():
 
 
 def _get_available_task_pool():
-    """
-    Возвращает только задания для ВКЛЮЧЁННЫХ игр.
-    Импорт state делаем внутри функции, чтобы избежать циклических импортов.
-    """
     try:
         import core.state as state
         enabled_games = {k for k, v in state.games_config.items() if v.get("enabled")}
     except Exception:
-        # Fallback — если не получилось, возвращаем весь пул
         return list(TASK_POOL)
 
     available = []
     for t in TASK_POOL:
         game = t.get("game")
         if game == "any":
-            # Задание «2 разные игры» — только если есть хотя бы 2 включённые
             if len(enabled_games) >= 2:
                 available.append(t)
         elif game in enabled_games:
@@ -65,7 +59,6 @@ def _get_available_task_pool():
 
 
 def _pick_tasks(uid: str, day: str):
-    """Стабильный выбор 3 заданий для игрока на день — только из доступных игр."""
     seed = hash((uid, day)) & 0xffffffff
     rng = random.Random(seed)
     pool = _get_available_task_pool()
@@ -85,7 +78,6 @@ async def get_or_create_day(uid: str):
 
         if row:
             tasks_list = json.loads(row[0])
-            # Фильтруем задания — если игра выключена, не показываем
             try:
                 import core.state as state
                 filtered = []
@@ -105,7 +97,6 @@ async def get_or_create_day(uid: str):
                 "claimed": json.loads(row[2]),
             }
 
-        # создаём
         picked = _pick_tasks(uid, day)
         tasks_list = [{"key": t["key"], "text": t["text"], "game": t["game"],
                        "target": t["target"], "reward": t["reward"],
@@ -144,13 +135,14 @@ async def check_game_completion(uid: str, game: str, raw_score: int, extra: dict
         new_val = cur_val
 
         if t["game"] == game:
-            if key in ("clicker_200", "clicker_350", "broadway_400", "broadway_700",
-                       "tetris_500", "tetris_1500", "2048_500"):
+            if key in ("clicker_200", "clicker_350",
+                       "broadway_400", "broadway_700",
+                       "tetris_500", "tetris_1500",
+                       "2048_500",
+                       "grable_500", "grable_1500"):
                 new_val = max(cur_val, raw_score)
             elif key == "campus_vote":
                 new_val = cur_val + 1
-                       elif key in ("grable_500", "grable_1500"):
-                new_val = max(cur_val, raw_score)
             elif key == "adventure_win":
                 if extra.get("win"):
                     new_val = 1

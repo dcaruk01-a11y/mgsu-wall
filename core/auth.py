@@ -67,9 +67,11 @@ async def register(payload: RegisterPayload, request: Request):
 
     try:
         await ip_tracking.track_visit(
-            ip=ip,
+            ip=_client_ip(request),
             user_agent=request.headers.get("user-agent", ""),
             uid=r["uid"],
+            page="/auth",
+            action="login",
         )
     except Exception as e:
         print("ip track error:", e)
@@ -139,14 +141,23 @@ async def update_pin(payload: UpdatePinPayload, authorization: str = Header(defa
 @router.post("/api/visit")
 async def public_visit(request: Request):
     """
-    Публичный трекинг захода на сайт (без авторизации).
-    Собирает IP и час, чтобы понимать, откуда и когда заходят.
+    Публичный трекинг захода на сайт.
+    Принимает JSON {page: '/glavnaya'} — чтобы понимать, куда зашли.
     """
+    page = ""
+    try:
+        body = await request.json()
+        page = (body or {}).get("page", "")
+    except Exception:
+        pass
+
     try:
         await ip_tracking.track_visit(
             ip=_client_ip(request),
             user_agent=request.headers.get("user-agent", ""),
             uid="",
+            page=page,
+            action="visit",
         )
     except Exception as e:
         print("public visit error:", e)

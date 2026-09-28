@@ -4,43 +4,91 @@
 <title>Аналитика · Админка МГСУ</title>
 <link rel="stylesheet" href="/static/admin.css">
 <style>
-.page-header{margin-bottom:28px;}
+.page-header{margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;}
 .page-title{font-size:28px;font-weight:800;color:#fff;margin:0 0 6px;}
 .page-sub{font-size:14px;color:rgba(255,255,255,0.55);}
 
-.block{margin-bottom:28px;}
-.block h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:16px;}
-.card-block{padding:20px;border-radius:14px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
+/* Период-табы */
+.period-tabs{display:flex;gap:6px;background:rgba(255,255,255,0.05);border-radius:10px;padding:4px;}
+.period-tab{padding:8px 16px;border:0;background:transparent;color:rgba(255,255,255,0.6);font-family:inherit;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.period-tab:hover{color:#fff;}
+.period-tab.active{background:rgba(255,255,255,0.15);color:#fff;}
 
-.hours-chart{display:flex;align-items:flex-end;gap:4px;height:160px;padding:20px 0;}
-.hour-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;}
-.hour-bar{width:100%;min-height:2px;background:#6FA8FF;border-radius:3px 3px 0 0;transition:background .15s;}
-.hour-bar:hover{background:#fff;}
+/* Сводка */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
+.sum-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.10);}
+.sum-label{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;}
+.sum-value{font-size:22px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1;}
+
+/* Воронка */
+.funnel{display:flex;flex-direction:column;gap:8px;padding:18px 20px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:20px;}
+.funnel-step{display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.04);position:relative;overflow:hidden;}
+.funnel-step-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(111,168,255,0.25),rgba(111,168,255,0.05));z-index:0;transition:width .5s;}
+.funnel-step-content{position:relative;z-index:1;display:flex;align-items:center;gap:14px;width:100%;}
+.funnel-icon{font-size:22px;line-height:1;width:32px;text-align:center;flex-shrink:0;}
+.funnel-label{flex:1;font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);}
+.funnel-count{font-size:20px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;min-width:50px;text-align:right;}
+
+/* Живая лента */
+.feed-box{border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);overflow:hidden;}
+.feed-head{display:grid;grid-template-columns:80px 60px 130px 1fr 100px;gap:10px;padding:12px 16px;background:rgba(0,0,0,0.20);font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+.feed-row{display:grid;grid-template-columns:80px 60px 130px 1fr 100px;gap:10px;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.05);font-size:13px;align-items:center;transition:background .15s;}
+.feed-row:hover{background:rgba(255,255,255,0.03);}
+.feed-time{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.7);}
+.feed-device{font-size:18px;line-height:1;text-align:center;}
+.feed-subnet{font-family:monospace;font-size:12px;color:#6FA8FF;}
+.feed-who{display:flex;align-items:center;gap:8px;overflow:hidden;}
+.feed-emoji{font-size:16px;flex-shrink:0;}
+.feed-nick{color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.feed-guest{color:rgba(255,255,255,0.5);font-style:italic;}
+.feed-action{padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;text-align:center;}
+.feed-action.visit{background:rgba(111,168,255,0.15);color:#6FA8FF;}
+.feed-action.register{background:rgba(74,222,128,0.2);color:#4ADE80;}
+.feed-action.login{background:rgba(180,120,255,0.18);color:#C0A0FF;}
+.feed-action.game{background:rgba(255,180,80,0.2);color:#FFB347;}
+
+/* По часам */
+.hours-chart{display:flex;align-items:flex-end;gap:3px;height:140px;padding:20px 4px 0;}
+.hour-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px;position:relative;}
+.hour-stack{width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:100%;}
+.hour-bar-mobile{background:#FFB347;border-radius:3px 3px 0 0;min-height:0;}
+.hour-bar-desktop{background:#6FA8FF;border-radius:0 0 3px 3px;min-height:0;}
 .hour-label{font-size:9px;color:rgba(255,255,255,0.4);font-variant-numeric:tabular-nums;}
-.hour-col.peak .hour-bar{background:#4ADE80;}
-.devices{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
-.device-chip{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);}
-.device-chip b{color:#fff;margin-left:6px;}
+.hours-legend{display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:12px;color:rgba(255,255,255,0.7);}
+.hours-legend-item{display:flex;align-items:center;gap:6px;}
+.hours-legend-dot{width:10px;height:10px;border-radius:3px;}
 
-.geo-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
-.geo-chip{padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);}
-.geo-chip b{color:#fff;margin-left:6px;}
+/* Зоны IP */
+.zones-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;}
+.sort-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.05);border-radius:8px;padding:3px;}
+.sort-tab{padding:6px 12px;border:0;background:transparent;color:rgba(255,255,255,0.55);font-family:inherit;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;transition:all .15s;}
+.sort-tab.active{background:rgba(255,255,255,0.15);color:#fff;}
 
-.ip-table{width:100%;border-collapse:collapse;font-size:13px;}
-.ip-table th{text-align:left;padding:10px 12px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);border-bottom:1px solid rgba(255,255,255,0.1);}
-.ip-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
-.ip-table tr:last-child td{border-bottom:none;}
-.ip-subnet{font-family:monospace;font-size:13px;color:#fff;}
-.ip-visits{font-weight:700;font-variant-numeric:tabular-nums;}
-.ip-select{padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:inherit;font-size:12px;cursor:pointer;}
-.ip-select option{background:#0F1524;color:#fff;}
+.zone-card{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;}
+.zone-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+.zone-subnet{font-family:monospace;font-size:15px;font-weight:800;color:#fff;}
+.zone-tag-badge{padding:4px 10px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;}
+.zone-tag-badge.mgsu{background:rgba(74,222,128,0.2);color:#4ADE80;border:1px solid rgba(74,222,128,0.5);}
+.zone-tag-badge.dorm{background:rgba(255,180,80,0.2);color:#FFB347;border:1px solid rgba(255,180,80,0.5);}
+.zone-tag-badge.mobile{background:rgba(111,168,255,0.2);color:#6FA8FF;border:1px solid rgba(111,168,255,0.5);}
+.zone-tag-badge.other{background:rgba(180,120,255,0.2);color:#C0A0FF;border:1px solid rgba(180,120,255,0.5);}
+.zone-tag-badge.unknown{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);}
+.zone-stats{display:flex;gap:16px;font-size:12px;color:rgba(255,255,255,0.7);flex-wrap:wrap;margin-bottom:8px;}
+.zone-stats b{color:#fff;font-weight:800;}
+.zone-users{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.zone-user{padding:3px 9px;border-radius:999px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);font-size:11px;color:rgba(255,255,255,0.8);}
+.zone-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.zone-btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.8);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;}
+.zone-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.zone-btn.active{background:#4ADE80;color:#0a1f0f;border-color:#4ADE80;}
+.zone-btn.active.dorm{background:#FFB347;color:#1a0e05;border-color:#FFB347;}
+.zone-btn.active.mobile{background:#6FA8FF;color:#0a1f3d;border-color:#6FA8FF;}
+.zone-btn.active.other{background:#C0A0FF;color:#1a0e2e;border-color:#C0A0FF;}
 
-.tasks-row{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);margin-bottom:6px;font-size:13px;}
-.tasks-text{flex:1;color:#fff;font-weight:500;}
-.tasks-count{font-size:13px;font-weight:700;color:rgba(255,255,255,0.75);font-variant-numeric:tabular-nums;white-space:nowrap;}
-.tasks-bar{width:80px;height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;flex-shrink:0;}
-.tasks-bar-fill{height:100%;background:#4ADE80;transition:width .3s;}
-.tasks-summary-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:12px;color:rgba(255,255,255,0.55);letter-spacing:0.08em;text-transform:uppercase;}
+.block{margin-bottom:28px;}
+.block h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.block h2 small{font-size:12px;font-weight:500;color:rgba(255,255,255,0.4);}
+.empty{padding:40px;text-align:center;color:rgba(255,255,255,0.4);font-size:14px;}
 </style>
 </head><body class="admin-page">
 
@@ -49,42 +97,71 @@
   <main class="admin-main">
 
     <div class="page-header">
-      <h1 class="page-title">Аналитика</h1>
-      <div class="page-sub">По часам, по IP, ежедневные задания</div>
-    </div>
-
-    <div class="block">
-      <h2>По часам</h2>
-      <div class="card-block">
-        <div class="hours-chart" id="hoursChart">Загрузка…</div>
-        <div class="devices" id="devicesBox"></div>
+      <div>
+        <h1 class="page-title">Аналитика</h1>
+        <div class="page-sub">Кто заходит, откуда, что делает</div>
+      </div>
+      <div class="period-tabs">
+        <button class="period-tab" data-days="1">Сегодня</button>
+        <button class="period-tab active" data-days="7">7 дней</button>
+        <button class="period-tab" data-days="30">30 дней</button>
       </div>
     </div>
 
+    <!-- Сводка -->
+    <div class="summary-grid" id="summaryGrid"></div>
+
+    <!-- Воронка -->
     <div class="block">
-      <h2>Откуда заходят (IP)</h2>
-      <div class="card-block">
-        <div class="geo-row" id="geoRow">Загрузка…</div>
-        <div style="overflow-x:auto;">
-          <table class="ip-table">
-            <thead>
-              <tr><th>Подсеть</th><th>Заходов</th><th>Категория</th></tr>
-            </thead>
-            <tbody id="ipTableBody"></tbody>
-          </table>
+      <h2>🎯 Воронка: что происходит с пользователем</h2>
+      <div class="funnel" id="funnelBox"><div class="empty">Загрузка…</div></div>
+    </div>
+
+    <!-- Живая лента -->
+    <div class="block">
+      <h2>📡 Живая лента заходов <small id="feedRangeLabel"></small></h2>
+      <div class="feed-box">
+        <div class="feed-head">
+          <span>Время</span>
+          <span>Девайс</span>
+          <span>Подсеть</span>
+          <span>Кто</span>
+          <span>Действие</span>
+        </div>
+        <div id="feedBody"></div>
+      </div>
+    </div>
+
+    <!-- По часам -->
+    <div class="block">
+      <h2>🕐 По часам — кто когда заходит</h2>
+      <div style="padding:20px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
+        <div class="hours-chart" id="hoursChart"></div>
+        <div class="hours-legend">
+          <div class="hours-legend-item">
+            <div class="hours-legend-dot" style="background:#6FA8FF;"></div>
+            <span>💻 С компьютера</span>
+          </div>
+          <div class="hours-legend-item">
+            <div class="hours-legend-dot" style="background:#FFB347;"></div>
+            <span>📱 С телефона</span>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Зоны IP -->
     <div class="block">
-      <h2>Ежедневные задания</h2>
-      <div class="card-block">
-        <div class="tasks-summary-head">
-          <span id="tasksDayLabel">—</span>
-          <span id="tasksTotalsLabel">—</span>
+      <h2>🌍 Зоны IP <small>(сгруппировано по подсетям)</small></h2>
+      <div class="zones-toolbar">
+        <span style="font-size:12px;color:rgba(255,255,255,0.5);">Сортировка:</span>
+        <div class="sort-tabs">
+          <button class="sort-tab active" data-sort="visits">По заходам</button>
+          <button class="sort-tab" data-sort="recent">По свежести</button>
+          <button class="sort-tab" data-sort="users">По игрокам</button>
         </div>
-        <div id="tasksSummaryBox">Загрузка…</div>
       </div>
+      <div id="zonesBox"><div class="empty">Загрузка…</div></div>
     </div>
 
   </main>
@@ -95,134 +172,257 @@
 const token = adminRequireToken();
 renderAdminMenu('analytics');
 
+let currentDays = 7;
+let currentSort = 'visits';
+
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function fmtTime(ts){
+  if (!ts) return '—';
+  const d = new Date(ts * 1000);
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+  const time = d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+  if (isToday) return time;
+  return d.toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'}) + ' ' + time;
+}
+
+function deviceIcon(d){
+  if (d === 'mobile') return '📱';
+  if (d === 'tablet') return '📱';
+  return '💻';
+}
+
+const ACTION_LABELS = {
+  visit: 'Заход',
+  register: 'Регистрация',
+  login: 'Вход',
+  game: 'Игра',
+};
+
+const CHAR_EMOJI = {
+  student:'🎓', sso:'👷', prorab:'📋', builder:'🏗️',
+  prof:'🧑‍🏫', dean:'🧑‍💼', legend:'👑'
+};
+
+/* ═════ Период ═════ */
+document.querySelectorAll('.period-tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.period-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    currentDays = parseInt(t.dataset.days);
+    loadAll();
+  };
+});
+
+/* ═════ Сортировка зон ═════ */
+document.querySelectorAll('.sort-tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.sort-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    currentSort = t.dataset.sort;
+    loadZones();
+  };
+});
+
+/* ═════ Сводка ═════ */
+async function loadSummary(){
+  try{
+    const s = await adminApi('/admin/api/summary?days=' + currentDays);
+    const grid = document.getElementById('summaryGrid');
+    const cards = [
+      {label:'Всего заходов', value: s.visits},
+      {label:'Уникальных IP', value: s.uniq_ips},
+      {label:'Игроков', value: s.uniq_users},
+      {label:'💻 ПК', value: s.desktop},
+      {label:'📱 Телефоны', value: s.mobile},
+    ];
+    grid.innerHTML = cards.map(c =>
+      '<div class="sum-card"><div class="sum-label">' + c.label + '</div><div class="sum-value">' + c.value + '</div></div>'
+    ).join('');
+  }catch(e){ console.warn('summary:', e); }
+}
+
+/* ═════ Воронка ═════ */
+async function loadFunnel(){
+  try{
+    const f = await adminApi('/admin/api/funnel?days=' + currentDays);
+    const box = document.getElementById('funnelBox');
+    const steps = [
+      {icon:'🌐', label:'Зашли на сайт (уникальные IP)', value: f.ips},
+      {icon:'👤', label:'Были с аккаунтом', value: f.users},
+      {icon:'🎉', label:'Зарегистрировались', value: f.registered},
+      {icon:'🎮', label:'Сыграли хотя бы раз', value: f.played},
+      {icon:'🔁', label:'Вернулись ещё раз', value: f.returned},
+    ];
+    const max = Math.max(1, ...steps.map(s => s.value));
+    box.innerHTML = '';
+    steps.forEach(s => {
+      const pct = (s.value / max) * 100;
+      const el = document.createElement('div');
+      el.className = 'funnel-step';
+      el.innerHTML =
+        '<div class="funnel-step-fill" style="width:' + pct + '%"></div>' +
+        '<div class="funnel-step-content">' +
+          '<span class="funnel-icon">' + s.icon + '</span>' +
+          '<span class="funnel-label">' + s.label + '</span>' +
+          '<span class="funnel-count">' + s.value + '</span>' +
+        '</div>';
+      box.appendChild(el);
+    });
+  }catch(e){ console.warn('funnel:', e); }
+}
+
+/* ═════ Живая лента ═════ */
+async function loadFeed(){
+  try{
+    const r = await adminApi('/admin/api/feed?days=' + currentDays + '&limit=60');
+    const feed = r.feed || [];
+    const body = document.getElementById('feedBody');
+    document.getElementById('feedRangeLabel').textContent =
+      '(последние ' + feed.length + ' за ' + currentDays + ' д.)';
+
+    if (!feed.length){
+      body.innerHTML = '<div class="empty">Пока пусто</div>';
+      return;
+    }
+
+    body.innerHTML = '';
+    feed.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'feed-row';
+
+      const actionLabel = ACTION_LABELS[item.action] || item.action;
+      const who = item.logged_in
+        ? '<span class="feed-emoji">' + (CHAR_EMOJI[item.active_char] || '🎓') + '</span>' +
+          '<span class="feed-nick">' + escapeHtml(item.nick) + '</span>'
+        : '<span class="feed-emoji">👻</span><span class="feed-guest">Гость</span>';
+
+      row.innerHTML =
+        '<span class="feed-time">' + fmtTime(item.ts) + '</span>' +
+        '<span class="feed-device">' + deviceIcon(item.device) + '</span>' +
+        '<span class="feed-subnet">' + escapeHtml(item.subnet) + '.*</span>' +
+        '<span class="feed-who">' + who + '</span>' +
+        '<span class="feed-action ' + item.action + '">' + actionLabel + '</span>';
+      body.appendChild(row);
+    });
+  }catch(e){ console.warn('feed:', e); }
+}
+
+/* ═════ Часы ═════ */
 async function loadHours(){
   try{
-    const r = await adminApi('/admin/api/hours?days=1');
-    renderHours(r.hours || []);
-    renderDevices(r.devices || []);
-  }catch(e){}
-}
+    const r = await adminApi('/admin/api/hours-full?days=' + currentDays);
+    const hours = r.hours || [];
+    const chart = document.getElementById('hoursChart');
+    const max = Math.max(1, ...hours.map(h => h.visits));
+    chart.innerHTML = '';
+    hours.forEach(h => {
+      const totalH = (h.visits / max) * 100;
+      const mobilePart = h.visits ? (h.mobile / h.visits) * totalH : 0;
+      const desktopPart = h.visits ? (h.desktop / h.visits) * totalH : 0;
 
-function renderHours(hours){
-  const box = document.getElementById('hoursChart');
-  if (!hours.length){ box.textContent = 'Нет данных'; return; }
-  const max = Math.max(...hours.map(h => h.visits), 1);
-  box.innerHTML = '';
-  hours.forEach(h => {
-    const pct = (h.visits / max) * 100;
-    const isPeak = h.visits === max && h.visits > 0;
-    const col = document.createElement('div');
-    col.className = 'hour-col' + (isPeak ? ' peak' : '');
-    col.title = h.hour + ':00 — ' + h.visits + ' заходов, ' + h.uniques + ' уник.';
-    col.innerHTML = '<div class="hour-bar" style="height:' + Math.max(2, pct) + '%"></div><div class="hour-label">' + h.hour + '</div>';
-    box.appendChild(col);
-  });
-}
-
-function renderDevices(devices){
-  const box = document.getElementById('devicesBox');
-  if (!devices.length){ box.innerHTML = ''; return; }
-  const labels = {mobile:'📱 Телефон', desktop:'💻 ПК', tablet:'📱 Планшет', unknown:'—'};
-  box.innerHTML = '';
-  devices.forEach(d => {
-    const el = document.createElement('div');
-    el.className = 'device-chip';
-    el.innerHTML = (labels[d.device] || d.device) + '<b>' + d.pct + '%</b>';
-    box.appendChild(el);
-  });
-}
-
-async function loadIps(){
-  try{
-    const r = await adminApi('/admin/api/ips');
-    renderGeo(r.geo || []);
-    renderIpTable(r.ips || []);
-  }catch(e){}
-}
-
-function renderGeo(geo){
-  const box = document.getElementById('geoRow');
-  if (!geo.length){ box.textContent = 'Пока нет данных'; return; }
-  box.innerHTML = '';
-  geo.forEach(g => {
-    const el = document.createElement('div');
-    el.className = 'geo-chip';
-    el.innerHTML = g.label + '<b>' + g.pct + '%</b>';
-    box.appendChild(el);
-  });
-}
-
-function renderIpTable(ips){
-  const body = document.getElementById('ipTableBody');
-  if (!ips.length){
-    body.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;opacity:0.5;">Пока пусто</td></tr>';
-    return;
-  }
-  body.innerHTML = '';
-  ips.forEach(ip => {
-    const tr = document.createElement('tr');
-    const sel = document.createElement('select');
-    sel.className = 'ip-select';
-    [['unknown','Не размечено'],['mgsu','МГСУ'],['dorm','Общежитие'],['mobile','Мобильный'],['other','Другое']].forEach(([v,l]) => {
-      const o = document.createElement('option');
-      o.value = v; o.textContent = l;
-      if (v === ip.tag) o.selected = true;
-      sel.appendChild(o);
+      const col = document.createElement('div');
+      col.className = 'hour-col';
+      col.title = h.hour + ':00 — всего ' + h.visits +
+        ' (💻' + h.desktop + ' / 📱' + h.mobile + ')';
+      col.innerHTML =
+        '<div class="hour-stack">' +
+          '<div class="hour-bar-mobile" style="height:' + mobilePart + '%"></div>' +
+          '<div class="hour-bar-desktop" style="height:' + desktopPart + '%"></div>' +
+        '</div>' +
+        '<div class="hour-label">' + h.hour + '</div>';
+      chart.appendChild(col);
     });
-    sel.onchange = async () => {
-      try{
-        await adminApi('/admin/api/ips/tag', {
-          method:'POST',
-          body: JSON.stringify({subnet: ip.subnet, tag: sel.value, label: ip.label || ''})
-        });
-        loadIps();
-      }catch(e){}
-    };
-    tr.innerHTML = '<td class="ip-subnet">' + escapeHtml(ip.subnet) + '.*</td><td class="ip-visits">' + ip.visits + '</td>';
-    const td = document.createElement('td');
-    td.appendChild(sel);
-    tr.appendChild(td);
-    body.appendChild(tr);
-  });
+  }catch(e){ console.warn('hours:', e); }
 }
 
-async function loadTasksSummary(){
+/* ═════ Зоны IP ═════ */
+async function loadZones(){
   try{
-    const r = await adminApi('/admin/api/tasks-summary');
-    renderTasksSummary(r);
-  }catch(e){}
-}
+    const r = await adminApi('/admin/api/zones?days=' + currentDays + '&sort=' + currentSort);
+    const zones = r.zones || [];
+    const box = document.getElementById('zonesBox');
 
-function renderTasksSummary(data){
-  const box = document.getElementById('tasksSummaryBox');
-  document.getElementById('tasksDayLabel').textContent = 'День: ' + (data.day || '—');
-  document.getElementById('tasksTotalsLabel').textContent = (data.total_users || 0) + ' игроков · ' + (data.total_completed || 0) + ' выполнений';
-  if (!data.tasks || !data.tasks.length){
-    box.innerHTML = '<div style="padding:20px;text-align:center;opacity:0.5;font-size:13px;">Сегодня задания ещё никто не получил</div>';
-    return;
+    if (!zones.length){
+      box.innerHTML = '<div class="empty">Пока нет данных</div>';
+      return;
+    }
+
+    box.innerHTML = '';
+    zones.forEach(z => {
+      const el = document.createElement('div');
+      el.className = 'zone-card';
+
+      const usersHtml = z.users.length
+        ? z.users.map(u => '<span class="zone-user">' + escapeHtml(u.nick) + '</span>').join('')
+        : '<span class="zone-user" style="opacity:0.5;">только гости</span>';
+
+      const tagLabels = {
+        mgsu: '🏛 МГСУ', dorm: '🛏 Общага',
+        mobile: '📡 Мобильный', other: '❓ Другое', unknown: '— Не размечено'
+      };
+
+      el.innerHTML =
+        '<div class="zone-head">' +
+          '<span class="zone-subnet">' + escapeHtml(z.subnet) + '.*</span>' +
+          '<span class="zone-tag-badge ' + z.tag + '">' + (tagLabels[z.tag] || z.tag) + '</span>' +
+        '</div>' +
+        '<div class="zone-stats">' +
+          '<span>📊 <b>' + z.visits + '</b> заходов</span>' +
+          '<span>👤 <b>' + z.users_count + '</b> игроков</span>' +
+          '<span>📱 <b>' + z.mobile_count + '</b> с телефона</span>' +
+          '<span>🕐 последний: <b>' + fmtTime(z.last_seen) + '</b></span>' +
+        '</div>' +
+        '<div class="zone-users">' + usersHtml + '</div>' +
+        '<div class="zone-actions">' +
+          '<button class="zone-btn" data-tag="mgsu">🏛 МГСУ</button>' +
+          '<button class="zone-btn dorm" data-tag="dorm">🛏 Общага</button>' +
+          '<button class="zone-btn mobile" data-tag="mobile">📡 Мобильный</button>' +
+          '<button class="zone-btn other" data-tag="other">❓ Другое</button>' +
+          '<button class="zone-btn" data-tag="unknown">— Сброс</button>' +
+        '</div>';
+
+      // Подсветить активную метку
+      el.querySelectorAll('.zone-btn').forEach(b => {
+        if (b.dataset.tag === z.tag) b.classList.add('active');
+      });
+
+      // Обработчики
+      el.querySelectorAll('.zone-btn').forEach(b => {
+        b.onclick = async () => {
+          try{
+            await adminApi('/admin/api/zones/tag', {
+              method:'POST',
+              body: JSON.stringify({subnet: z.subnet, tag: b.dataset.tag, label: ''})
+            });
+            loadZones();
+          }catch(e){ alert('Ошибка: ' + e.message); }
+        };
+      });
+
+      box.appendChild(el);
+    });
+  }catch(e){
+    console.warn('zones:', e);
+    document.getElementById('zonesBox').innerHTML =
+      '<div class="empty" style="color:#FF4D5E;">Ошибка: ' + escapeHtml(e.message) + '</div>';
   }
-  box.innerHTML = '';
-  data.tasks.forEach(t => {
-    const row = document.createElement('div');
-    row.className = 'tasks-row';
-    row.innerHTML =
-      '<div class="tasks-text">' + escapeHtml(t.text) + '</div>' +
-      '<div class="tasks-bar"><div class="tasks-bar-fill" style="width:' + t.pct + '%"></div></div>' +
-      '<div class="tasks-count">' + t.done + ' / ' + t.taken + '</div>';
-    box.appendChild(row);
-  });
 }
 
-loadHours();
-loadIps();
-loadTasksSummary();
-setInterval(loadHours, 60000);
-setInterval(loadIps, 120000);
-setInterval(loadTasksSummary, 60000);
+/* ═════ Загрузка всего ═════ */
+function loadAll(){
+  loadSummary();
+  loadFunnel();
+  loadFeed();
+  loadHours();
+  loadZones();
+}
+
+loadAll();
+setInterval(loadAll, 60000);
 </script>
 
 </body></html>

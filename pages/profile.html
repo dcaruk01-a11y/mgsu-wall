@@ -81,12 +81,7 @@
 }
 .btn:hover{background:rgba(128,128,128,0.20);}
 .btn-primary{background:rgba(128,128,128,0.28);}
-.btn-danger{
-  color:#FF4D5E;
-  border-color:rgba(255,77,94,0.4);
-  padding:14px 28px;
-  font-size:15px;
-}
+.btn-danger{color:#FF4D5E;border-color:rgba(255,77,94,0.4);padding:14px 28px;font-size:15px;}
 
 .hide{display:none;}
 .err{color:#FF4D5E;font-size:13px;margin-top:8px;min-height:18px;}
@@ -105,7 +100,6 @@
 .task-progress-text{font-size:12px;opacity:0.6;font-variant-numeric:tabular-nums;}
 .tasks-empty{padding:20px;text-align:center;opacity:0.6;font-size:13px;}
 
-/* Модалка настроек */
 .settings-modal{
   position:fixed;inset:0;z-index:2000;
   background:rgba(5,14,31,0.85);
@@ -197,7 +191,23 @@
         <div style="height:8px;border-radius:4px;background:rgba(128,128,128,0.20);overflow:hidden;margin-bottom:8px;">
           <div id="rankProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,#6FA8FF,#B794F6);border-radius:4px;transition:width .4s;"></div>
         </div>
-        <div id="rankProgressText" style="font-size:12px;opacity:0.6;text-align:center;">—</div>
+        <div id="rankProgressText" style="font-size:12px;opacity:0.6;text-align:center;margin-bottom:14px;">—</div>
+
+        <!-- Бонус ранга к монетам -->
+        <div id="rankBonusBlock" style="padding:14px 16px;border-radius:12px;background:rgba(255,180,80,0.08);border:1px solid rgba(255,180,80,0.28);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:10px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;opacity:0.6;margin-bottom:4px;">Бонус ранга к монетам</div>
+              <div style="font-size:22px;font-weight:900;color:#FFB347;" id="rankBonusNow">+0%</div>
+            </div>
+            <div style="text-align:right;font-size:12px;opacity:0.75;line-height:1.4;" id="rankBonusNextBox">
+              Следующий ранг<br>даст <b style="color:#FFD700;">+5%</b>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,180,80,0.25);font-size:12px;opacity:0.75;line-height:1.5;">
+            💡 Чем выше ранг — тем больше монет за каждую партию. Качай очки и партии!
+          </div>
+        </div>
       </div>
     </div>
 
@@ -220,7 +230,7 @@
       </div>
     </div>
 
-        <!-- Мои позиции в рейтинге -->
+    <!-- Мои позиции в рейтинге -->
     <div class="card">
       <h3>🏆 Мои позиции в рейтинге</h3>
       <div id="myRatingsBox">
@@ -235,7 +245,7 @@
       </div>
     </div>
 
-        <div class="section" style="text-align:center;padding-top:24px;padding-bottom:8px;">
+    <div class="section" style="text-align:center;padding-top:24px;padding-bottom:8px;">
       <button class="btn btn-danger" id="btnLogout" style="min-width:200px;">🚪 Выйти</button>
     </div>
 
@@ -314,6 +324,7 @@ async function api(path, opts){
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_UID);
     localStorage.removeItem('mgsu_nick');
+    localStorage.removeItem('mgsu_active_char');
     location.href = '/auth';
     throw new Error('unauthorized');
   }
@@ -334,9 +345,14 @@ function setUser(u){
   document.getElementById('pScore').textContent = u.total_score || 0;
   document.getElementById('pGames').textContent = u.games_played || 0;
 
-  // Аватар — из активного персонажа
+  // Аватар
   const av = document.getElementById('pAvatar');
   if (av && u.active_char) av.textContent = CHAR_EMOJI[u.active_char] || '🎓';
+
+  // ★ Сохраняем скин для шапки
+  if (u.active_char){
+    localStorage.setItem('mgsu_active_char', u.active_char);
+  }
 
   // === РАНГ ===
   if (u.rank){
@@ -352,7 +368,6 @@ function setUser(u){
       nextEl.textContent = 'До «' + r.next.name + '» ' + r.next.emoji;
       fill.style.width = Math.round(r.progress * 100) + '%';
 
-      // Что именно нужно
       const needScore = Math.max(0, r.next.min_score - r.total_score);
       const needGames = Math.max(0, r.next.min_games - r.games_played);
       const parts = [];
@@ -364,11 +379,30 @@ function setUser(u){
       fill.style.width = '100%';
       txt.textContent = '👑 Ты — легенда';
     }
+
+    // ★ Бонус ранга
+    const bonusNow = r.bonus_pct || 0;
+    const bonusEl = document.getElementById('rankBonusNow');
+    if (bonusEl){
+      bonusEl.textContent = '+' + bonusNow + '%';
+      bonusEl.style.color = bonusNow > 0 ? '#FFB347' : 'rgba(128,128,128,0.6)';
+    }
+
+    const bonusNextBox = document.getElementById('rankBonusNextBox');
+    if (bonusNextBox){
+      if (r.next && r.next.bonus_pct !== undefined){
+        bonusNextBox.innerHTML = 'Следующий ранг<br>даст <b style="color:#FFD700;">+' + r.next.bonus_pct + '%</b>';
+      } else {
+        bonusNextBox.innerHTML = '<b style="color:#FFD700;">Максимум</b><br>бонуса';
+      }
+    }
   }
 
   localStorage.setItem('mgsu_nick', u.display_name);
   const headerAvatar = document.querySelector('.site-header-avatar span');
-  if (headerAvatar) headerAvatar.textContent = u.display_name.charAt(0).toUpperCase();
+  if (headerAvatar){
+    headerAvatar.textContent = CHAR_EMOJI[u.active_char] || '🎓';
+  }
 }
 
 async function loadMe(){
@@ -419,6 +453,51 @@ function renderTasks(data){
   });
 }
 loadTasks();
+
+/* ═══════════════════════════════════════════════════════════
+   МОИ ПОЗИЦИИ В РЕЙТИНГЕ
+   ═══════════════════════════════════════════════════════════ */
+async function loadMyRatings(){
+  try{
+    const res = await api('/api/ratings');
+    if (res.status !== 200) return;
+    const data = res.data;
+    const me = data.me;
+    const box = document.getElementById('myRatingsBox');
+    if (!box) return;
+
+    if (!me){
+      box.innerHTML = '<div class="tasks-empty">Сыграй партию — увидишь свою позицию.</div>';
+      return;
+    }
+
+    const posData = [
+      {label: 'Сегодня',   pos: me.day ? me.day.pos : null},
+      {label: 'Неделя',    pos: me.week ? me.week.pos : null},
+      {label: 'Всё время', pos: me.all ? me.all.pos : null},
+    ];
+
+    let html = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">';
+    posData.forEach(p => {
+      const val = p.pos ? ('#' + p.pos) : '—';
+      const color = p.pos && p.pos <= 3 ? '#FFD700' : 'inherit';
+      html +=
+        '<div style="text-align:center;padding:14px 6px;border-radius:12px;background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.18);">' +
+          '<div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.6;margin-bottom:6px;">' + p.label + '</div>' +
+          '<div style="font-size:24px;font-weight:900;color:' + color + ';">' + val + '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    html += '<div style="margin-top:14px;text-align:center;">' +
+      '<a href="/ratings" style="color:#6FA8FF;text-decoration:none;font-size:13px;font-weight:700;">Смотреть весь рейтинг →</a>' +
+    '</div>';
+    box.innerHTML = html;
+  }catch(e){
+    const box = document.getElementById('myRatingsBox');
+    if (box) box.innerHTML = '<div class="tasks-empty">Не удалось загрузить</div>';
+  }
+}
+loadMyRatings();
 
 /* Копирование UID */
 document.getElementById('pUid').addEventListener('click', async function(){
@@ -519,6 +598,7 @@ document.getElementById('btnSavePin').onclick = async function(){
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_UID);
     localStorage.removeItem('mgsu_nick');
+    localStorage.removeItem('mgsu_active_char');
     location.href = '/auth';
   }catch(e){ errEl.textContent = 'Ошибка'; }
 };
@@ -529,6 +609,7 @@ document.getElementById('btnLogout').onclick = async function(){
   localStorage.removeItem(LS_TOKEN);
   localStorage.removeItem(LS_UID);
   localStorage.removeItem('mgsu_nick');
+  localStorage.removeItem('mgsu_active_char');
   location.href = '/auth';
 };
 
@@ -537,50 +618,6 @@ document.getElementById('btnLogout').onclick = async function(){
     e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);
   });
 });
-/* ═══════════════════════════════════════════════════════════
-   МОИ ПОЗИЦИИ В РЕЙТИНГЕ
-   ═══════════════════════════════════════════════════════════ */
-async function loadMyRatings(){
-  try{
-    const res = await api('/api/ratings');
-    if (res.status !== 200) return;
-    const data = res.data;
-    const me = data.me;
-    const box = document.getElementById('myRatingsBox');
-    if (!box) return;
-
-    if (!me){
-      box.innerHTML = '<div class="tasks-empty">Сыграй партию — увидишь свою позицию.</div>';
-      return;
-    }
-
-    const posData = [
-      {label: 'Сегодня',   pos: me.day ? me.day.pos : null},
-      {label: 'Неделя',    pos: me.week ? me.week.pos : null},
-      {label: 'Всё время', pos: me.all ? me.all.pos : null},
-    ];
-
-    let html = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">';
-    posData.forEach(p => {
-      const val = p.pos ? ('#' + p.pos) : '—';
-      const color = p.pos && p.pos <= 3 ? '#FFD700' : 'inherit';
-      html +=
-        '<div style="text-align:center;padding:14px 6px;border-radius:12px;background:rgba(128,128,128,0.08);border:1px solid rgba(128,128,128,0.18);">' +
-          '<div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.6;margin-bottom:6px;">' + p.label + '</div>' +
-          '<div style="font-size:24px;font-weight:900;color:' + color + ';">' + val + '</div>' +
-        '</div>';
-    });
-    html += '</div>';
-    html += '<div style="margin-top:14px;text-align:center;">' +
-      '<a href="/ratings" style="color:#6FA8FF;text-decoration:none;font-size:13px;font-weight:700;">Смотреть весь рейтинг →</a>' +
-    '</div>';
-    box.innerHTML = html;
-  }catch(e){
-    const box = document.getElementById('myRatingsBox');
-    if (box) box.innerHTML = '<div class="tasks-empty">Не удалось загрузить</div>';
-  }
-}
-loadMyRatings();
 </script>
 
 </body></html>

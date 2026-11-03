@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, HTTPException
 import aiosqlite
 import core.top as top
 import core.users as users
@@ -53,12 +53,16 @@ async def ratings_page():
 
 
 @router.get("/api/ratings")
-async def api_ratings(authorization: str = Header(default="")):
+async def api_ratings(institute: str = "", authorization: str = Header(default="")):
+    if institute:
+        from core.institutes import INSTITUTE_MAP
+        if institute not in INSTITUTE_MAP:
+            raise HTTPException(status_code=400, detail="Неизвестный институт")
     user = await users.get_user_by_token(_token(authorization))
 
-    day = await top.top_day(10)
-    week = await top.top_week(10)
-    alltime = await top.top_alltime(20)
+    day = await top.top_day(10, institute)
+    week = await top.top_week(10, institute)
+    alltime = await top.top_alltime(20, institute)
 
     # ★ Добавляем институт каждому игроку в топах
     day = await _attach_institutes(day)
@@ -79,3 +83,4 @@ async def api_ratings(authorization: str = Header(default="")):
         "week_label": top.week_label(),
         "me": my,
     }
+

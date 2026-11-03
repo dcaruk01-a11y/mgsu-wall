@@ -8,7 +8,7 @@ import aiosqlite
 import core.users as users
 import core.top as top
 import core.analytics as analytics
-import core.tasks as tasks
+import core.daily_tasks as tasks
 from config import DB_PATH, today_str
 
 router = APIRouter()

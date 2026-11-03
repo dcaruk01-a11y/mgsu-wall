@@ -58,17 +58,18 @@ async def save_score(uid: str, nick: str, game: str, score: int):
         await db.commit()
 
 
-async def top_day(limit: int = 10):
+async def top_day(limit: int = 10, institute: str = ""):
     """Топ за сегодня — по сумме очков за день, каждый uid один раз."""
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("""
-            SELECT uid, nick, SUM(score) as total, COUNT(*) as games
-            FROM scores
-            WHERE day = ?
-            GROUP BY uid
+            SELECT s.uid, s.nick, SUM(s.score) as total, COUNT(*) as games
+            FROM scores s
+            LEFT JOIN users u ON u.uid = s.uid
+            WHERE s.day = ? AND (? = '' OR u.institute = ?)
+            GROUP BY s.uid
             ORDER BY total DESC
             LIMIT ?
-        """, (today_str(), limit))
+        """, (today_str(), institute, institute, limit))
         rows = await cur.fetchall()
     return [
         {"uid": r[0], "nick": r[1], "score": r[2], "games": r[3]}
@@ -76,17 +77,18 @@ async def top_day(limit: int = 10):
     ]
 
 
-async def top_week(limit: int = 10):
+async def top_week(limit: int = 10, institute: str = ""):
     """Топ за неделю."""
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("""
-            SELECT uid, nick, SUM(score) as total, COUNT(*) as games
-            FROM scores
-            WHERE week = ?
-            GROUP BY uid
+            SELECT s.uid, s.nick, SUM(s.score) as total, COUNT(*) as games
+            FROM scores s
+            LEFT JOIN users u ON u.uid = s.uid
+            WHERE s.week = ? AND (? = '' OR u.institute = ?)
+            GROUP BY s.uid
             ORDER BY total DESC
             LIMIT ?
-        """, (week_str(), limit))
+        """, (week_str(), institute, institute, limit))
         rows = await cur.fetchall()
     return [
         {"uid": r[0], "nick": r[1], "score": r[2], "games": r[3]}
@@ -94,16 +96,18 @@ async def top_week(limit: int = 10):
     ]
 
 
-async def top_alltime(limit: int = 20):
+async def top_alltime(limit: int = 20, institute: str = ""):
     """Топ за всё время."""
     async with aiosqlite.connect(DB_PATH) as db:
         cur = await db.execute("""
-            SELECT uid, nick, SUM(score) as total, COUNT(*) as games
-            FROM scores
-            GROUP BY uid
+            SELECT s.uid, s.nick, SUM(s.score) as total, COUNT(*) as games
+            FROM scores s
+            LEFT JOIN users u ON u.uid = s.uid
+            WHERE ? = '' OR u.institute = ?
+            GROUP BY s.uid
             ORDER BY total DESC
             LIMIT ?
-        """, (limit,))
+        """, (institute, institute, limit))
         rows = await cur.fetchall()
     return [
         {"uid": r[0], "nick": r[1], "score": r[2], "games": r[3]}
@@ -179,3 +183,4 @@ async def archive_old_scores(days: int = 90):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM scores WHERE ts < ?", (cutoff_ts,))
         await db.commit()
+

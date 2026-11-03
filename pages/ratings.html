@@ -185,21 +185,18 @@ document.querySelectorAll('.tab-period').forEach(function(t){
 
 document.getElementById('filterInst').addEventListener('change', function(e){
   currentInstFilter = e.target.value;
-  rerenderMain();
+  loadRatings();
 });
 
 function rerenderMain(){
   const src = currentPeriod === 'day' ? dataDay
             : currentPeriod === 'week' ? dataWeek
             : dataAll;
-  const filtered = currentInstFilter
-    ? src.filter(function(it){ return it.institute === currentInstFilter; })
-    : src;
   let emptyText = 'Пока никого';
   if (currentPeriod === 'day') emptyText = 'Сегодня пока никто не играл. Будь первым!';
   else if (currentPeriod === 'week') emptyText = 'На этой неделе пока пусто.';
   else emptyText = 'Рейтинг ещё пуст. Начни первым!';
-  renderList('listMain', filtered, emptyText);
+  renderList('listMain', src, emptyText);
 }
 
 function escapeHtml(s){
@@ -373,12 +370,17 @@ async function showInstitutePlayers(key){
 }
 
 /* ═════ ЗАГРУЗКА ДАННЫХ ═════ */
-async function loadAll(){
+async function loadRatings(){
+  const requestedFilter = currentInstFilter;
+  document.getElementById('listMain').innerHTML = '<div class="loading">Загрузка…</div>';
   try{
     const headers = {};
     if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
-    const r = await fetch('/api/ratings', {headers: headers});
+    const url = '/api/ratings' + (requestedFilter ? '?institute=' + encodeURIComponent(requestedFilter) : '');
+    const r = await fetch(url, {headers: headers});
+    if (!r.ok) throw new Error('ratings HTTP ' + r.status);
     const data = await r.json();
+    if (requestedFilter !== currentInstFilter) return;
 
     if (data.me && data.me.uid) myUid = data.me.uid;
     renderMe(data.me);
@@ -393,10 +395,14 @@ async function loadAll(){
       document.getElementById('subText').textContent = 'Неделя: ' + data.week_label;
     }
   }catch(e){
+    if (requestedFilter !== currentInstFilter) return;
     console.error('ratings error:', e);
     document.getElementById('listMain').innerHTML = '<div class="empty">Не удалось загрузить</div>';
   }
+}
 
+async function loadAll(){
+  await loadRatings();
   try{
     const r = await fetch('/api/institutes');
     const data = await r.json();
@@ -453,3 +459,4 @@ loadAll();
 </script>
 
 </body></html>
+

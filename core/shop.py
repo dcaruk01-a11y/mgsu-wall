@@ -62,26 +62,39 @@ async def shop_buy(payload: dict, authorization: str = Header(default="")):
         raise HTTPException(status_code=400, detail="Такого персонажа нет")
     if key == "student":
         raise HTTPException(status_code=400, detail="Студент и так твой")
-    if key in user.get("owned_chars", []):
-        raise HTTPException(status_code=400, detail="Уже куплен")
-    if user["coins"] < item["price"]:
-        need = item["price"] - user["coins"]
-        raise HTTPException(status_code=400, detail=f"Не хватает {need} монет")
-
-    new_owned = list(user.get("owned_chars", ["student"]))
-    new_owned.append(key)
-
+    # The balance and inventory must be checked in the same statement that
+    # debits the account. The user object above may be cached or out of date.
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
+        cur = await db.execute("""
             UPDATE users
             SET coins = coins - ?,
-                owned_chars = ?,
+                owned_chars = json_insert(
+                    COALESCE(owned_chars, '["student"]'), '$[#]', ?
+                ),
                 active_char = ?
-            WHERE uid = ?
-        """, (item["price"], json.dumps(new_owned), key, user["uid"]))
+            WHERE uid = ? AND coins >= ?
+              AND NOT EXISTS (
+                  SELECT 1 FROM json_each(COALESCE(owned_chars, '["student"]'))
+                  WHERE value = ?
+              )
+            RETURNING coins, owned_chars
+        """, (item["price"], key, key, user["uid"], item["price"], key))
+        bought = await cur.fetchone()
         await db.commit()
 
-    return {"ok": True, "coins": user["coins"] - item["price"], "active_char": key, "owned": new_owned}
+        if not bought:
+            cur = await db.execute("SELECT coins, owned_chars FROM users WHERE uid = ?", (user["uid"],))
+            current = await cur.fetchone()
+            if not current:
+                raise HTTPException(status_code=401, detail="Не авторизован")
+            if key in json.loads(current[1] or '["student"]'):
+                raise HTTPException(status_code=400, detail="Уже куплен")
+            if current[0] < item["price"]:
+                raise HTTPException(status_code=400, detail=f"Не хватает {item['price'] - current[0]} монет")
+            raise HTTPException(status_code=409, detail="Не удалось завершить покупку, попробуйте ещё раз")
+
+    users.invalidate_user_cache(user["uid"])
+    return {"ok": True, "coins": bought[0], "active_char": key, "owned": json.loads(bought[1])}
 
 
 @router.post("/api/shop/equip")
@@ -91,11 +104,21 @@ async def shop_equip(payload: dict, authorization: str = Header(default="")):
         raise HTTPException(status_code=401, detail="Не авторизован")
 
     key = str(payload.get("key", ""))
-    if key not in user.get("owned_chars", []):
-        raise HTTPException(status_code=400, detail="Персонаж не куплен")
-
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("UPDATE users SET active_char = ? WHERE uid = ?", (key, user["uid"]))
+        cur = await db.execute("""
+            UPDATE users SET active_char = ?
+            WHERE uid = ? AND EXISTS (
+                SELECT 1 FROM json_each(COALESCE(owned_chars, '["student"]'))
+                WHERE value = ?
+            )
+            RETURNING active_char
+        """, (key, user["uid"], key))
+        equipped = await cur.fetchone()
         await db.commit()
 
+    if not equipped:
+        raise HTTPException(status_code=400, detail="Персонаж не куплен")
+
+    users.invalidate_user_cache(user["uid"])
     return {"ok": True, "active_char": key}
+

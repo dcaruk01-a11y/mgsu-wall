@@ -1,4 +1,5 @@
 import time, asyncio, aiosqlite
+from uuid import UUID
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from config import DB_PATH, today_str
@@ -16,6 +17,7 @@ class ClickerScore(BaseModel):
     score: int = 0
     rank: str = ""
     mode: str = "solo"   # "solo" | "duel"
+    submission_id: str = ""
 
 
 def _token(authorization: str) -> str:
@@ -53,7 +55,6 @@ async def clicker_can_play(authorization: str = Header(default="")):
 @router.post("/clicker/score")
 async def clicker_score(payload: ClickerScore, authorization: str = Header(default="")):
     state.clicker_reset_if_needed()
-    analytics.track_game("clicker")
 
     token = _token(authorization)
     user = await users.get_user_by_token(token) if token else None
@@ -61,20 +62,25 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
     score = max(0, min(int(payload.score or 0), 10000))
     rank = (payload.rank or "")[:30]
     mode = (payload.mode or "solo").strip()
+    if mode not in ("solo", "duel"):
+        raise HTTPException(status_code=400, detail="Неизвестный режим игры")
 
     # ═══ ЛИМИТ 1 ПАРТИЯ В ДЕНЬ — только для соло ═══
-    if user and mode == "solo":
-        plays = await _get_daily_plays(user["uid"])
-        if plays >= 1:
-            raise HTTPException(
-                status_code=429,
-                detail="Одна партия в день. Возвращайся завтра!"
-            )
-
     if user:
         nick = user["display_name"]
         uid = user["uid"]
-        streak_info = await users.apply_streak(uid)
+        try:
+            submission_id = str(UUID(payload.submission_id))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=400, detail="Обнови страницу игры и повтори попытку")
+
+        async with aiosqlite.connect(DB_PATH) as db:
+            cur = await db.execute("""
+                SELECT game, raw_score FROM game_awards WHERE uid=? AND submission_id=?
+            """, (uid, submission_id))
+            previous = await cur.fetchone()
+        if previous and (previous[0] != "clicker" or previous[1] != score):
+            raise HTTPException(status_code=409, detail="Идентификатор партии уже использован")
 
         is_record = False
         for e in state.clicker_top:
@@ -83,12 +89,44 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
         else:
             is_record = score > 0
 
-        progress = await users.apply_score_and_coins(uid, score, "clicker", is_record)
-        try:
-            await top.save_score(uid, nick, "clicker", score)
-        except Exception as e:
-            print("top save error:", e)
+        duplicate = bool(previous)
+        if not duplicate:
+            coins = users.COINS_PER_GAME + (users.COINS_PER_RECORD if is_record else 0)
+            day = today_str()
+            async with aiosqlite.connect(DB_PATH) as db:
+                cur = await db.execute("""
+                    INSERT OR IGNORE INTO game_awards
+                        (uid, submission_id, nick, game, raw_score, points, coins,
+                         institute, day, week, ts)
+                    SELECT ?, ?, ?, 'clicker', ?, ?, ?, '', ?, ?, ?
+                    WHERE ? != 'solo' OR NOT EXISTS (
+                        SELECT 1 FROM scores WHERE uid=? AND game='clicker' AND day=?
+                    )
+                    RETURNING submission_id
+                """, (uid, submission_id, nick[:30], score, score, coins,
+                      day, top.week_str(), time.time(), mode, uid, day))
+                inserted = await cur.fetchone()
+                await db.commit()
+            if not inserted:
+                async with aiosqlite.connect(DB_PATH) as db:
+                    cur = await db.execute("""
+                        SELECT game, raw_score FROM game_awards WHERE uid=? AND submission_id=?
+                    """, (uid, submission_id))
+                    previous = await cur.fetchone()
+                if previous:
+                    if previous[0] != "clicker" or previous[1] != score:
+                        raise HTTPException(status_code=409, detail="Идентификатор партии уже использован")
+                    duplicate = True
+                else:
+                    raise HTTPException(status_code=429, detail="Одна партия в день. Возвращайся завтра!")
+        users.invalidate_user_cache(uid)
+        streak_info = await users.apply_streak(uid) if not duplicate else {"ok": False}
+        refreshed = await users.get_user_by_token(token)
+        progress = {"ok": True, **refreshed, "coins_added": 0 if duplicate else coins}
+        if not duplicate:
+            analytics.track_game("clicker")
     else:
+        analytics.track_game("clicker")
         nick = state.sanitize_nick(payload.nick)
         uid = ""
         streak_info = {"ok": False}
@@ -103,6 +141,13 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
     }
 
     async with clicker_lock:
+        if user and duplicate:
+            return {
+                "ok": True, "duplicate": True, "logged_in": True,
+                "top": state.clicker_top, "position": None,
+                "streak": progress.get("streak"), "streak_changed": False,
+                "progress": progress,
+            }
         if uid:
             state.clicker_top = [e for e in state.clicker_top if e.get("uid") != uid]
         state.clicker_top.append(entry)

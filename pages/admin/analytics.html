@@ -306,6 +306,8 @@ async function loadOverview(){
 
     const row = document.getElementById('overviewRow');
     const cards = [
+      {label:'📄 Просмотры страниц', value: d.page_views, sub:'открытия страниц за период'},
+      {label:'⚡ Действия', value: d.actions, sub:'события кроме просмотров'},
       {label:'🆕 Новые', value: d.new_visitors, sub:'первый раз на сайте'},
       {label:'🔁 Вернувшиеся', value: d.returning, sub:'заходили ранее'},
       {label:'🎉 Регистрации', value: d.registered, sub: d.registered_delta !== null ? (d.registered_delta >= 0 ? '+' : '') + d.registered_delta + '%' : 'нет сравнения'},

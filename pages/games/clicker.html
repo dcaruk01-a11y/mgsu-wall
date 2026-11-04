@@ -1114,7 +1114,9 @@ async function finishAllRounds(){
 /* ═══════════════════════════════════════════════════════════
    СОЛО
    ═══════════════════════════════════════════════════════════ */
+let clickerSubmissionId = crypto.randomUUID();
 function startSolo(){
+  clickerSubmissionId = crypto.randomUUID();
   if (!scheduleOpen){ checkScheduleStatus(); return; }
   initAudio();
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
@@ -1164,7 +1166,7 @@ async function submitSoloResult(finalScore){
     if (t) headers['Authorization'] = 'Bearer ' + t;
     const r = await fetch('/clicker/score', {
       method:'POST', headers,
-      body: JSON.stringify({nick: '', score: finalScore, rank: rankFor(finalScore).name})
+      body: JSON.stringify({nick: '', score: finalScore, rank: rankFor(finalScore).name, submission_id: clickerSubmissionId})
     });
     const data = await r.json();
     renderTop(data.top || [], finalScore, data.position);
@@ -1430,6 +1432,7 @@ function applyDuelState(data){
 }
 
 function startDuelCountdown(startAt){
+  clickerSubmissionId = crypto.randomUUID();
   duelPanel.classList.add('hide');
   startOv.classList.add('hide');
   finishOv.classList.add('hide');
@@ -1580,7 +1583,7 @@ function showDuelResult(room){
     if (t) headers['Authorization'] = 'Bearer ' + t;
     fetch('/clicker/score', {
       method:'POST', headers,
-      body: JSON.stringify({nick: '', score: youScore, rank: r.name, mode: 'duel'})
+      body: JSON.stringify({nick: '', score: youScore, rank: r.name, mode: 'duel', submission_id: clickerSubmissionId})
     }).catch(()=>{});
   }catch(e){}
 }

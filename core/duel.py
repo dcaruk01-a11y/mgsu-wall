@@ -101,7 +101,7 @@ async def duel_create(payload: dict = Body(default={}), authorization: str = Hea
 
     rooms[code] = {
         "code": code,
-        "host": {"uid": user["uid"], "nick": user["display_name"], "score": None},
+        "host": {"uid": user["uid"], "nick": user["display_name"], "score": None, "submitted": False},
         "guest": None,
         "status": "waiting",
         "created_at": time.time(),
@@ -142,7 +142,7 @@ async def duel_join(payload: dict = Body(...), authorization: str = Header(defau
     if room["status"] != "waiting" and not room["guest"]:
         raise HTTPException(status_code=400, detail="Игра уже началась")
 
-    room["guest"] = {"uid": user["uid"], "nick": user["display_name"], "score": None}
+    room["guest"] = {"uid": user["uid"], "nick": user["display_name"], "score": None, "submitted": False}
     room["status"] = "ready"
     return {"ok": True, "code": code, "role": "guest"}
 
@@ -182,9 +182,11 @@ async def duel_progress(payload: dict = Body(...), authorization: str = Header(d
     if not user:
         raise HTTPException(status_code=401, detail="Не авторизован")
 
-    if room["host"]["uid"] == user["uid"]:
+    if room["status"] != "playing":
+        raise HTTPException(status_code=409, detail="Дуэль не идёт")
+    if room["host"]["uid"] == user["uid"] and not room["host"].get("submitted"):
         room["host"]["score"] = score
-    elif room["guest"] and room["guest"]["uid"] == user["uid"]:
+    elif room["guest"] and room["guest"]["uid"] == user["uid"] and not room["guest"].get("submitted"):
         room["guest"]["score"] = score
     else:
         raise HTTPException(status_code=403, detail="Ты не участник")
@@ -206,9 +208,13 @@ async def duel_start(payload: dict = Body(...), authorization: str = Header(defa
         raise HTTPException(status_code=403, detail="Только хост может начать")
     if not room["guest"]:
         raise HTTPException(status_code=400, detail="Ждём соперника")
+    if room["status"] != "ready":
+        raise HTTPException(status_code=409, detail="Дуэль уже началась")
 
     room["host"]["score"] = None
+    room["host"]["submitted"] = False
     room["guest"]["score"] = None
+    room["guest"]["submitted"] = False
     room["status"] = "playing"
     room["start_at"] = time.time() + 3.5
     return {"ok": True}
@@ -226,16 +232,22 @@ async def duel_submit(payload: dict = Body(...), authorization: str = Header(def
     if not room:
         raise HTTPException(status_code=404, detail="Комната закрыта")
 
+    if room["status"] not in ("playing", "finished"):
+        raise HTTPException(status_code=409, detail="Дуэль не идёт")
     if room["host"]["uid"] == user["uid"]:
-        room["host"]["score"] = score
+        participant = room["host"]
     elif room["guest"] and room["guest"]["uid"] == user["uid"]:
-        room["guest"]["score"] = score
+        participant = room["guest"]
     else:
         raise HTTPException(status_code=403, detail="Ты не участник")
+    if participant.get("submitted") and participant["score"] != score:
+        raise HTTPException(status_code=409, detail="Результат уже отправлен")
+    participant["score"] = score
+    participant["submitted"] = True
 
-    if (room["host"]["score"] is not None
+    if (room["host"].get("submitted")
         and room["guest"]
-        and room["guest"]["score"] is not None):
+        and room["guest"].get("submitted")):
         room["status"] = "finished"
 
     return {"ok": True, "room": _pub_room(room)}

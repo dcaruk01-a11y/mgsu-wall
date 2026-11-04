@@ -827,7 +827,9 @@ function updateHud(){
 /* ═══════════════════════════════════════════════════════════
    СТАРТ / КОНЕЦ
    ═══════════════════════════════════════════════════════════ */
+let submissionId = crypto.randomUUID();
 function startGame(){
+  submissionId = crypto.randomUUID();
   if (!scheduleOpen){ checkScheduleStatus(); return; }
 
   initAudio();
@@ -862,7 +864,7 @@ async function sendResult(win_){
     if (token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch('/api/game/finish', {
       method:'POST', headers,
-      body: JSON.stringify({game: 'adventure', raw_score: raw, extra: {win: !!win_}})
+      body: JSON.stringify({game: 'adventure', raw_score: raw, submission_id: submissionId, extra: {win: !!win_}})
     });
     const data = await res.json();
     renderProgress(data);

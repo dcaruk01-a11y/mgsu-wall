@@ -133,9 +133,9 @@ function connect(){
 }
 connect();
 
-let drawing = false, last = null;
+let drawing = false, strokeDrawn = false, last = null;
 function pos(e){ const r = c.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return { x:(p.clientX-r.left)*(W/r.width), y:(p.clientY-r.top)*(H/r.height) }; }
-function start(e){ e.preventDefault(); drawing = true; last = pos(e); }
+function start(e){ e.preventDefault(); drawing = true; strokeDrawn = false; last = pos(e); }
 function move(e){
   if (!drawing) return; e.preventDefault();
   const p = pos(e);
@@ -143,9 +143,10 @@ function move(e){
   drawLine(s.x0,s.y0,s.x1,s.y1,color,width);
   const msg = JSON.stringify({type:'stroke', ...s});
   if (ws && ws.readyState === 1) ws.send(msg); else queue.push(msg);
+  strokeDrawn = true;
   last = p;
 }
-function end(){ drawing = false; last = null; }
+function end(){ if (drawing && strokeDrawn) strokesSent++; drawing = false; last = null; }
 c.addEventListener('touchstart', start, {passive:false});
 c.addEventListener('touchmove', move, {passive:false});
 c.addEventListener('touchend', end);
@@ -159,18 +160,26 @@ document.getElementById('undoBtn').onclick = () => {
 };
 
 let strokesSent = 0;
+let submissionId = crypto.randomUUID();
+let sendingStrokes = false;
+let pendingStrokes = 0;
 setInterval(async () => {
-  if (strokesSent === 0) return;
+  if (strokesSent === 0 || sendingStrokes) return;
   const token = localStorage.getItem('mgsu_token') || '';
   if (!token) return;
+  if (!pendingStrokes) pendingStrokes = strokesSent;
+  sendingStrokes = true;
   try{
-    await fetch('/api/game/finish', {
+    const response = await fetch('/api/game/finish', {
       method:'POST',
       headers:{'Content-Type':'application/json', 'Authorization': 'Bearer ' + token},
-      body: JSON.stringify({game: 'wall', raw_score: strokesSent})
+      body: JSON.stringify({game: 'wall', raw_score: pendingStrokes, submission_id: submissionId})
     });
-    strokesSent = 0;
-  }catch(e){}
+    if (!response.ok) return;
+    strokesSent -= pendingStrokes;
+    pendingStrokes = 0;
+    submissionId = crypto.randomUUID();
+  }catch(e){} finally { sendingStrokes = false; }
 }, 60000);
 
 async function checkStatus(){

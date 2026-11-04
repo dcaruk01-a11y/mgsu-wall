@@ -5,6 +5,8 @@
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 import aiosqlite
+import time
+from uuid import UUID
 import core.users as users
 import core.top as top
 import core.analytics as analytics
@@ -51,6 +53,7 @@ def daily_multiplier(plays_today: int) -> float:
 class FinishPayload(BaseModel):
     game: str = ""
     raw_score: int = 0
+    submission_id: str = ""
     extra: dict = {}
 
 
@@ -81,9 +84,8 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
 
     raw = max(0, min(int(payload.raw_score or 0), 100000))
 
-    analytics.track_game(game)
-
     if not user:
+        analytics.track_game(game)
         points = int(raw * GAME_WEIGHTS[game])
         return {
             "ok": True,
@@ -97,6 +99,28 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
 
     uid = user["uid"]
     nick = user["display_name"]
+    try:
+        submission_id = str(UUID(payload.submission_id))
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=400, detail="Обнови страницу игры и повтори попытку")
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("""
+            SELECT game, raw_score, points FROM game_awards
+            WHERE uid = ? AND submission_id = ?
+        """, (uid, submission_id))
+        previous = await cur.fetchone()
+    if previous:
+        if previous[0] != game or previous[1] != raw:
+            raise HTTPException(status_code=409, detail="Идентификатор партии уже использован")
+        users.invalidate_user_cache(uid)
+        refreshed = await users.get_user_by_token(token)
+        return {
+            "ok": True, "duplicate": True, "logged_in": True,
+            "game": game, "raw_score": raw, "points": previous[2],
+            "progress": refreshed,
+            "tasks_completed": [], "achievements_new": [],
+        }
 
     # 1. Дневной множитель
     plays_today = await _get_daily_plays(uid, game)
@@ -112,41 +136,42 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
     )
     rank_bonus_pct = rank_data.get("bonus_pct", 0)
 
-    # 4. Streak
-    streak_info = await users.apply_streak(uid)
-
-    # 5. Рекорд (для кликера)
-    is_record = False
-    if game == "clicker":
+    # The insert and trigger update profile, rankings and institute together.
+    coins = int(round(users.COINS_PER_GAME * mult))
+    coins = int(round(coins * (1 + rank_bonus_pct / 100.0)))
+    async with aiosqlite.connect(DB_PATH) as db:
+        cur = await db.execute("""
+            INSERT OR IGNORE INTO game_awards
+                (uid, submission_id, nick, game, raw_score, points, coins,
+                 institute, day, week, ts)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            RETURNING submission_id
+        """, (uid, submission_id, nick[:30], game, raw, points, coins,
+              user.get("institute") or "", today_str(), top.week_str(), time.time()))
+        inserted = await cur.fetchone()
+        await db.commit()
+    if not inserted:
         async with aiosqlite.connect(DB_PATH) as db:
             cur = await db.execute("""
-                SELECT MAX(score) FROM scores WHERE uid=? AND day=?
-            """, (uid, today_str()))
-            row = await cur.fetchone()
-            prev = row[0] or 0
-        is_record = raw > prev
+                SELECT game, raw_score, points FROM game_awards
+                WHERE uid = ? AND submission_id = ?
+            """, (uid, submission_id))
+            previous = await cur.fetchone()
+        if not previous or previous[0] != game or previous[1] != raw:
+            raise HTTPException(status_code=409, detail="Идентификатор партии уже использован")
+        users.invalidate_user_cache(uid)
+        refreshed = await users.get_user_by_token(token)
+        return {
+            "ok": True, "duplicate": True, "logged_in": True,
+            "game": game, "raw_score": raw, "points": previous[2],
+            "progress": refreshed,
+            "tasks_completed": [], "achievements_new": [],
+        }
 
-    # 6. Начисляем очки и монеты
-    progress = await users.apply_score_and_coins(
-        uid, points, game, is_record,
-        daily_mult=mult,
-        rank_bonus_pct=rank_bonus_pct,
-    )
-
-    # 7. Топы
-    try:
-        await top.save_score(uid, nick, game, points)
-    except Exception as e:
-        print("top save error:", e)
-
-    # 8. Очки в копилку института
-    try:
-        inst = user.get("institute") or ""
-        if inst:
-            from core.institutes import add_score
-            await add_score(uid, inst, points)
-    except Exception as e:
-        print("institute score error:", e)
+    users.invalidate_user_cache(uid)
+    analytics.track_game(game)
+    streak_info = await users.apply_streak(uid)
+    is_record = False
 
     # 9. Задания
     completed = []

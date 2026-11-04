@@ -838,7 +838,9 @@ function loop(now){
 /* ═══════════════════════════════════════════════════════════
    СТАРТ / КОНЕЦ
    ═══════════════════════════════════════════════════════════ */
+let submissionId = crypto.randomUUID();
 function startGame(){
+  submissionId = crypto.randomUUID();
   if (!scheduleOpen){ checkScheduleStatus(); return; }
 
   initAudio();
@@ -895,7 +897,7 @@ async function endGame(){
     if (token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch('/api/game/finish', {
       method:'POST', headers,
-      body: JSON.stringify({game: 'tetris', raw_score: score})
+      body: JSON.stringify({game: 'tetris', raw_score: score, submission_id: submissionId})
     });
     const data = await res.json();
     renderProgress(data);

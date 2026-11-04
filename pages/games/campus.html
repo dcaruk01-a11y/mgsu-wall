@@ -159,6 +159,7 @@ function vote(id){
   sendVote();
 }
 
+const submissionId = crypto.randomUUID();
 async function sendVote(){
   const token = localStorage.getItem('mgsu_token') || '';
   try{
@@ -166,7 +167,7 @@ async function sendVote(){
     if (token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch('/api/game/finish', {
       method:'POST', headers,
-      body: JSON.stringify({game: 'campus', raw_score: 1})
+      body: JSON.stringify({game: 'campus', raw_score: 1, submission_id: submissionId})
     });
     const data = await res.json();
     const block = document.getElementById('campusProgress');

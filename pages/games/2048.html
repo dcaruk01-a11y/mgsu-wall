@@ -540,7 +540,9 @@ function addRandomTile(){
   return tile;
 }
 
+let submissionId = crypto.randomUUID();
 function newGame(){
+  submissionId = crypto.randomUUID();
   if (!scheduleOpen){ checkScheduleStatus(); return; }
   initAudio();
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
@@ -736,7 +738,7 @@ async function gameOver(){
     if (token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch('/api/game/finish', {
       method: 'POST', headers,
-      body: JSON.stringify({ game: '2048', raw_score: score })
+      body: JSON.stringify({ game: '2048', raw_score: score, submission_id: submissionId })
     });
     const data = await res.json();
     renderProgress(data);

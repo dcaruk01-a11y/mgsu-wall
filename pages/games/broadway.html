@@ -148,7 +148,9 @@ function resetGame(){
   player.y = 0; player.vy = 0; player.onGround = true; player.jumpCount = 0; player.runPhase = 0;
 }
 
+let submissionId = crypto.randomUUID();
 function startGame(){
+  submissionId = crypto.randomUUID();
   if (!scheduleOpen){ checkScheduleStatus(); return; }
   resetGame();
   running = true;
@@ -193,7 +195,7 @@ async function stopGame(){
     if (token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch('/api/game/finish', {
       method:'POST', headers,
-      body: JSON.stringify({game:'broadway', raw_score: dist})
+      body: JSON.stringify({game:'broadway', raw_score: dist, submission_id: submissionId})
     });
     const data = await res.json();
     renderProgress(data);

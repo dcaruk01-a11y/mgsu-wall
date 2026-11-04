@@ -43,6 +43,45 @@ async def db_init_top():
         await db.execute("""
             CREATE INDEX IF NOT EXISTS idx_scores_uid ON scores (uid)
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS game_awards (
+                uid TEXT NOT NULL,
+                submission_id TEXT NOT NULL,
+                nick TEXT NOT NULL,
+                game TEXT NOT NULL,
+                raw_score INTEGER NOT NULL,
+                points INTEGER NOT NULL,
+                coins INTEGER NOT NULL,
+                institute TEXT NOT NULL,
+                day TEXT NOT NULL,
+                week TEXT NOT NULL,
+                ts REAL NOT NULL,
+                PRIMARY KEY (uid, submission_id)
+            )
+        """)
+        await db.execute("""
+            CREATE TRIGGER IF NOT EXISTS award_game_result
+            AFTER INSERT ON game_awards
+            BEGIN
+                UPDATE users SET
+                    total_score = total_score + NEW.points,
+                    coins = coins + NEW.coins,
+                    games_played = games_played + 1,
+                    last_seen = NEW.ts
+                WHERE uid = NEW.uid;
+                INSERT INTO scores (uid, nick, game, score, day, week, ts)
+                VALUES (NEW.uid, NEW.nick, NEW.game, NEW.points,
+                        NEW.day, NEW.week, NEW.ts);
+                INSERT INTO institute_scores
+                    (uid, institute, score_sum, games_count, updated_at)
+                SELECT NEW.uid, NEW.institute, NEW.points, 1, NEW.ts
+                WHERE NEW.institute != '' AND NEW.points > 0
+                ON CONFLICT(uid, institute) DO UPDATE SET
+                    score_sum = score_sum + excluded.score_sum,
+                    games_count = games_count + 1,
+                    updated_at = excluded.updated_at;
+            END
+        """)
         await db.commit()
 
 

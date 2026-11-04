@@ -283,6 +283,20 @@ async def get_overview(days: int = 7):
         """, (prev_cutoff, cutoff))
         visitors_prev = (await cur.fetchone())[0] or 0
 
+        cur = await db.execute("""
+            SELECT COUNT(*) FROM visits v
+            LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+            WHERE v.ts > ? AND v.action = 'visit' AND COALESCE(vi.is_admin, 0) = 0
+        """, (cutoff,))
+        page_views = (await cur.fetchone())[0] or 0
+
+        cur = await db.execute("""
+            SELECT COUNT(*) FROM visits v
+            LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+            WHERE v.ts > ? AND v.action != 'visit' AND COALESCE(vi.is_admin, 0) = 0
+        """, (cutoff,))
+        actions = (await cur.fetchone())[0] or 0
+
         # Новые = те visitor_id, у которых first_seen в этом периоде
         # (для старых заходов без visitor_id — не считаем "новыми")
         cur = await db.execute("""
@@ -326,28 +340,20 @@ async def get_overview(days: int = 7):
         )
         games_prev = (await cur.fetchone())[0] or 0
 
-        # D1: из зарегавшихся за период — сколько вернулись на следующий день
+        # Только завершённые календарные дни; один запрос вместо запроса на игрока.
+        eligible_before = datetime.now(MSK).replace(hour=0, minute=0, second=0, microsecond=0).timestamp() - 86400
         cur = await db.execute("""
-            SELECT uid, created_at FROM users WHERE created_at > ?
-        """, (cutoff,))
-        reg_rows = await cur.fetchall()
-
-    d1_count = 0
-    d1_total = 0
-    for uid, created in reg_rows:
-        if not uid or not created:
-            continue
-        d1_total += 1
-        next_day_start = created + 86400
-        next_day_end = created + 2 * 86400
-        async with aiosqlite.connect(DB_PATH) as db:
-            cur = await db.execute("""
-                SELECT 1 FROM visits
-                WHERE uid=? AND ts > ? AND ts < ?
-                LIMIT 1
-            """, (uid, next_day_start, next_day_end))
-            if await cur.fetchone():
-                d1_count += 1
+            SELECT COUNT(*), COALESCE(SUM(CASE WHEN EXISTS (
+                SELECT 1 FROM visits v
+                LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
+                WHERE (v.uid = u.uid OR vi.linked_uid = u.uid)
+                  AND COALESCE(vi.is_admin, 0) = 0
+                  AND date(v.ts, 'unixepoch', '+3 hours') =
+                      date(u.created_at, 'unixepoch', '+3 hours', '+1 day')
+            ) THEN 1 ELSE 0 END), 0)
+            FROM users u WHERE u.created_at > ? AND u.created_at < ?
+        """, (cutoff, eligible_before))
+        d1_total, d1_count = await cur.fetchone()
 
     d1_pct = round(d1_count / d1_total * 100) if d1_total else 0
 
@@ -359,6 +365,8 @@ async def get_overview(days: int = 7):
     return {
         "days": days,
         "visitors": visitors_now,
+        "page_views": page_views,
+        "actions": actions,
         "visitors_delta": delta(visitors_now, visitors_prev),
         "new_visitors": new_visitors,
         "returning": returning,

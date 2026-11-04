@@ -647,25 +647,10 @@ async def set_institute(uid: str, institute: str) -> dict:
         old_institute = (row[0] or "").strip()
         is_change = bool(old_institute and old_institute != institute)
 
-        if is_change:
-            await db.execute("""
-                UPDATE users SET
-                    institute = ?,
-                    total_score = 0,
-                    coins = 0,
-                    streak = 0,
-                    best_streak = 0,
-                    games_played = 0,
-                    last_day_played = '',
-                    owned_chars = '["student"]',
-                    active_char = 'student'
-                WHERE uid = ?
-            """, (institute, uid))
-        else:
-            await db.execute(
-                "UPDATE users SET institute = ? WHERE uid = ?",
-                (institute, uid)
-            )
+        await db.execute(
+            "UPDATE users SET institute = ? WHERE uid = ?",
+            (institute, uid)
+        )
         await db.commit()
 
     if is_change:

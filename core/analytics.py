@@ -2,7 +2,7 @@
 Аналитика с сохранением в SQLite.
 Хранит 30 дней, переживает перезапуск сервера (но не деплой).
 """
-import json, time, aiosqlite
+import asyncio, json, time, aiosqlite
 from datetime import datetime, timedelta
 from config import MSK, today_str, DB_PATH
 
@@ -11,6 +11,11 @@ HISTORY_DAYS = 30
 
 history: dict = {}
 all_seen_uids: set = set()
+_dirty_versions: dict = {}
+
+
+def _mark_dirty(day: str):
+    _dirty_versions[day] = _dirty_versions.get(day, 0) + 1
 
 
 def _today():
@@ -44,6 +49,7 @@ def cleanup_old():
     for d in list(history.keys()):
         if d < cutoff:
             del history[d]
+            _dirty_versions.pop(d, None)
 
 
 # ============ SQLITE ============
@@ -70,6 +76,7 @@ async def archive_day(date_str=None):
     d = date_str or _today()
     if d not in history:
         return
+    version = _dirty_versions.get(d, 0)
     day = history[d]
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
@@ -88,7 +95,19 @@ async def archive_day(date_str=None):
             time.time(),
         ))
         await db.commit()
+    if _dirty_versions.get(d, 0) == version:
+        _dirty_versions.pop(d, None)
     print(f"stats archived for {d}")
+
+
+async def archive_dirty_loop():
+    while True:
+        await asyncio.sleep(60)
+        for day in list(_dirty_versions):
+            try:
+                await archive_day(day)
+            except Exception as e:
+                print("stats archive error:", e)
 
 
 async def load_history():
@@ -125,8 +144,10 @@ async def load_history():
 # ============ ЗАПИСЬ СОБЫТИЙ ============
 
 def track_visit(uid: str = ""):
-    day = _ensure_day()
+    day_key = _today()
+    day = _ensure_day(day_key)
     day["visits"] += 1
+    _mark_dirty(day_key)
     if uid and len(uid) < 64:
         if uid in day["uniques"]:
             return
@@ -140,21 +161,26 @@ def track_visit(uid: str = ""):
 
 
 def track_game(name: str):
-    day = _ensure_day()
-    if name in day["games"]:
-        day["games"][name] += 1
+    day_key = _today()
+    day = _ensure_day(day_key)
+    day["games"][name] = day["games"].get(name, 0) + 1
+    _mark_dirty(day_key)
 
 
 def track_clicker_score(score: int):
-    day = _ensure_day()
+    day_key = _today()
+    day = _ensure_day(day_key)
     if 0 <= score <= 100000:
         day["clicker_scores"].append(score)
+        _mark_dirty(day_key)
 
 
 def track_session(seconds: float):
-    day = _ensure_day()
+    day_key = _today()
+    day = _ensure_day(day_key)
     if 1 <= seconds <= 3600:
         day["sessions"].append(seconds)
+        _mark_dirty(day_key)
 
 
 # ============ МЕТРИКИ ============
@@ -426,3 +452,4 @@ def all_metrics():
         m_memory(),
         m_cpu(),
     ]
+

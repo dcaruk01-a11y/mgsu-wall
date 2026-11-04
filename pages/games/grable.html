@@ -717,7 +717,9 @@ function showFloat(text, isBad){
 /* ═══════════════════════════════════════════════════════════
    СТАРТ / ФИНАЛ
    ═══════════════════════════════════════════════════════════ */
+let submissionId = crypto.randomUUID();
 function startGame(){
+  submissionId = crypto.randomUUID();
   if (!scheduleOpen){ checkScheduleStatus(); return; }
   initAudio();
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
@@ -761,7 +763,7 @@ async function finishGame(){
     if (token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch('/api/game/finish', {
       method: 'POST', headers,
-      body: JSON.stringify({ game: 'grable', raw_score: totalScore })
+      body: JSON.stringify({ game: 'grable', raw_score: totalScore, submission_id: submissionId })
     });
     const data = await res.json();
     renderProgress(data);

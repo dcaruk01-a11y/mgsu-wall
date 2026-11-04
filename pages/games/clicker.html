@@ -1583,7 +1583,7 @@ function showDuelResult(room){
     if (t) headers['Authorization'] = 'Bearer ' + t;
     fetch('/clicker/score', {
       method:'POST', headers,
-      body: JSON.stringify({nick: '', score: youScore, rank: r.name, mode: 'duel', submission_id: clickerSubmissionId})
+      body: JSON.stringify({nick: '', score: youScore, rank: r.name, mode: 'duel', room_code: duelCode, submission_id: clickerSubmissionId})
     }).catch(()=>{});
   }catch(e){}
 }

@@ -56,24 +56,15 @@ async def add_score(uid: str, institute: str, points: int):
         return
     now = time.time()
     async with aiosqlite.connect(DB_PATH) as db:
-        cur = await db.execute(
-            "SELECT score_sum, games_count FROM institute_scores WHERE uid=? AND institute=?",
-            (uid, institute)
-        )
-        row = await cur.fetchone()
-        if row:
-            await db.execute("""
-                UPDATE institute_scores
-                SET score_sum = score_sum + ?, games_count = games_count + 1, updated_at = ?
-                WHERE uid=? AND institute=?
-            """, (points, now, uid, institute))
-        else:
-            await db.execute("""
-                INSERT INTO institute_scores (uid, institute, score_sum, games_count, updated_at)
-                VALUES (?,?,?,?,?)
-            """, (uid, institute, points, 1, now))
+        await db.execute("""
+            INSERT INTO institute_scores (uid, institute, score_sum, games_count, updated_at)
+            VALUES (?, ?, ?, 1, ?)
+            ON CONFLICT(uid, institute) DO UPDATE SET
+                score_sum = score_sum + excluded.score_sum,
+                games_count = games_count + 1,
+                updated_at = excluded.updated_at
+        """, (uid, institute, points, now))
         await db.commit()
-
 
 async def reset_player_institute(uid: str):
     """При смене института — обнуляем очки в старом институте у этого игрока."""

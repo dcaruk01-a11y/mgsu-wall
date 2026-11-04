@@ -7,6 +7,7 @@ import core.state as state
 import core.analytics as analytics
 import core.users as users
 import core.top as top
+import core.duel as duel
 
 router = APIRouter()
 clicker_lock = asyncio.Lock()
@@ -18,6 +19,7 @@ class ClickerScore(BaseModel):
     rank: str = ""
     mode: str = "solo"   # "solo" | "duel"
     submission_id: str = ""
+    room_code: str = ""
 
 
 def _token(authorization: str) -> str:
@@ -69,6 +71,16 @@ async def clicker_score(payload: ClickerScore, authorization: str = Header(defau
     if user:
         nick = user["display_name"]
         uid = user["uid"]
+        if mode == "duel":
+            room = duel.rooms.get(duel.normalize_code(payload.room_code))
+            participant = None
+            if room:
+                if room["host"]["uid"] == uid:
+                    participant = room["host"]
+                elif room.get("guest") and room["guest"]["uid"] == uid:
+                    participant = room["guest"]
+            if not participant or room["status"] != "finished" or participant["score"] != score:
+                raise HTTPException(status_code=403, detail="Результат дуэли не подтверждён")
         try:
             submission_id = str(UUID(payload.submission_id))
         except (ValueError, AttributeError):

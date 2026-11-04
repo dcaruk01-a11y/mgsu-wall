@@ -132,7 +132,7 @@
         <div class="pulse-label">Посетители</div>
         <div class="pulse-value" id="pulseVisitors">—</div>
         <div class="pulse-delta flat" id="pulseVisitorsDelta">—</div>
-        <div class="pulse-hint">по уникальным браузерам</div>
+        <div class="pulse-hint">оценка по браузерам и сети</div>
       </div>
       <div class="pulse-card green">
         <div class="pulse-icon">🎮</div>
@@ -156,7 +156,7 @@
     </div>
 
     <div class="block">
-      <h2>🎯 Путь пользователя</h2>
+      <h2>🎯 Активность за период</h2>
       <div class="funnel" id="funnelBox">
         <div class="empty">Загрузка…</div>
       </div>
@@ -341,7 +341,6 @@ async function loadFunnel(){
         '<div class="funnel-content">' +
           '<span class="funnel-icon">' + s.icon + '</span>' +
           '<span class="funnel-label">' + s.label + '</span>' +
-          (i > 0 ? '<span class="funnel-pct">' + s.pct + '%</span>' : '') +
           '<span class="funnel-count">' + s.value + '</span>' +
         '</div>';
       box.appendChild(el);

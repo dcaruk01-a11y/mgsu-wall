@@ -419,7 +419,7 @@ async def get_funnel_v2(days: int = 7):
                       WHEN v.uid != '' THEN 'u:' || v.uid
                       ELSE 's:' || v.subnet || ':' || CAST(v.hour AS TEXT)
                     END as key,
-                    COUNT(*) as cnt
+                    COUNT(DISTINCT date(v.ts, 'unixepoch', '+3 hours')) as cnt
                 FROM visits v
                 LEFT JOIN visitors vi ON vi.visitor_id = v.visitor_id
                 WHERE v.ts > ? AND COALESCE(vi.is_admin, 0) = 0
@@ -437,7 +437,7 @@ async def get_funnel_v2(days: int = 7):
             {"icon": "👥", "label": "Посетители", "value": step1, "pct": 100},
             {"icon": "🎉", "label": "Зарегались", "value": step2, "pct": pct(step2, step1)},
             {"icon": "🎮", "label": "Сыграли", "value": step3, "pct": pct(step3, step2)},
-            {"icon": "🔁", "label": "Вернулись", "value": step4, "pct": pct(step4, step3)},
+            {"icon": "🔁", "label": "Были в разные дни", "value": step4, "pct": pct(step4, step1)},
         ]
     }
 

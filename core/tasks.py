@@ -35,13 +35,6 @@ async def daily_loop():
             state.clicker_day = ""
             print("Топ кликера сброшен")
 
-            # === Очистка старых результатов игр ===
-            try:
-                await top.archive_old_scores(90)
-                print("Старые результаты очищены (90+ дней)")
-            except Exception as e:
-                print("archive scores error:", e)
-
             # === Очистка login_attempts ===
             try:
                 from core.login_guard import cleanup_old as lg_cleanup

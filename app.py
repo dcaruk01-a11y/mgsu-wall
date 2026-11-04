@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from core.storage import db_init
-from core.analytics import db_init_stats, load_history
+from core.analytics import db_init_stats, load_history, archive_dirty_loop
 from core.users import db_init_users
 from core.ip_tracking import db_init_ip
 from core.top import db_init_top
@@ -67,8 +67,10 @@ async def on_startup():
     await db_init_frames()
     await state.load_all_settings()
     await load_history()
+    asyncio.create_task(archive_dirty_loop())
     asyncio.create_task(daily_loop())
     asyncio.create_task(feedback_bot_loop())
     asyncio.create_task(content_publisher_loop())
+
 
 

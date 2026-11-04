@@ -332,7 +332,7 @@ async def admin_user_reset_pin(payload: dict, token: str = Header(default="", al
         await db.execute("DELETE FROM sessions WHERE uid=?", (uid,))
         await db.commit()
 
-    await log_action("reset_pin", uid, f"новый PIN: {new_pin}")
+    await log_action("reset_pin", uid, "PIN изменён")
     return {"ok": True, "new_pin": new_pin}
 
 

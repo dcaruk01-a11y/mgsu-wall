@@ -43,6 +43,19 @@ async def db_init_frames():
                 await db.execute("ALTER TABLE users ADD COLUMN active_frame TEXT DEFAULT ''")
         except Exception:
             pass
+        cur = await db.execute("PRAGMA table_info(user_frames)")
+        columns = {row[1] for row in await cur.fetchall()}
+        if "price" not in columns:
+            await db.execute("ALTER TABLE user_frames ADD COLUMN price INTEGER DEFAULT 0")
+        await db.execute("""
+            CREATE TRIGGER IF NOT EXISTS charge_frame_purchase
+            AFTER INSERT ON user_frames
+            BEGIN
+                UPDATE users SET coins = coins - NEW.price,
+                    active_frame = NEW.frame_key
+                WHERE uid = NEW.uid;
+            END
+        """)
         await db.commit()
 
 
@@ -62,29 +75,19 @@ async def buy_frame(uid: str, frame_key: str, coins_available: int) -> dict:
         return {"ok": False, "error": "Такой рамки нет"}
 
     async with aiosqlite.connect(DB_PATH) as db:
-        cur = await db.execute(
-            "SELECT 1 FROM user_frames WHERE uid=? AND frame_key=?",
-            (uid, frame_key)
-        )
-        if await cur.fetchone():
-            return {"ok": False, "error": "Уже куплена"}
-
-        if coins_available < frame["price"]:
-            return {"ok": False, "error": "Недостаточно монет"}
-
-        await db.execute(
-            "UPDATE users SET coins = coins - ? WHERE uid = ?",
-            (frame["price"], uid)
-        )
-        await db.execute(
-            "INSERT INTO user_frames (uid, frame_key, bought_at) VALUES (?,?,?)",
-            (uid, frame_key, time.time())
-        )
-        await db.execute(
-            "UPDATE users SET active_frame = ? WHERE uid = ?",
-            (frame_key, uid)
-        )
+        cur = await db.execute("""
+            INSERT OR IGNORE INTO user_frames (uid, frame_key, bought_at, price)
+            SELECT uid, ?, ?, ? FROM users
+            WHERE uid = ? AND coins >= ?
+            RETURNING frame_key
+        """, (frame_key, time.time(), frame["price"], uid, frame["price"]))
+        purchased = await cur.fetchone()
         await db.commit()
+        if not purchased:
+            cur = await db.execute("SELECT 1 FROM user_frames WHERE uid=? AND frame_key=?", (uid, frame_key))
+            if await cur.fetchone():
+                return {"ok": False, "error": "Уже куплена"}
+            return {"ok": False, "error": "Недостаточно монет"}
 
     return {"ok": True, "frame": frame_key, "active": frame_key}
 

@@ -73,6 +73,9 @@ async def finish_game(payload: FinishPayload, authorization: str = Header(defaul
     if game not in GAME_WEIGHTS:
         raise HTTPException(status_code=400, detail="Unknown game")
 
+    if game == "clicker":
+        raise HTTPException(status_code=400, detail="Используй сохранение результата кликера")
+
     token = _token(authorization)
     user = await users.get_user_by_token(token) if token else None
 
